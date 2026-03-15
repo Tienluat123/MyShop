@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Uno.Resizetizer;
+using MyShop.Views;
 
 namespace MyShop;
 
