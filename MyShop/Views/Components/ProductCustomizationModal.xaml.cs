@@ -1,0 +1,32 @@
+using Microsoft.UI.Xaml.Controls;
+using MyShop.ViewModels;
+using MyShop.Models;
+
+namespace MyShop.Views.Components;
+
+public sealed partial class ProductCustomizationModal : ContentDialog
+{
+    public ProductCustomizationViewModel ViewModel;
+
+    public ProductCustomizationModal(TempProduct product, OrderItem? existingItem = null)
+    {
+        this.InitializeComponent();
+        ViewModel = new ProductCustomizationViewModel(product, existingItem);
+        DataContext = ViewModel;
+
+        // Clear default title as we use custom header
+        Title = "";
+
+        if (product.Category != "Coffee" && product.Category != "Tea")
+        {
+            BeverageOptions.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        }
+
+        ViewModel.DrinkConfirmed += (opts, qty) => this.Hide();
+    }
+
+    private void CloseBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        this.Hide();
+    }
+}

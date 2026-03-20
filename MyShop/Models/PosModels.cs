@@ -1,0 +1,139 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace MyShop.Models;
+
+public enum PaymentMethod
+{
+    Cash,
+    Card,
+    Digital
+}
+
+public partial class PaymentMethodItem : ObservableObject
+{
+    public PaymentMethod Method { get; set; }
+    public string Label { get; set; } = "";
+    public string IconKey { get; set; } = "";
+    public string Glyph { get; set; } = "";
+
+    [ObservableProperty]
+    private bool _isSelected;
+}
+
+public enum OrderStatus
+{
+    Pending,
+    Preparing,
+    Ready,
+    Completed,
+    Voided,
+    Refunded
+}
+
+public enum LoyaltyTier
+{
+    Regular,
+    Silver,
+    Gold,
+    VIP
+}
+
+public partial class DrinkOptions : ObservableObject
+{
+    [ObservableProperty]
+    private string _size = "M";
+
+    [ObservableProperty]
+    private string _sugar = "100%";
+
+    [ObservableProperty]
+    private string _ice = "Regular";
+
+    public ObservableCollection<string> AddOns { get; } = new();
+
+    [ObservableProperty]
+    private string _notes = "";
+}
+
+public partial class OrderItem : ObservableObject
+{
+    public TempProduct Product { get; set; } = null!;
+
+    public double BasePrice { get; set; }
+
+    [ObservableProperty]
+    private int _quantity;
+
+    public DrinkOptions? DrinkOptions { get; set; }
+
+    public double TotalPrice => BasePrice * Quantity;
+
+    partial void OnQuantityChanged(int value)
+    {
+        OnPropertyChanged(nameof(TotalPrice));
+    }
+}
+
+public partial class PosOrder : ObservableObject
+{
+    [ObservableProperty]
+    private string _orderId = "";
+
+    public ObservableCollection<OrderItem> Items { get; } = new();
+
+    [ObservableProperty]
+    private double _subtotal;
+
+    [ObservableProperty]
+    private double _tax;
+
+    [ObservableProperty]
+    private double _total;
+
+    [ObservableProperty]
+    private string _type = "Dine-in";
+
+    [ObservableProperty]
+    private string? _table;
+
+    [ObservableProperty]
+    private PaymentMethod _method;
+
+    [ObservableProperty]
+    private OrderStatus _status = OrderStatus.Pending;
+
+    [ObservableProperty]
+    private DateTime _createdAt = DateTime.Now;
+
+    [ObservableProperty]
+    private string? _customerId;
+
+    [ObservableProperty]
+    private string? _customerName;
+}
+
+
+public class UpdateQtyParams
+{
+    public OrderItem? Item { get; set; }
+    public int Delta { get; set; }
+}
+
+public class AddCustomizedParams
+{
+    public TempProduct Product { get; set; } = null!;
+    public DrinkOptions Options { get; set; } = null!;
+    public int Quantity { get; set; }
+}
+
+public partial class CategoryItem : ObservableObject
+{
+    public string Name { get; set; } = "";
+    public string IconKey { get; set; } = "";
+
+    [ObservableProperty]
+    private bool _isActive;
+}
