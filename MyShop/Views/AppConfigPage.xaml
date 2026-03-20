@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MyShop.Views.AppConfigPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="#F3F4F6">
+
+    <Page.Resources>
+        <!-- ===================== CARD CONTAINER ===================== -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="28"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- ===================== SECTION HEADER ===================== -->
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+        </Style>
+
+        <Style x:Key="SectionDescStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#6B7280"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <!-- ===================== LABEL ===================== -->
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <!-- ===================== COMBOBOX ===================== -->
+        <Style x:Key="ConfigComboStyle" TargetType="ComboBox">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="#F9FAFB"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+
+        <!-- ===================== TEXTBOX ===================== -->
+        <Style x:Key="ConfigTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="#F9FAFB"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+
+        <!-- ===================== TEXTBOX ===================== -->
+        <Style x:Key="ConfigTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="#F9FAFB"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+
+        <!-- ===================== TOGGLE SWITCH ===================== -->
+        <Style x:Key="ConfigToggleStyle" TargetType="ToggleSwitch">
+            <Setter Property="OnContent" Value=""/>
+            <Setter Property="OffContent" Value=""/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+
+        <!-- ===================== PRIMARY BUTTON ===================== -->
+        <Style x:Key="PrimaryBtnStyle" TargetType="Button">
+            <Setter Property="Background" Value="#D97706"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- ===================== DIVIDER ===================== -->
+        <Style x:Key="DividerStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#F3F4F6"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Margin" Value="0,4,0,16"/>
+        </Style>
+
+        <!-- ===================== ROW SETTING ===================== -->
+        <Style x:Key="SettingRowStyle" TargetType="Grid">
+            <Setter Property="Margin" Value="0,0,0,20"/>
+        </Style>
+    </Page.Resources>
+
+    <!-- ===================== ROOT SCROLL ===================== -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="32,28,32,32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Page Header 0 -->
+                <RowDefinition Height="16"/>   <!-- Gap 1 -->
+                <RowDefinition Height="Auto"/> <!-- Card 1 (Shop Info) -> Row 2 -->
+                <RowDefinition Height="16"/>   <!-- Gap 3 -->
+                <RowDefinition Height="Auto"/> <!-- Card 2 (Hiển Thị) -> Row 4 -->
+                <RowDefinition Height="16"/>   <!-- Gap 5 -->
+                <RowDefinition Height="Auto"/> <!-- Card 3 (Chức Năng) -> Row 6 -->
+                <RowDefinition Height="24"/>   <!-- Gap 7 -->
+                <RowDefinition Height="Auto"/> <!-- Buttons -> Row 8 -->
+            </Grid.RowDefinitions>
+
+            <!-- ===================== PAGE HEADER ===================== -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="14">
+                <Border Width="36" Height="36" Background="#FEF3C7" CornerRadius="10">
+                    <FontIcon Glyph="&#xE713;" FontFamily="Segoe MDL2 Assets"
+                              Foreground="#D97706" FontSize="18"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Cài Đặt Hệ Thống"
+                               FontSize="22" FontWeight="Bold" Foreground="#1F2937"/>
+                    <TextBlock Text="Cấu hình các tuỳ chọn cho ứng dụng MyShop của bạn."
+                               FontSize="12" Foreground="#6B7280"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ===================== CARD 1: THÔNG TIN CỬA HÀNG ===================== -->
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <!-- Header -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,4">
+                        <Border Width="28" Height="28" Background="#EFF6FF" CornerRadius="7">
+                            <FontIcon Glyph="&#xE825;" FontFamily="Segoe MDL2 Assets"
+                                      Foreground="#3B82F6" FontSize="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Thông Tin Cửa Hàng" Style="{StaticResource SectionTitleStyle}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Cập nhật tên, địa chỉ và thông tin liên lạc của cửa hàng."
+                               Style="{StaticResource SectionDescStyle}" Margin="0,0,0,20"/>
+                    <Border Style="{StaticResource DividerStyle}"/>
+
+                    <!-- Fields Grid -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="16"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="16"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Tên cửa hàng -->
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="Tên cửa hàng" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBox Style="{StaticResource ConfigTextBoxStyle}"
+                                     Text="MyShop - Cafe &amp; Trà Sữa"/>
+                        </StackPanel>
+
+                        <!-- Mã cửa hàng -->
+                        <StackPanel Grid.Row="0" Grid.Column="2">
+                            <TextBlock Text="Mã cửa hàng" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBox Style="{StaticResource ConfigTextBoxStyle}" Text="MYSHOP-001"
+                                     IsReadOnly="True" Background="#F3F4F6" Foreground="#9CA3AF"/>
+                        </StackPanel>
+
+                        <!-- Địa chỉ -->
+                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                            <TextBlock Text="Địa chỉ" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBox Style="{StaticResource ConfigTextBoxStyle}"
+                                     Text="123 Đường Nguyễn Văn Cừ, Quận 5, TP. Hồ Chí Minh"/>
+                        </StackPanel>
+
+                        <!-- Số điện thoại -->
+                        <StackPanel Grid.Row="4" Grid.Column="0">
+                            <TextBlock Text="Số điện thoại" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBox Style="{StaticResource ConfigTextBoxStyle}" Text="0912 345 678"/>
+                        </StackPanel>
+
+                        <!-- Email -->
+                        <StackPanel Grid.Row="4" Grid.Column="2">
+                            <TextBlock Text="Email liên hệ" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBox Style="{StaticResource ConfigTextBoxStyle}" Text="contact@myshop.vn"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ===================== CARD 2: CÀI ĐẶT HIỂN THỊ ===================== -->
+            <Border Grid.Row="4" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <!-- Header -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,4">
+                        <Border Width="28" Height="28" Background="#F0FDF4" CornerRadius="7">
+                            <FontIcon Glyph="&#xE7F4;" FontFamily="Segoe MDL2 Assets"
+                                      Foreground="#22C55E" FontSize="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Cài Đặt Hiển Thị" Style="{StaticResource SectionTitleStyle}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Điều chỉnh giao diện và cách dữ liệu được trình bày."
+                               Style="{StaticResource SectionDescStyle}" Margin="0,0,0,20"/>
+                    <Border Style="{StaticResource DividerStyle}"/>
+
+                    <!-- Số mặt hàng mỗi trang -->
+                    <Grid Style="{StaticResource SettingRowStyle}" Margin="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="200"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Số mặt hàng mỗi trang (Phân trang)"
+                                       Style="{StaticResource FieldLabelStyle}" Margin="0"/>
+                            <TextBlock Text="Số lượng sản phẩm hiển thị trên mỗi trang danh sách."
+                                       Style="{StaticResource SectionDescStyle}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1"
+                                  Style="{StaticResource ConfigComboStyle}"
+                                  SelectedIndex="1">
+                            <ComboBoxItem Content="5 mặt hàng"/>
+                            <ComboBoxItem Content="10 mặt hàng"/>
+                            <ComboBoxItem Content="20 mặt hàng"/>
+                            <ComboBoxItem Content="50 mặt hàng"/>
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ===================== CARD 3: CÀI ĐẶT CHỨC NĂNG ===================== -->
+            <Border Grid.Row="6" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <!-- Header -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,4">
+                        <Border Width="28" Height="28" Background="#FFF7ED" CornerRadius="7">
+                            <FontIcon Glyph="&#xE8B8;" FontFamily="Segoe MDL2 Assets"
+                                      Foreground="#F97316" FontSize="14"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Cài Đặt Chức Năng" Style="{StaticResource SectionTitleStyle}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Bật hoặc tắt các tính năng của hệ thống theo nhu cầu sử dụng."
+                               Style="{StaticResource SectionDescStyle}" Margin="0,0,0,20"/>
+                    <Border Style="{StaticResource DividerStyle}"/>
+
+                    <!-- Tự động lưu màn hình cuối -->
+                    <Grid Style="{StaticResource SettingRowStyle}" Margin="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Tự động lưu màn hình cuối"
+                                       Style="{StaticResource FieldLabelStyle}" Margin="0"/>
+                            <TextBlock Text="Tự động mở màn hình đã truy cập lần cuối khi đăng nhập lại."
+                                       Style="{StaticResource SectionDescStyle}"/>
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1"
+                                      Style="{StaticResource ConfigToggleStyle}"
+                                      IsOn="True"
+                                      VerticalAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ===================== ACTION BUTTONS ===================== -->
+            <StackPanel Grid.Row="8"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="12">
+                <Button Style="{StaticResource PrimaryBtnStyle}"
+                        Content="Lưu thay đổi"
+                        Click="OnSaveClick"/>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>
