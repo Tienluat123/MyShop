@@ -1,9 +1,9 @@
 using Microsoft.UI.Xaml.Controls;
 using MyShop.ViewModels;
-using MyShop.Views.Products;
+using MyShop.Views.ProductManagement.Components;
 using System.Diagnostics.CodeAnalysis;
 
-namespace MyShop.Views;
+namespace MyShop.Views.ProductManagement;
 
 public sealed partial class ManageProductPage : Page
 {

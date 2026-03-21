@@ -34,7 +34,7 @@ public sealed partial class MainPage : Page
                     pageType = typeof(OrdersPage);
                     break;
                 case "ManageProductPage":
-                    pageType = typeof(ManageProductPage);
+                    pageType = typeof(ProductManagement.ManageProductPage);
                     break;
                 case "CustomersPage":
                     pageType = typeof(CustomersPage);
