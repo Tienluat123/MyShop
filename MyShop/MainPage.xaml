@@ -18,7 +18,7 @@
 
       <NavigationView.PaneHeader>
         <Grid Height="60">
-          <TextBlock Text="LOGOO"
+          <TextBlock Text="LOGO"
                      Style="{StaticResource HeaderTextStyle}"/>
         </Grid>
       </NavigationView.PaneHeader>

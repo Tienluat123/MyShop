@@ -1,0 +1,49 @@
+<UserControl
+    x:Class="MyShop.Views.StaffManagement.Components.ShiftNoteFlyoutContent"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Spacing="16"
+                Width="260">
+        <StackPanel Orientation="Horizontal"
+                    Spacing="12">
+            <PersonPicture Initials="VN"
+                           Width="42"
+                           Height="42"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Nguyễn Văn Nam"
+                           FontWeight="Bold"
+                           FontSize="15"
+                           Foreground="{StaticResource TextPrimary}"/>
+                <TextBlock Text="Mã NV: NV001"
+                           FontSize="12"
+                           Foreground="{StaticResource TextSecondary}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <Border BorderBrush="#E5E7EB"
+                BorderThickness="0,0,0,1"/>
+
+        <StackPanel Spacing="8">
+            <TextBlock Text="Ghi chú phân ca:"
+                       FontWeight="SemiBold"
+                       FontSize="13"
+                       Foreground="{StaticResource BrandPrimary}"/>
+            <TextBox PlaceholderText="VD: Lau dọn quầy, kiểm tra kho..."
+                     Height="70"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     CornerRadius="6"
+                     Foreground="{StaticResource TextPrimary}"/>
+        </StackPanel>
+
+        <Button Content="Lưu thông tin"
+                Background="{StaticResource BrandPrimary}"
+                Foreground="{StaticResource BrandPrimaryForeground}"
+                HorizontalAlignment="Right"
+                CornerRadius="6"
+                Padding="16,6"
+                FontWeight="SemiBold"
+                BorderThickness="0"/>
+    </StackPanel>
+</UserControl>
