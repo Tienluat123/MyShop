@@ -1,0 +1,125 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MyShop.Themes">
+
+    <!-- Include Colors -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx:///Themes/Colors.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- === BUTTON STYLES === -->
+    <Style x:Key="PrimaryButtonStyle"
+            TargetType="Button">
+        <Setter Property="Background"
+                Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Foreground"
+                Value="White"/>
+        <Setter Property="BorderThickness"
+                Value="0"/>
+        <Setter Property="Padding"
+                Value="16,8"/>
+        <Setter Property="FontSize"
+                Value="14"/>
+        <Setter Property="FontWeight"
+                Value="SemiBold"/>
+        <Setter Property="CornerRadius"
+                Value="6"/>
+        <Setter Property="MinHeight"
+                Value="40"/>
+    </Style>
+
+    <Style x:Key="SecondaryButtonStyle"
+            TargetType="Button">
+        <Setter Property="Background"
+                Value="{StaticResource SecondaryBackground}"/>
+        <Setter Property="Foreground"
+                Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="BorderBrush"
+                Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness"
+                Value="1"/>
+        <Setter Property="Padding"
+                Value="16,8"/>
+        <Setter Property="FontSize"
+                Value="14"/>
+        <Setter Property="FontWeight"
+                Value="SemiBold"/>
+        <Setter Property="CornerRadius"
+                Value="6"/>
+        <Setter Property="MinHeight"
+                Value="40"/>
+    </Style>
+
+    <!-- === TEXTBLOCK STYLES === -->
+    <Style x:Key="HeadingStyle"
+            TargetType="TextBlock">
+        <Setter Property="FontSize"
+                Value="24"/>
+        <Setter Property="FontWeight"
+                Value="Bold"/>
+        <Setter Property="Foreground"
+                Value="{StaticResource TextPrimary}"/>
+    </Style>
+
+    <Style x:Key="SubheadingStyle"
+            TargetType="TextBlock">
+        <Setter Property="FontSize"
+                Value="16"/>
+        <Setter Property="FontWeight"
+                Value="SemiBold"/>
+        <Setter Property="Foreground"
+                Value="{StaticResource TextPrimary}"/>
+    </Style>
+
+    <Style x:Key="BodyStyle"
+            TargetType="TextBlock">
+        <Setter Property="FontSize"
+                Value="14"/>
+        <Setter Property="Foreground"
+                Value="{StaticResource TextSecondary}"/>
+    </Style>
+
+    <Style x:Key="CaptionStyle"
+            TargetType="TextBlock">
+        <Setter Property="FontSize"
+                Value="12"/>
+        <Setter Property="Foreground"
+                Value="{StaticResource TextTertiary}"/>
+    </Style>
+
+    <!-- === CARD STYLE === -->
+    <Style x:Key="CardStyle"
+            TargetType="Border">
+        <Setter Property="Background"
+                Value="{StaticResource SurfaceBackground}"/>
+        <Setter Property="BorderBrush"
+                Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness"
+                Value="1"/>
+        <Setter Property="CornerRadius"
+                Value="12"/>
+        <Setter Property="Padding"
+                Value="16"/>
+    </Style>
+
+    <!-- === INPUT STYLES === -->
+    <Style x:Key="TextBoxStyle"
+            TargetType="TextBox">
+        <Setter Property="Background"
+                Value="{StaticResource SecondaryBackground}"/>
+        <Setter Property="BorderBrush"
+                Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness"
+                Value="1"/>
+        <Setter Property="Padding"
+                Value="12,8"/>
+        <Setter Property="CornerRadius"
+                Value="6"/>
+        <Setter Property="MinHeight"
+                Value="40"/>
+        <Setter Property="FontSize"
+                Value="14"/>
+    </Style>
+
+</ResourceDictionary>
