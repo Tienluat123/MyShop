@@ -13,7 +13,7 @@ public sealed partial class MainPage : Page
 
         // Set trang mặc định lúc mới mở app là Khach hang
         NavView.SelectedItem = NavView.MenuItems[4];
-        ContentFrame.Navigate(typeof(CustomersPage));
+        ContentFrame.Navigate(typeof(CustomerManagement.CustomerPage));
     }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
@@ -39,7 +39,7 @@ public sealed partial class MainPage : Page
                     pageType = typeof(ManageProductPage);
                     break;
                 case "CustomersPage":
-                    pageType = typeof(CustomersPage);
+                    pageType = typeof(CustomerManagement.CustomerPage);
                     break;
                 case "PromotionsPage":
                     pageType = typeof(PromotionsPage);

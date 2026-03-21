@@ -1,18 +1,19 @@
 using Microsoft.UI.Xaml.Controls;
 using MyShop.ViewModels;
+using MyShop.Views.CustomerManagement.Components;
 using System.Diagnostics.CodeAnalysis;
 
-namespace MyShop.Views;
+namespace MyShop.Views.CustomerManagement;
 
-public sealed partial class CustomersPage : Page
+public sealed partial class CustomerPage : Page
 {
-    public CustomersPage()
+    public CustomerPage()
     {
         InitializeComponent();
-        Loaded += CustomersPage_Loaded;
+        Loaded += CustomerPage_Loaded;
     }
 
-    private void CustomersPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void CustomerPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         if (CustomerContentFrame.Content is null)
         {

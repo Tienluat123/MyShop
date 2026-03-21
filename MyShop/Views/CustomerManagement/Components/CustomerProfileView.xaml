@@ -1,5 +1,5 @@
 <Page
-    x:Class="MyShop.Views.CustomerProfileView"
+    x:Class="MyShop.Views.CustomerManagement.Components.CustomerProfileView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="#F3F4F6">
