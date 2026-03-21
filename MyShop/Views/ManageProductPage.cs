@@ -1,16 +1,39 @@
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml;
+using MyShop.ViewModels;
+using MyShop.Views.Products;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MyShop.Views;
 
-public sealed class ManageProductPage : Page
+public sealed partial class ManageProductPage : Page
 {
     public ManageProductPage()
     {
-        Content = new TextBlock
+        InitializeComponent();
+        Loaded += ManageProductPage_Loaded;
+    }
+
+    private void ManageProductPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (ProductContentFrame.Content is null)
         {
-            Text = "Manage Products",
-            Margin = new Thickness(16)
-        };
+            NavigateToManagement();
+        }
+    }
+
+    private void NavigateToManagement()
+    {
+        var vm = new ProductManagementViewModel(
+            onAddProduct: () => NavigateToForm(false),
+            onEditProduct: product => NavigateToForm(true, product));
+
+        ProductContentFrame.Navigate(typeof(ProductManagementView), vm);
+    }
+
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    private void NavigateToForm(bool isEditMode, ProductListEntry? product = null)
+    {
+        var vm = new ProductFormViewModel(isEditMode, product, onCancel: NavigateToManagement);
+        ProductContentFrame.Navigate(typeof(ProductFormView), vm);
     }
 }
