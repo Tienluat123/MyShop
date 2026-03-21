@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using MyShop.ViewModels;
 
-namespace MyShop.Views.Components;
+namespace MyShop.Views.Pos.Components;
 
 public sealed partial class MembershipSelectionModal : ContentDialog
 {

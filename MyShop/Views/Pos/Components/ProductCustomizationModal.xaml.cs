@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml.Controls;
 using MyShop.ViewModels;
 using MyShop.Models;
 
-namespace MyShop.Views.Components;
+namespace MyShop.Views.Pos.Components;
 
 public sealed partial class ProductCustomizationModal : ContentDialog
 {

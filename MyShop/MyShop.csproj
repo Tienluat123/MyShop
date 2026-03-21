@@ -36,8 +36,5 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Components\" />
-  </ItemGroup>
 
 </Project>

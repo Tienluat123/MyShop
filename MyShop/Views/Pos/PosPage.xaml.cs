@@ -3,9 +3,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MyShop.Models;
 using MyShop.ViewModels;
-using MyShop.Views.Components;
+using MyShop.Views.Pos.Components;
 
-namespace MyShop.Views;
+namespace MyShop.Views.Pos;
 
 public sealed partial class PosPage : Page
 {
