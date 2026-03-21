@@ -5,30 +5,50 @@
 
         <Application.Resources>
                 <ResourceDictionary>
+                        <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary Source="ms-appx:///Themes/Colors.xaml"/>
+                                <ResourceDictionary Source="ms-appx:///Themes/Styles.xaml"/>
+                        </ResourceDictionary.MergedDictionaries>
 
-                        <SolidColorBrush x:Key="SidebarBackgroundColor"
+                        <SolidColorBrush x:Key="BrandPrimary"
+                                         Color="#D97706"/>
+                        <SolidColorBrush x:Key="BrandPrimaryForeground"
+                                         Color="White"/>
+
+                        <SolidColorBrush x:Key="SurfaceBackground"
                                          Color="#FFFFFF"/>
-                        <SolidColorBrush x:Key="TransparentBrush"
-                                         Color="Transparent"/>
-                        <SolidColorBrush x:Key="HoverBackgroundBrush"
+                        <SolidColorBrush x:Key="SurfaceHover"
                                          Color="#F3F4F6"/>
-                        <SolidColorBrush x:Key="PressedBackgroundBrush"
+                        <SolidColorBrush x:Key="SurfacePressed"
+                                         Color="#E5E7EB"/>
+                        <SolidColorBrush x:Key="BorderBrush"
                                          Color="#E5E7EB"/>
 
-                        <SolidColorBrush x:Key="IconSelectedBgBrush"
-                                         Color="#D97706"/>
-                        <SolidColorBrush x:Key="IconSelectedFgBrush"
-                                         Color="White"/>
-                        <SolidColorBrush x:Key="TextSelectedBrush"
+
+                        <SolidColorBrush x:Key="TextPrimary"
                                          Color="#1F2937"/>
-                        <SolidColorBrush x:Key="TextUnselectedBrush"
+                        <SolidColorBrush x:Key="TextSecondary"
                                          Color="#6B7280"/>
+                        <Style x:Key="HeaderTextStyle"
+                               TargetType="TextBlock">
+                                <Setter Property="FontSize"
+                                        Value="20"/>
+                                <Setter Property="FontWeight"
+                                        Value="Black"/>
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource TextPrimary}"/>
+                                <Setter Property="Margin"
+                                        Value="16,0,0,0"/>
+                                <Setter Property="VerticalAlignment"
+                                        Value="Center"/>
+                        </Style>
+
                         <Style x:Key="BodyTextStyle"
                                TargetType="TextBlock">
                                 <Setter Property="FontSize"
                                         Value="14"/>
                                 <Setter Property="Foreground"
-                                        Value="{StaticResource TextSelectedBrush}"/>
+                                        Value="{StaticResource TextPrimary}"/>
                                 <Setter Property="VerticalAlignment"
                                         Value="Center"/>
                         </Style>
@@ -38,7 +58,7 @@
                                 <Setter Property="FontSize"
                                         Value="12"/>
                                 <Setter Property="Foreground"
-                                        Value="{StaticResource TextUnselectedBrush}"/>
+                                        Value="{StaticResource TextSecondary}"/>
                                 <Setter Property="VerticalAlignment"
                                         Value="Center"/>
                         </Style>
@@ -46,7 +66,7 @@
                         <Style x:Key="RoleTagStyle"
                                TargetType="Border">
                                 <Setter Property="Background"
-                                        Value="{StaticResource HoverBackgroundBrush}"/>
+                                        Value="{StaticResource SurfaceHover}"/>
                                 <Setter Property="CornerRadius"
                                         Value="12"/>
                                 <Setter Property="Padding"
@@ -56,21 +76,6 @@
                                 <Setter Property="HorizontalAlignment"
                                         Value="Left"/>
                         </Style>
-
-                        <Style x:Key="HeaderTextStyle"
-                               TargetType="TextBlock">
-                                <Setter Property="FontSize"
-                                        Value="20"/>
-                                <Setter Property="FontWeight"
-                                        Value="Black"/>
-                                <Setter Property="Foreground"
-                                        Value="{StaticResource TextSelectedBrush}"/>
-                                <Setter Property="Margin"
-                                        Value="16,0,0,0"/>
-                                <Setter Property="VerticalAlignment"
-                                        Value="Center"/>
-                        </Style>
-
 
                         <Style x:Key="SidebarItemStyle"
                                TargetType="NavigationViewItem">
@@ -91,6 +96,10 @@
                                                                 <VisualStateManager.VisualStateGroups>
                                                                         <VisualStateGroup x:Name="CommonStates">
 
+                                                                                <VisualStateGroup.Transitions>
+                                                                                        <VisualTransition GeneratedDuration="0:0:0.15"/>
+                                                                                </VisualStateGroup.Transitions>
+
                                                                                 <VisualState x:Name="Normal">
                                                                                         <VisualState.Setters>
                                                                                                 <Setter Target="RootGrid.Background"
@@ -98,9 +107,9 @@
                                                                                                 <Setter Target="IconBox.Background"
                                                                                                         Value="Transparent"/>
                                                                                                 <Setter Target="IconPresenter.(TextElement.Foreground)"
-                                                                                                        Value="#6B7280"/>
+                                                                                                        Value="{StaticResource TextSecondary}"/>
                                                                                                 <Setter Target="TextPresenter.Foreground"
-                                                                                                        Value="#6B7280"/>
+                                                                                                        Value="{StaticResource TextSecondary}"/>
                                                                                                 <Setter Target="TextPresenter.FontWeight"
                                                                                                         Value="Normal"/>
                                                                                         </VisualState.Setters>
@@ -109,13 +118,13 @@
                                                                                 <VisualState x:Name="PointerOver">
                                                                                         <VisualState.Setters>
                                                                                                 <Setter Target="RootGrid.Background"
-                                                                                                        Value="#F3F4F6"/>
+                                                                                                        Value="{StaticResource SurfaceHover}"/>
                                                                                                 <Setter Target="IconBox.Background"
                                                                                                         Value="Transparent"/>
                                                                                                 <Setter Target="IconPresenter.(TextElement.Foreground)"
-                                                                                                        Value="#6B7280"/>
+                                                                                                        Value="{StaticResource TextSecondary}"/>
                                                                                                 <Setter Target="TextPresenter.Foreground"
-                                                                                                        Value="#6B7280"/>
+                                                                                                        Value="{StaticResource TextSecondary}"/>
                                                                                                 <Setter Target="TextPresenter.FontWeight"
                                                                                                         Value="Normal"/>
                                                                                         </VisualState.Setters>
@@ -126,11 +135,11 @@
                                                                                                 <Setter Target="RootGrid.Background"
                                                                                                         Value="Transparent"/>
                                                                                                 <Setter Target="IconBox.Background"
-                                                                                                        Value="#D97706"/>
+                                                                                                        Value="{StaticResource BrandPrimary}"/>
                                                                                                 <Setter Target="IconPresenter.(TextElement.Foreground)"
-                                                                                                        Value="White"/>
+                                                                                                        Value="{StaticResource BrandPrimaryForeground}"/>
                                                                                                 <Setter Target="TextPresenter.Foreground"
-                                                                                                        Value="#1F2937"/>
+                                                                                                        Value="{StaticResource TextPrimary}"/>
                                                                                                 <Setter Target="TextPresenter.FontWeight"
                                                                                                         Value="Bold"/>
                                                                                         </VisualState.Setters>
@@ -139,13 +148,13 @@
                                                                                 <VisualState x:Name="PointerOverSelected">
                                                                                         <VisualState.Setters>
                                                                                                 <Setter Target="RootGrid.Background"
-                                                                                                        Value="#F3F4F6"/>
+                                                                                                        Value="{StaticResource SurfaceHover}"/>
                                                                                                 <Setter Target="IconBox.Background"
-                                                                                                        Value="#D97706"/>
+                                                                                                        Value="{StaticResource BrandPrimary}"/>
                                                                                                 <Setter Target="IconPresenter.(TextElement.Foreground)"
-                                                                                                        Value="White"/>
+                                                                                                        Value="{StaticResource BrandPrimaryForeground}"/>
                                                                                                 <Setter Target="TextPresenter.Foreground"
-                                                                                                        Value="#1F2937"/>
+                                                                                                        Value="{StaticResource TextPrimary}"/>
                                                                                                 <Setter Target="TextPresenter.FontWeight"
                                                                                                         Value="Bold"/>
                                                                                         </VisualState.Setters>
@@ -171,7 +180,7 @@
                                                                                           Content="{TemplateBinding Icon}"
                                                                                           HorizontalAlignment="Center"
                                                                                           VerticalAlignment="Center"
-                                                                                          Foreground="#6B7280"/>
+                                                                                          Foreground="{StaticResource TextSecondary}"/>
                                                                 </Border>
 
                                                                 <TextBlock x:Name="TextPresenter"
@@ -179,7 +188,7 @@
                                                                            Grid.Column="1"
                                                                            VerticalAlignment="Center"
                                                                            Margin="8,0,0,0"
-                                                                           Foreground="#6B7280"/>
+                                                                           Foreground="{StaticResource TextSecondary}"/>
 
                                                         </Grid>
                                                 </ControlTemplate>

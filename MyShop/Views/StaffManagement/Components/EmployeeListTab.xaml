@@ -1,0 +1,312 @@
+<UserControl
+    x:Class="MyShop.Views.StaffManagement.Components.EmployeeListTab"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:comps="using:MyShop.Views.StaffManagement.Components">
+
+    <Grid Margin="0,16,0,0"
+          Background="{StaticResource SurfaceBackground}"
+          CornerRadius="12"
+          BorderBrush="#E5E7EB"
+          BorderThickness="1"
+          Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0"
+              Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Content="+ Thêm nhân viên"
+                    Height="40"
+                    Background="{StaticResource BrandPrimary}"
+                    Foreground="{StaticResource BrandPrimaryForeground}"
+                    Padding="16,0"
+                    FontSize="14"
+                    BorderThickness="0"
+                    CornerRadius="8"
+                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"
+                    Click="AddEmployee_Click"/>
+
+            <ComboBox Grid.Column="1"
+                      Margin="16,0,0,0"
+                      Width="180"
+                      Height="40"
+                      PlaceholderText="Lọc theo chức vụ"
+                      CornerRadius="8"
+                      VerticalAlignment="Center"/>
+
+            <Grid Grid.Column="3"
+                  Margin="12,0,0,0"
+                  Height="40">
+
+                <TextBox PlaceholderText="Tìm kiếm nhân viên..."
+                         CornerRadius="8"
+                         Padding="12,8,36,8"
+                         VerticalAlignment="Stretch"
+                         VerticalContentAlignment="Center"
+                         FontWeight="SemiBold"/>
+
+                <FontIcon Glyph="&#xE721;"
+                          Foreground="{StaticResource TextSecondary}"
+                          FontSize="14"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Margin="0,0,12,0"
+                          IsHitTestVisible="False"/>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="1"
+              Background="{StaticResource SurfaceHover}"
+              Padding="16,12"
+              CornerRadius="6"
+              BorderBrush="#E5E7EB"
+              BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="2.5*"/>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="80"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Mã NV"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondary}"
+                       FontSize="13"/>
+            <TextBlock Grid.Column="1"
+                       Text="Họ tên"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondary}"
+                       FontSize="13"/>
+            <TextBlock Grid.Column="2"
+                       Text="Liên hệ"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondary}"
+                       FontSize="13"/>
+            <TextBlock Grid.Column="3"
+                       Text="Chức vụ"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondary}"
+                       FontSize="13"/>
+            <TextBlock Grid.Column="4"
+                       Text="Lịch làm việc"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondary}"
+                       FontSize="13"/>
+            <TextBlock Grid.Column="5"
+                       Text="Trạng thái"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondary}"
+                       FontSize="13"/>
+            <TextBlock Grid.Column="6"
+                       Text="Thao tác"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondary}"
+                       FontSize="13"
+                       HorizontalAlignment="Center"/>
+        </Grid>
+
+        <StackPanel Grid.Row="2"
+                    Spacing="0">
+
+            <Grid Padding="16,16"
+                  BorderBrush="#F3F4F6"
+                  BorderThickness="0,0,0,1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="2.5*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="NV001"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondary}"
+                           FontWeight="Medium"/>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="12">
+                    <PersonPicture Initials="VN"
+                                   Width="36"
+                                   Height="36"/>
+                    <TextBlock Text="Nguyễn Văn Nam"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource TextPrimary}"
+                               FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <TextBlock Grid.Column="2"
+                           Text="0912.345.678"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondary}"/>
+
+                <Border Grid.Column="3"
+                        Background="#FEE2E2"
+                        CornerRadius="12"
+                        Padding="12,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="Admin"
+                               Foreground="#DC2626"
+                               FontSize="12"
+                               FontWeight="Bold"/>
+                </Border>
+
+                <StackPanel Grid.Column="4"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left">
+                    <Button Content="Xem lịch (3 ca)"
+                            Background="{StaticResource SurfaceHover}"
+                            Foreground="{StaticResource TextPrimary}"
+                            CornerRadius="16"
+                            Padding="12,6"
+                            FontWeight="SemiBold"
+                            BorderThickness="0">
+                        <Button.Flyout>
+                            <Flyout>
+                                <comps:EmployeeScheduleFlyout/>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+
+                <Border Grid.Column="5"
+                        Background="#D1FAE5"
+                        CornerRadius="12"
+                        Padding="12,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="Đang làm"
+                               Foreground="#059669"
+                               FontSize="12"
+                               FontWeight="Bold"/>
+                </Border>
+
+                <StackPanel Grid.Column="6"
+                            Orientation="Horizontal"
+                            Spacing="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <Button Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8"
+                            CornerRadius="8"
+                            ToolTipService.ToolTip="Chỉnh sửa"
+                            Click="EditEmployee_Click">
+                        <FontIcon Glyph="&#xE70F;"
+                                  Foreground="#2563EB"
+                                  FontSize="14"/>
+                    </Button>
+
+                    <Button Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8"
+                            CornerRadius="8"
+                            ToolTipService.ToolTip="Khóa tài khoản">
+                        <FontIcon Glyph="&#xE72E;"
+                                  Foreground="#DC2626"
+                                  FontSize="14"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <Grid Padding="16,16"
+                  BorderBrush="#F3F4F6"
+                  BorderThickness="0,0,0,1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="2.5*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="NV002"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondary}"
+                           FontWeight="Medium"/>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="12">
+                    <PersonPicture Initials="TL"
+                                   Width="36"
+                                   Height="36"/>
+                    <TextBlock Text="Trần Thị Lan"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource TextPrimary}"
+                               FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <TextBlock Grid.Column="2"
+                           Text="0987.654.321"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondary}"/>
+
+                <Border Grid.Column="3"
+                        Background="#DBEAFE"
+                        CornerRadius="12"
+                        Padding="12,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="Bán hàng"
+                               Foreground="#2563EB"
+                               FontSize="12"
+                               FontWeight="Bold"/>
+                </Border>
+
+                <TextBlock Grid.Column="4"
+                           Text="Chưa phân ca"
+                           FontStyle="Italic"
+                           Foreground="{StaticResource TextSecondary}"
+                           VerticalAlignment="Center"/>
+
+                <Border Grid.Column="5"
+                        Background="#D1FAE5"
+                        CornerRadius="12"
+                        Padding="12,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="Đang làm"
+                               Foreground="#059669"
+                               FontSize="12"
+                               FontWeight="Bold"/>
+                </Border>
+
+                <StackPanel Grid.Column="6"
+                            Orientation="Horizontal"
+                            Spacing="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <FontIcon Glyph="&#xE70F;"
+                              Foreground="{StaticResource TextSecondary}"
+                              FontSize="16"/>
+                    <FontIcon Glyph="&#xE72E;"
+                              Foreground="#DC2626"
+                              FontSize="16"/>
+                </StackPanel>
+            </Grid>
+
+        </StackPanel>
+    </Grid>
+
+</UserControl>
