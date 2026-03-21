@@ -1,0 +1,280 @@
+using System.Collections.ObjectModel;
+using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using MyShop.Models;
+
+namespace MyShop.ViewModels;
+
+public partial class PosViewModel : ObservableObject
+{
+    private const double TAX_RATE = 0.0875;
+
+    public ObservableCollection<TempProduct> Products { get; } = new();
+    public ObservableCollection<CategoryItem> Categories { get; } = new();
+    public ObservableCollection<OrderItem> Order { get; } = new();
+    public ObservableCollection<PosOrder> ActiveOrders { get; } = new();
+
+    public ObservableCollection<TempProduct> FilteredProducts { get; } = new();
+
+    [ObservableProperty]
+    private string activeCategory = "Coffee";
+
+    [ObservableProperty]
+    private string searchQuery = "";
+
+    [ObservableProperty]
+    private double subtotal;
+
+    [ObservableProperty]
+    private double tax;
+
+    [ObservableProperty]
+    private double total;
+
+    [ObservableProperty]
+    private string orderType = "Dine-in";
+
+    [ObservableProperty]
+    private string tableNumber;
+
+    public string TotalFormatted => $"Total: {Total:F2}";
+
+    public event EventHandler? PlaceOrderRequested;
+
+    public PosViewModel()
+    {
+        LoadMockData();
+        RebuildFilter();
+
+        // Add some customized items for verification
+        var product = Products.FirstOrDefault();
+        if (product != null)
+        {
+            var options = new DrinkOptions
+            {
+                Size = "L",
+                Sugar = "50%",
+                Ice = "Less Ice",
+                Notes = "No foam please"
+            };
+            options.AddOns.Add("Extra Shot");
+            options.AddOns.Add("Oat Milk");
+
+            Order.Add(new OrderItem
+            {
+                Product = product,
+                BasePrice = product.Price + 1.5,
+                Quantity = 1,
+                DrinkOptions = options
+            });
+        }
+
+        var secondProduct = Products.FirstOrDefault(p => p.Id == 2);
+        if (secondProduct != null)
+        {
+            Order.Add(new OrderItem
+            {
+                Product = secondProduct,
+                BasePrice = secondProduct.Price,
+                Quantity = 2
+            });
+        }
+
+        Order.CollectionChanged += (s, e) =>
+        {
+            if (e.NewItems != null)
+            {
+                foreach (OrderItem item in e.NewItems)
+                {
+                    item.PropertyChanged += (_, __) => CalculateTotals();
+                }
+            }
+            CalculateTotals();
+            PlaceOrderCommand.NotifyCanExecuteChanged();
+        };
+    }
+
+    private void LoadMockData()
+    {
+        Categories.Add(new CategoryItem { Name = "Coffee", IconKey = "IconCoffee", IsActive = true });
+        Categories.Add(new CategoryItem { Name = "Tea", IconKey = "IconTea" });
+        Categories.Add(new CategoryItem { Name = "Smoothies", IconKey = "IconSmoothies" });
+        Categories.Add(new CategoryItem { Name = "Pastries", IconKey = "IconPastries" });
+
+        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new TempProduct { Id = 2, Name = "Matcha Latte", Price = 5.00, Category = "Tea", ImageUrl = "ms-appx:///Assets/matcha-latte.jpg" });
+        Products.Add(new TempProduct { Id = 3, Name = "Blueberry Muffin", Price = 3.25, Category = "Pastries", ImageUrl = "ms-appx:///Assets/muffin.jpg" });
+        Products.Add(new TempProduct { Id = 4, Name = "Croissant", Price = 2.75, Category = "Pastries", ImageUrl = "ms-appx:///Assets/croissant.jpg" });
+    }
+
+    private void RebuildFilter()
+    {
+        FilteredProducts.Clear();
+
+        var filtered = Products.Where(p =>
+            (ActiveCategory == "All" || p.Category == ActiveCategory) &&
+            (string.IsNullOrWhiteSpace(SearchQuery) || p.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
+
+        foreach (var p in filtered)
+            FilteredProducts.Add(p);
+    }
+
+    partial void OnSearchQueryChanged(string value) => RebuildFilter();
+    partial void OnActiveCategoryChanged(string value) => RebuildFilter();
+
+    [RelayCommand]
+    private void SetCategory(CategoryItem category)
+    {
+        foreach (var c in Categories)
+            c.IsActive = (c == category);
+            
+        ActiveCategory = category.Name;
+    }
+
+    [RelayCommand]
+    public void AddToCart(TempProduct product)
+    {
+        var existing = Order.FirstOrDefault(i => i.Product.Id == product.Id && i.DrinkOptions == null);
+
+        if (existing != null)
+        {
+            existing.Quantity++;
+        }
+        else
+        {
+            Order.Add(new OrderItem
+            {
+                Product = product,
+                BasePrice = product.Price,
+                Quantity = 1
+            });
+        }
+    }
+
+    [RelayCommand]
+    public void AddCustomizedToCart(AddCustomizedParams param)
+    {
+        // For customized items, we might want to check if the exact same customization exists
+        // but for now let's just add it as a new item to be safe, or match exactly.
+        var existing = Order.FirstOrDefault(i => 
+            i.Product.Id == param.Product.Id && 
+            AreOptionsEqual(i.DrinkOptions, param.Options));
+
+        if (existing != null)
+        {
+            existing.Quantity += param.Quantity;
+        }
+        else
+        {
+            Order.Add(new OrderItem
+            {
+                Product = param.Product,
+                BasePrice = param.Product.Price, // In a real app, calculate based on options
+                Quantity = param.Quantity,
+                DrinkOptions = param.Options
+            });
+        }
+    }
+
+    private bool AreOptionsEqual(DrinkOptions? o1, DrinkOptions? o2)
+    {
+        if (o1 == null && o2 == null) return true;
+        if (o1 == null || o2 == null) return false;
+        return o1.Size == o2.Size && o1.Sugar == o2.Sugar && o1.Ice == o2.Ice && o1.Notes == o2.Notes && o1.AddOns.SequenceEqual(o2.AddOns);
+    }
+
+    [RelayCommand]
+    private void RemoveItem(OrderItem item)
+    {
+        Order.Remove(item);
+    }
+
+    [RelayCommand]
+    private void ClearCart()
+    {
+        Order.Clear();
+    }
+
+    [RelayCommand]
+    private void UpdateQuantity(UpdateQtyParams param)
+    {
+        if (param.Item == null) return;
+        param.Item.Quantity += param.Delta;
+        if (param.Item.Quantity <= 0)
+            Order.Remove(param.Item);
+            
+        PlaceOrderCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void SetOrderType(string type)
+    {
+        OrderType = type;
+        if (type != "Dine-in")
+            TableNumber = null;
+    }
+
+    [RelayCommand]
+    private void SetTableNumber(string table)
+    {
+        TableNumber = table;
+    }
+
+    private void CalculateTotals()
+    {
+        Subtotal = Order.Sum(i => i.TotalPrice);
+        Tax = Subtotal * TAX_RATE;
+        Total = Subtotal + Tax;
+    }
+
+    private bool CanPlaceOrder() => Order.Any();
+
+    [RelayCommand(CanExecute = nameof(CanPlaceOrder))]
+    private void PlaceOrder()
+    {
+        PlaceOrderRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public PosOrder? FinalizeOrder(PaymentMethod method, TempCustomer? customer = null)
+    {
+        if (!Order.Any()) return null;
+
+        var newOrder = new PosOrder
+        {
+            OrderId = $"ID-{DateTime.Now:Hmmss}",
+            Subtotal = Subtotal,
+            Tax = Tax,
+            Total = Total,
+            Type = OrderType,
+            Table = TableNumber,
+            CreatedAt = DateTime.Now,
+            Status = OrderStatus.Pending,
+            Method = method,
+            CustomerId = customer?.Id.ToString(),
+            CustomerName = customer?.Name
+        };
+
+        foreach (var item in Order)
+        {
+            newOrder.Items.Add(new OrderItem
+            {
+                Product = item.Product,
+                BasePrice = item.BasePrice,
+                Quantity = item.Quantity,
+                DrinkOptions = item.DrinkOptions
+            });
+        }
+
+        ActiveOrders.Add(newOrder);
+        Order.Clear();
+        return newOrder;
+    }
+}

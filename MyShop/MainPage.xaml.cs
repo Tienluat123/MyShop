@@ -28,7 +28,7 @@ public sealed partial class MainPage : Page
                     pageType = typeof(DashboardPage);
                     break;
                 case "PosPage":
-                    pageType = typeof(PosPage);
+                    pageType = typeof(Pos.PosPage);
                     break;
                 case "OrdersPage":
                     pageType = typeof(OrdersPage);
