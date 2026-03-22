@@ -40,7 +40,7 @@ public sealed partial class MainPage : Page
                     pageType = typeof(CustomersPage);
                     break;
                 case "PromotionsPage":
-                    pageType = typeof(PromotionsPage);
+                    pageType = typeof(Promotion.PromotionsPage);
                     break;
                 case "StaffSchedulePage":
                     pageType = typeof(StaffManagement.StaffSchedulePage);
