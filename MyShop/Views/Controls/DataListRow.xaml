@@ -1,0 +1,46 @@
+<UserControl
+    x:Class="MyShop.Views.Controls.DataListRow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="16,12"
+            BorderBrush="#EEF2F7"
+            BorderThickness="0,0,0,1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Avatar/Icon Section -->
+        <ContentPresenter Grid.Column="0"
+                Content="{x:Bind Avatar, Mode=OneWay}"/>
+
+        <!-- Title and Subtitle Section -->
+        <StackPanel Grid.Column="1"
+                Margin="12,0,0,0"
+                VerticalAlignment="Center">
+            <TextBlock Text="{x:Bind Title, Mode=OneWay}"
+                       Style="{StaticResource BodyTextStyle}"
+                       FontWeight="SemiBold"
+                       Foreground="#1F2937"/>
+            <TextBlock Text="{x:Bind Subtitle, Mode=OneWay}"
+                       Style="{StaticResource CaptionTextStyle}"
+                       Foreground="#9CA3AF"
+                       Margin="0,2,0,0"/>
+        </StackPanel>
+
+        <!-- Content Section (flexible middle content) -->
+        <ContentPresenter Grid.Column="2"
+                Content="{x:Bind Content, Mode=OneWay}"/>
+
+        <!-- Actions Section (right-aligned buttons) -->
+        <StackPanel Grid.Column="2"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right">
+            <ContentPresenter Content="{x:Bind Actions, Mode=OneWay}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

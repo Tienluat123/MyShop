@@ -32,9 +32,6 @@ public sealed partial class MainPage : Page
                 case "PosPage":
                     pageType = typeof(Pos.PosPage);
                     break;
-                case "OrdersPage":
-                    pageType = typeof(OrdersPage);
-                    break;
                 case "ManageProductPage":
                     pageType = typeof(ProductManagement.ManageProductPage);
                     break;

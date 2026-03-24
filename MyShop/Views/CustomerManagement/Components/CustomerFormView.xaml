@@ -4,182 +4,291 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:MyShop.Views.Controls"
     x:Name="PageRoot"
-    Background="#F3F4F6">
+    Background="{StaticResource BgPage}">
 
     <Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState x:Name="NarrowState">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="0" />
+                        <AdaptiveTrigger MinWindowWidth="0"/>
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="FormHost.Margin" Value="12" />
-                        <Setter Target="FormCard.CornerRadius" Value="16" />
+                        <Setter Target="FormHost.Margin"
+                                Value="12"/>
+                        <Setter Target="FormCard.CornerRadius"
+                                Value="16"/>
 
-                        <Setter Target="NamePhoneGrid.ColumnDefinitions[0].Width" Value="*" />
-                        <Setter Target="NamePhoneGrid.ColumnDefinitions[1].Width" Value="0" />
-                        <Setter Target="PhoneField.(Grid.Column)" Value="0" />
-                        <Setter Target="PhoneField.(Grid.Row)" Value="1" />
-                        <Setter Target="NameField.Margin" Value="0" />
-                        <Setter Target="PhoneField.Margin" Value="0,12,0,0" />
+                        <Setter Target="NamePhoneGrid.ColumnDefinitions[0].Width"
+                                Value="*"/>
+                        <Setter Target="NamePhoneGrid.ColumnDefinitions[1].Width"
+                                Value="0"/>
+                        <Setter Target="PhoneField.(Grid.Column)"
+                                Value="0"/>
+                        <Setter Target="PhoneField.(Grid.Row)"
+                                Value="1"/>
+                        <Setter Target="NameField.Margin"
+                                Value="0"/>
+                        <Setter Target="PhoneField.Margin"
+                                Value="0,12,0,0"/>
 
-                        <Setter Target="EmailBirthdayGrid.ColumnDefinitions[0].Width" Value="*" />
-                        <Setter Target="EmailBirthdayGrid.ColumnDefinitions[1].Width" Value="0" />
-                        <Setter Target="BirthdayField.(Grid.Column)" Value="0" />
-                        <Setter Target="BirthdayField.(Grid.Row)" Value="1" />
-                        <Setter Target="EmailField.Margin" Value="0" />
-                        <Setter Target="BirthdayField.Margin" Value="0,12,0,0" />
+                        <Setter Target="EmailBirthdayGrid.ColumnDefinitions[0].Width"
+                                Value="*"/>
+                        <Setter Target="EmailBirthdayGrid.ColumnDefinitions[1].Width"
+                                Value="0"/>
+                        <Setter Target="BirthdayField.(Grid.Column)"
+                                Value="0"/>
+                        <Setter Target="BirthdayField.(Grid.Row)"
+                                Value="1"/>
+                        <Setter Target="EmailField.Margin"
+                                Value="0"/>
+                        <Setter Target="BirthdayField.Margin"
+                                Value="0,12,0,0"/>
 
-                        <Setter Target="FooterActions.Orientation" Value="Vertical" />
-                        <Setter Target="FooterActions.HorizontalAlignment" Value="Stretch" />
-                        <Setter Target="CancelButton.HorizontalAlignment" Value="Stretch" />
-                        <Setter Target="SubmitButton.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="FooterActions.Orientation"
+                                Value="Vertical"/>
+                        <Setter Target="FooterActions.HorizontalAlignment"
+                                Value="Stretch"/>
+                        <Setter Target="CancelButton.HorizontalAlignment"
+                                Value="Stretch"/>
+                        <Setter Target="SubmitButton.HorizontalAlignment"
+                                Value="Stretch"/>
                     </VisualState.Setters>
                 </VisualState>
 
                 <VisualState x:Name="WideState">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="900" />
+                        <AdaptiveTrigger MinWindowWidth="900"/>
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="FormHost.Margin" Value="16" />
-                        <Setter Target="FormCard.CornerRadius" Value="24" />
+                        <Setter Target="FormHost.Margin"
+                                Value="16"/>
+                        <Setter Target="FormCard.CornerRadius"
+                                Value="24"/>
 
-                        <Setter Target="NamePhoneGrid.ColumnDefinitions[0].Width" Value="*" />
-                        <Setter Target="NamePhoneGrid.ColumnDefinitions[1].Width" Value="*" />
-                        <Setter Target="PhoneField.(Grid.Column)" Value="1" />
-                        <Setter Target="PhoneField.(Grid.Row)" Value="0" />
-                        <Setter Target="NameField.Margin" Value="0,0,10,0" />
-                        <Setter Target="PhoneField.Margin" Value="10,0,0,0" />
+                        <Setter Target="NamePhoneGrid.ColumnDefinitions[0].Width"
+                                Value="*"/>
+                        <Setter Target="NamePhoneGrid.ColumnDefinitions[1].Width"
+                                Value="*"/>
+                        <Setter Target="PhoneField.(Grid.Column)"
+                                Value="1"/>
+                        <Setter Target="PhoneField.(Grid.Row)"
+                                Value="0"/>
+                        <Setter Target="NameField.Margin"
+                                Value="0,0,10,0"/>
+                        <Setter Target="PhoneField.Margin"
+                                Value="10,0,0,0"/>
 
-                        <Setter Target="EmailBirthdayGrid.ColumnDefinitions[0].Width" Value="*" />
-                        <Setter Target="EmailBirthdayGrid.ColumnDefinitions[1].Width" Value="*" />
-                        <Setter Target="BirthdayField.(Grid.Column)" Value="1" />
-                        <Setter Target="BirthdayField.(Grid.Row)" Value="0" />
-                        <Setter Target="EmailField.Margin" Value="0,0,10,0" />
-                        <Setter Target="BirthdayField.Margin" Value="10,0,0,0" />
+                        <Setter Target="EmailBirthdayGrid.ColumnDefinitions[0].Width"
+                                Value="*"/>
+                        <Setter Target="EmailBirthdayGrid.ColumnDefinitions[1].Width"
+                                Value="*"/>
+                        <Setter Target="BirthdayField.(Grid.Column)"
+                                Value="1"/>
+                        <Setter Target="BirthdayField.(Grid.Row)"
+                                Value="0"/>
+                        <Setter Target="EmailField.Margin"
+                                Value="0,0,10,0"/>
+                        <Setter Target="BirthdayField.Margin"
+                                Value="10,0,0,0"/>
 
-                        <Setter Target="FooterActions.Orientation" Value="Horizontal" />
-                        <Setter Target="FooterActions.HorizontalAlignment" Value="Right" />
-                        <Setter Target="CancelButton.HorizontalAlignment" Value="Left" />
-                        <Setter Target="SubmitButton.HorizontalAlignment" Value="Left" />
+                        <Setter Target="FooterActions.Orientation"
+                                Value="Horizontal"/>
+                        <Setter Target="FooterActions.HorizontalAlignment"
+                                Value="Right"/>
+                        <Setter Target="CancelButton.HorizontalAlignment"
+                                Value="Left"/>
+                        <Setter Target="SubmitButton.HorizontalAlignment"
+                                Value="Left"/>
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="24,14">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Command="{Binding CancelCommand}" Background="Transparent" BorderThickness="0" Padding="0">
-                    <FontIcon Glyph="&#xE72B;" Foreground="#64748B" />
+        <Border Background="#FFFFFF"
+                BorderBrush="#E5E7EB"
+                BorderThickness="0,0,0,1"
+                Padding="24,14">
+            <StackPanel Orientation="Horizontal"
+                    Spacing="10">
+                <Button Command="{Binding CancelCommand}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0">
+                    <FontIcon Glyph="&#xE72B;"
+                            Foreground="#64748B"/>
                 </Button>
                 <StackPanel>
-                    <TextBlock Text="{Binding FormTitle}" FontSize="34" FontWeight="ExtraBold" Foreground="#0F172A" />
-                    <TextBlock Text="Manage individual customer information" Foreground="#94A3B8" />
+                    <TextBlock Text="{Binding FormTitle}"
+                            FontSize="34"
+                            FontWeight="ExtraBold"
+                            Foreground="#0F172A"/>
+                    <TextBlock Text="Manage individual customer information"
+                            Foreground="#94A3B8"/>
                 </StackPanel>
             </StackPanel>
         </Border>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <Grid x:Name="FormHost" VerticalAlignment="Center" HorizontalAlignment="Stretch" MaxWidth="900" Margin="16">
-                <Border x:Name="FormCard" Background="#FFFFFF" CornerRadius="24" BorderBrush="#E5E7EB" BorderThickness="1" Padding="24,22,24,0">
-                <Border.Shadow>
-                    <ThemeShadow />
-                </Border.Shadow>
-                <Border.Translation>0,0,14</Border.Translation>
+        <ScrollViewer Grid.Row="1"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
+            <Grid x:Name="FormHost"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Stretch"
+                    MaxWidth="900"
+                    Margin="16">
+                <Border x:Name="FormCard"
+                        Background="#FFFFFF"
+                        CornerRadius="24"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1"
+                        Padding="24,22,24,0">
+                    <Border.Shadow>
+                        <ThemeShadow/>
+                    </Border.Shadow>
+                    <Border.Translation>0,0,14</Border.Translation>
 
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                    <StackPanel Spacing="18">
-                        <Grid x:Name="NamePhoneGrid">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="18">
+                            <Grid x:Name="NamePhoneGrid">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <controls:LabeledInputControl x:Name="NameField" Label="FULL NAME *" Margin="0,0,10,0">
+                                <controls:LabeledInputControl x:Name="NameField"
+                                        Label="FULL NAME *"
+                                        Margin="0,0,10,0">
+                                    <controls:LabeledInputControl.InputContent>
+                                        <TextBox Text="{Binding CustomerData.FullName, Mode=TwoWay}"
+                                                Background="#F8FAFC"
+                                                BorderThickness="0"
+                                                CornerRadius="12"
+                                                Padding="14,10"/>
+                                    </controls:LabeledInputControl.InputContent>
+                                </controls:LabeledInputControl>
+
+                                <controls:LabeledInputControl x:Name="PhoneField"
+                                        Grid.Column="1"
+                                        Label="PHONE NUMBER *"
+                                        Margin="10,0,0,0">
+                                    <controls:LabeledInputControl.InputContent>
+                                        <TextBox Text="{Binding CustomerData.Phone, Mode=TwoWay}"
+                                                Background="#F8FAFC"
+                                                BorderThickness="0"
+                                                CornerRadius="12"
+                                                Padding="14,10"/>
+                                    </controls:LabeledInputControl.InputContent>
+                                </controls:LabeledInputControl>
+                            </Grid>
+
+                            <Grid x:Name="EmailBirthdayGrid">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <controls:LabeledInputControl x:Name="EmailField"
+                                        Label="EMAIL ADDRESS"
+                                        Margin="0,0,10,0">
+                                    <controls:LabeledInputControl.InputContent>
+                                        <TextBox Text="{Binding CustomerData.Email, Mode=TwoWay}"
+                                                Background="#F8FAFC"
+                                                BorderThickness="0"
+                                                CornerRadius="12"
+                                                Padding="14,10"/>
+                                    </controls:LabeledInputControl.InputContent>
+                                </controls:LabeledInputControl>
+
+                                <controls:LabeledInputControl x:Name="BirthdayField"
+                                        Grid.Column="1"
+                                        Label="BIRTHDAY"
+                                        Margin="10,0,0,0">
+                                    <controls:LabeledInputControl.InputContent>
+                                        <DatePicker Date="{Binding CustomerData.Birthday, Mode=TwoWay}"
+                                                Background="#F8FAFC"
+                                                BorderThickness="0"
+                                                CornerRadius="12"/>
+                                    </controls:LabeledInputControl.InputContent>
+                                </controls:LabeledInputControl>
+                            </Grid>
+
+                            <controls:LabeledInputControl Label="ADDRESS">
                                 <controls:LabeledInputControl.InputContent>
-                                    <TextBox Text="{Binding CustomerData.FullName, Mode=TwoWay}" Background="#F8FAFC" BorderThickness="0" CornerRadius="12" Padding="14,10" />
+                                    <TextBox Text="{Binding CustomerData.Address, Mode=TwoWay}"
+                                            Background="#F8FAFC"
+                                            BorderThickness="0"
+                                            CornerRadius="12"
+                                            Padding="14,10"/>
                                 </controls:LabeledInputControl.InputContent>
                             </controls:LabeledInputControl>
 
-                            <controls:LabeledInputControl x:Name="PhoneField" Grid.Column="1" Label="PHONE NUMBER *" Margin="10,0,0,0">
+                            <controls:LabeledInputControl Label="NOTES">
                                 <controls:LabeledInputControl.InputContent>
-                                    <TextBox Text="{Binding CustomerData.Phone, Mode=TwoWay}" Background="#F8FAFC" BorderThickness="0" CornerRadius="12" Padding="14,10" />
+                                    <TextBox Text="{Binding CustomerData.Notes, Mode=TwoWay}"
+                                             PlaceholderText="Add any specific preferences or information..."
+                                             TextWrapping="Wrap"
+                                             AcceptsReturn="True"
+                                             Height="100"
+                                             Background="#F8FAFC"
+                                             BorderThickness="0"
+                                             CornerRadius="12"
+                                             Padding="14,10"/>
                                 </controls:LabeledInputControl.InputContent>
                             </controls:LabeledInputControl>
-                        </Grid>
-
-                        <Grid x:Name="EmailBirthdayGrid">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <controls:LabeledInputControl x:Name="EmailField" Label="EMAIL ADDRESS" Margin="0,0,10,0">
-                                <controls:LabeledInputControl.InputContent>
-                                    <TextBox Text="{Binding CustomerData.Email, Mode=TwoWay}" Background="#F8FAFC" BorderThickness="0" CornerRadius="12" Padding="14,10" />
-                                </controls:LabeledInputControl.InputContent>
-                            </controls:LabeledInputControl>
-
-                            <controls:LabeledInputControl x:Name="BirthdayField" Grid.Column="1" Label="BIRTHDAY" Margin="10,0,0,0">
-                                <controls:LabeledInputControl.InputContent>
-                                    <DatePicker Date="{Binding CustomerData.Birthday, Mode=TwoWay}" Background="#F8FAFC" BorderThickness="0" CornerRadius="12" />
-                                </controls:LabeledInputControl.InputContent>
-                            </controls:LabeledInputControl>
-                        </Grid>
-
-                        <controls:LabeledInputControl Label="ADDRESS">
-                            <controls:LabeledInputControl.InputContent>
-                                <TextBox Text="{Binding CustomerData.Address, Mode=TwoWay}" Background="#F8FAFC" BorderThickness="0" CornerRadius="12" Padding="14,10" />
-                            </controls:LabeledInputControl.InputContent>
-                        </controls:LabeledInputControl>
-
-                        <controls:LabeledInputControl Label="NOTES">
-                            <controls:LabeledInputControl.InputContent>
-                                <TextBox Text="{Binding CustomerData.Notes, Mode=TwoWay}"
-                                         PlaceholderText="Add any specific preferences or information..."
-                                         TextWrapping="Wrap"
-                                         AcceptsReturn="True"
-                                         Height="100"
-                                         Background="#F8FAFC"
-                                         BorderThickness="0"
-                                         CornerRadius="12"
-                                         Padding="14,10" />
-                            </controls:LabeledInputControl.InputContent>
-                        </controls:LabeledInputControl>
-                    </StackPanel>
-
-                    <Border Grid.Row="1" Margin="-24,22,-24,0" Padding="24" Background="#F8FAFC" CornerRadius="0,0,24,24">
-                        <StackPanel x:Name="FooterActions" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                            <Button x:Name="CancelButton" Command="{Binding CancelCommand}" Background="#FFFFFF" BorderBrush="#E2E8F0" CornerRadius="12" Padding="28,10">
-                                <TextBlock Text="Cancel" Foreground="#64748B" FontWeight="SemiBold" />
-                            </Button>
-                            <Button x:Name="SubmitButton" Command="{Binding SubmitCommand}" Background="#BB4D00" BorderBrush="#BB4D00" CornerRadius="12" Padding="28,10">
-                                <TextBlock Text="{Binding SubmitButtonText}" Foreground="White" FontWeight="Bold" />
-                            </Button>
                         </StackPanel>
-                    </Border>
-                </Grid>
-            </Border>
+
+                        <Border Grid.Row="1"
+                                Margin="-24,22,-24,0"
+                                Padding="24"
+                                Background="#F8FAFC"
+                                CornerRadius="0,0,24,24">
+                            <StackPanel x:Name="FooterActions"
+                                    Orientation="Horizontal"
+                                    Spacing="10"
+                                    HorizontalAlignment="Right">
+                                <Button x:Name="CancelButton"
+                                        Command="{Binding CancelCommand}"
+                                        Background="#FFFFFF"
+                                        BorderBrush="#E2E8F0"
+                                        CornerRadius="12"
+                                        Padding="28,10">
+                                    <TextBlock Text="Cancel"
+                                            Foreground="#64748B"
+                                            FontWeight="SemiBold"/>
+                                </Button>
+                                <Button x:Name="SubmitButton"
+                                        Command="{Binding SubmitCommand}"
+                                        Background="#BB4D00"
+                                        BorderBrush="#BB4D00"
+                                        CornerRadius="12"
+                                        Padding="28,10">
+                                    <TextBlock Text="{Binding SubmitButtonText}"
+                                            Foreground="White"
+                                            FontWeight="Bold"/>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
             </Grid>
         </ScrollViewer>
     </Grid>
