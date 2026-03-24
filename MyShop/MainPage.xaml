@@ -129,7 +129,7 @@
                 BorderThickness="1,0,0,0"
                 HorizontalAlignment="Left"/>
         <Frame x:Name="ContentFrame"
-               Margin="1,0,0,0"/>
+               Margin="0"/>
       </Grid>
 
     </NavigationView>

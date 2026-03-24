@@ -1,5 +1,6 @@
 using MyShop.Views;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml.Controls;
 
 namespace MyShop.Views;
@@ -10,11 +11,12 @@ public sealed partial class MainPage : Page
     {
         this.InitializeComponent();
 
-        // Set trang mặc định lúc mới mở app là Dashboard
-        NavView.SelectedItem = NavView.MenuItems[0];
-        ContentFrame.Navigate(typeof(DashboardPage));
+        // Set trang mặc định lúc mới mở app là Khach hang
+        NavView.SelectedItem = NavView.MenuItems[4];
+        ContentFrame.Navigate(typeof(CustomerManagement.CustomerPage));
     }
 
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         if (args.InvokedItemContainer != null && args.InvokedItemContainer.Tag != null)
@@ -37,7 +39,7 @@ public sealed partial class MainPage : Page
                     pageType = typeof(ProductManagement.ManageProductPage);
                     break;
                 case "CustomersPage":
-                    pageType = typeof(CustomersPage);
+                    pageType = typeof(CustomerManagement.CustomerPage);
                     break;
                 case "PromotionsPage":
                     pageType = typeof(PromotionsPage);
