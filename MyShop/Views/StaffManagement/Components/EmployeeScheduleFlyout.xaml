@@ -4,15 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <StackPanel Spacing="12"
-                Width="220"
-                Padding="8"
+                Width="{StaticResource Size220}"
+                Padding="{StaticResource SpaceSmall}"
                 Margin="0,0,0,8">
 
         <TextBlock Text="Lịch tuần này của Nam"
-                   FontWeight="Bold"
-                   FontSize="14"
+                   FontWeight="{StaticResource FontWeightBold}"
+                   FontSize="{StaticResource FontBody}"
                    Foreground="{StaticResource TextPrimary}"/>
-        <Border BorderBrush="#E5E7EB"
+        <Border BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,0,0,1"
                 Margin="0,0,0,4"/>
 
@@ -32,94 +32,94 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="Thứ 2"
-                       FontWeight="SemiBold"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
             <StackPanel Grid.Column="1"
                         Orientation="Horizontal"
                         Spacing="6">
-                <Border Background="#FEF3C7"
-                        CornerRadius="6"
-                        Padding="8,4">
+                <Border Background="{StaticResource WarningSurface}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="{StaticResource SpaceSmall_XSmall}">
                     <TextBlock Text="Sáng"
-                               FontSize="11"
-                               Foreground="#D97706"
-                               FontWeight="Bold"/>
+                               FontSize="{StaticResource FontCaption}"
+                               Foreground="{StaticResource WarningStrong}"
+                               FontWeight="{StaticResource FontWeightBold}"/>
                 </Border>
-                <Border Background="#F3E8FF"
-                        CornerRadius="6"
-                        Padding="8,4">
+                <Border Background="{StaticResource AccentPurpleSurface}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="{StaticResource SpaceSmall_XSmall}">
                     <TextBlock Text="Tối"
-                               FontSize="11"
-                               Foreground="#7E22CE"
-                               FontWeight="Bold"/>
+                               FontSize="{StaticResource FontCaption}"
+                               Foreground="{StaticResource AccentPurple}"
+                               FontWeight="{StaticResource FontWeightBold}"/>
                 </Border>
             </StackPanel>
 
             <TextBlock Grid.Row="1"
                        Text="Thứ 3"
-                       FontWeight="SemiBold"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
             <StackPanel Grid.Row="1"
                         Grid.Column="1"
                         Orientation="Horizontal"
                         Spacing="6">
-                <Border Background="#FEF3C7"
-                        CornerRadius="6"
-                        Padding="8,4">
+                <Border Background="{StaticResource WarningSurface}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="{StaticResource SpaceSmall_XSmall}">
                     <TextBlock Text="Sáng"
-                               FontSize="11"
-                               Foreground="#D97706"
-                               FontWeight="Bold"/>
+                               FontSize="{StaticResource FontCaption}"
+                               Foreground="{StaticResource WarningStrong}"
+                               FontWeight="{StaticResource FontWeightBold}"/>
                 </Border>
             </StackPanel>
 
             <TextBlock Grid.Row="2"
                        Text="Thứ 4"
-                       FontWeight="SemiBold"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
             <TextBlock Grid.Row="2"
                        Grid.Column="1"
                        Text="Nghỉ phép"
-                       Foreground="#9CA3AF"
+                       Foreground="{StaticResource TextMuted}"
                        FontStyle="Italic"
-                       FontSize="12"
+                       FontSize="{StaticResource FontCaption}"
                        VerticalAlignment="Center"/>
 
             <TextBlock Grid.Row="3"
                        Text="Thứ 5"
-                       FontWeight="SemiBold"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
             <StackPanel Grid.Row="3"
                         Grid.Column="1"
                         Orientation="Horizontal"
                         Spacing="6">
-                <Border Background="#DBEAFE"
-                        CornerRadius="6"
-                        Padding="8,4">
+                <Border Background="{StaticResource InfoSurface}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="{StaticResource SpaceSmall_XSmall}">
                     <TextBlock Text="Chiều"
-                               FontSize="11"
-                               Foreground="#2563EB"
-                               FontWeight="Bold"/>
+                               FontSize="{StaticResource FontCaption}"
+                               Foreground="{StaticResource InfoStrong}"
+                               FontWeight="{StaticResource FontWeightBold}"/>
                 </Border>
             </StackPanel>
 
             <TextBlock Grid.Row="4"
                        Text="Thứ 6"
-                       FontWeight="SemiBold"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
             <TextBlock Grid.Row="5"
                        Text="Thứ 7"
-                       FontWeight="SemiBold"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
             <TextBlock Grid.Row="6"
                        Text="CN"
-                       FontWeight="SemiBold"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
         </Grid>

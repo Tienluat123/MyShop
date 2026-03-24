@@ -6,21 +6,21 @@
     PrimaryButtonText="Lưu thông tin"
     CloseButtonText="Hủy bỏ"
     DefaultButton="Primary"
-    CornerRadius="12"
+    CornerRadius="{StaticResource RadiusMedium}"
     Background="{StaticResource SurfaceBackground}">
 
     <StackPanel Spacing="16"
-                Width="400"
+                Width="{StaticResource Size400}"
                 Margin="0,16,0,0">
         <TextBox x:Name="TxtHoTen"
                  Header="Họ và Tên (*)"
                  PlaceholderText="Nhập tên nhân viên"
-                 CornerRadius="6"
+                 CornerRadius="{StaticResource RadiusSmall}"
                  Foreground="{StaticResource TextPrimary}"/>
         <TextBox x:Name="TxtSDT"
                  Header="Số điện thoại (*)"
                  PlaceholderText="09xx.xxx.xxx"
-                 CornerRadius="6"
+                 CornerRadius="{StaticResource RadiusSmall}"
                  Foreground="{StaticResource TextPrimary}"/>
 
         <Grid ColumnSpacing="16">
@@ -32,7 +32,7 @@
                       Header="Chức vụ"
                       PlaceholderText="Chọn chức vụ"
                       HorizontalAlignment="Stretch"
-                      CornerRadius="6">
+                      CornerRadius="{StaticResource RadiusSmall}">
                 <ComboBoxItem Content="Quản lý (Admin)"/>
                 <ComboBoxItem Content="Nhân viên Bán hàng"/>
                 <ComboBoxItem Content="Nhân viên Pha chế"/>
@@ -42,7 +42,7 @@
                       Header="Trạng thái"
                       PlaceholderText="Chọn trạng thái"
                       HorizontalAlignment="Stretch"
-                      CornerRadius="6"
+                      CornerRadius="{StaticResource RadiusSmall}"
                       SelectedIndex="0">
                 <ComboBoxItem Content="Đang làm việc"/>
                 <ComboBoxItem Content="Nghỉ phép"/>
@@ -51,10 +51,10 @@
 
         <TextBox Header="Ghi chú thêm"
                  PlaceholderText="Thông tin khác..."
-                 Height="60"
+                 Height="{StaticResource Size60}"
                  TextWrapping="Wrap"
                  AcceptsReturn="True"
-                 CornerRadius="6"
+                 CornerRadius="{StaticResource RadiusSmall}"
                  Foreground="{StaticResource TextPrimary}"/>
     </StackPanel>
 </ContentDialog>

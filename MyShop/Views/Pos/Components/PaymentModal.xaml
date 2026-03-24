@@ -17,94 +17,120 @@
         <Thickness x:Key="ContentDialogPadding">0</Thickness>
         <Thickness x:Key="ContentDialogBorderThickness">0</Thickness>
 
-        <SolidColorBrush x:Key="Amber600" Color="#D97706" />
-        <SolidColorBrush x:Key="Amber50" Color="#FFFBEB" />
-
-        <converters:CurrencyConverter x:Key="CurrencyConverter" />
-        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-        <converters:EqualityToBrushConverter x:Key="EqualityToBrushConverter" />
+        <converters:CurrencyConverter x:Key="CurrencyConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:EqualityToBrushConverter x:Key="EqualityToBrushConverter"/>
         <converters:EqualityToBrushConverter
             x:Key="ActiveTabBackgroundConverter"
             FalseBrush="Transparent"
-            TrueBrush="{StaticResource Amber600}" />
+            TrueBrush="{StaticResource BrandPrimary}"/>
         <converters:EqualityToBrushConverter
             x:Key="ActiveTabForegroundConverter"
-            FalseBrush="#4B5563"
-            TrueBrush="White" />
+            FalseBrush="{StaticResource Gray500}"
+            TrueBrush="White"/>
         <converters:EqualityToBrushConverter
             x:Key="ActiveTabBorderConverter"
-            FalseBrush="#E5E7EB"
-            TrueBrush="{StaticResource Amber600}" />
+            FalseBrush="{StaticResource BorderBrush}"
+            TrueBrush="{StaticResource BrandPrimary}"/>
 
-        <Style x:Key="KeypadButtonStyle" TargetType="Button">
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Stretch" />
-            <Setter Property="Margin" Value="4" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="FontSize" Value="20" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#F3F4F6" />
-            <Setter Property="BorderThickness" Value="1" />
+        <Style x:Key="KeypadButtonStyle"
+               TargetType="Button">
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
+            <Setter Property="VerticalAlignment"
+                    Value="Stretch"/>
+            <Setter Property="Margin"
+                    Value="{StaticResource SpaceXSmall}"/>
+            <Setter Property="CornerRadius"
+                    Value="{StaticResource RadiusMedium}"/>
+            <Setter Property="FontSize"
+                    Value="{StaticResource FontHeader}"/>
+            <Setter Property="FontWeight"
+                    Value="{StaticResource FontWeightSemiBold}"/>
+            <Setter Property="Background"
+                    Value="{StaticResource SurfaceBackground}"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource Gray100}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
         </Style>
 
-        <Style x:Key="QuickAmountButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="16,8" />
-            <Setter Property="CornerRadius" Value="20" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="Background" Value="#F9FAFB" />
-            <Setter Property="BorderBrush" Value="#E5E7EB" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#4B5563" />
+        <Style x:Key="QuickAmountButtonStyle"
+               TargetType="Button">
+            <Setter Property="Padding"
+                    Value="{StaticResource SpaceLarge_Small}"/>
+            <Setter Property="CornerRadius"
+                    Value="{StaticResource RadiusXLarge}"/>
+            <Setter Property="FontSize"
+                    Value="{StaticResource FontCaption}"/>
+            <Setter Property="FontWeight"
+                    Value="{StaticResource FontWeightMedium}"/>
+            <Setter Property="Background"
+                    Value="{StaticResource SurfaceAlt}"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Gray500}"/>
         </Style>
 
         <Style
             x:Key="PaymentPrimaryButtonStyle"
             BasedOn="{StaticResource DefaultButtonStyle}"
             TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource Amber600}" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Padding" Value="48,14" />
-            <Setter Property="CornerRadius" Value="24" />
+            <Setter Property="Background"
+                    Value="{StaticResource BrandPrimary}"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+            <Setter Property="FontWeight"
+                    Value="{StaticResource FontWeightBold}"/>
+            <Setter Property="Padding"
+                    Value="{StaticResource Space3XLarge_Large}"/>
+            <Setter Property="CornerRadius"
+                    Value="{StaticResource RadiusXLarge}"/>
         </Style>
         <Style
             x:Key="PaymentSecondaryButtonStyle"
             BasedOn="{StaticResource DefaultButtonStyle}"
             TargetType="Button">
-            <Setter Property="Background" Value="#F3F4F6" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="#4B5563" />
-            <Setter Property="Padding" Value="48,14" />
-            <Setter Property="CornerRadius" Value="24" />
+            <Setter Property="Background"
+                    Value="{StaticResource Gray100}"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Gray500}"/>
+            <Setter Property="Padding"
+                    Value="{StaticResource Space3XLarge_Large}"/>
+            <Setter Property="CornerRadius"
+                    Value="{StaticResource RadiusXLarge}"/>
         </Style>
     </ContentDialog.Resources>
 
     <ContentDialog.Title>
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal" Spacing="12">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
                 <FontIcon
-                    FontSize="20"
-                    Foreground="{StaticResource Amber600}"
-                    Glyph="&#xE8FB;" />
+                    Style="{StaticResource IconHeaderStyle}"
+                    Foreground="{StaticResource BrandPrimary}"
+                    Glyph="&#xE8FB;"/>
                 <TextBlock
-                    FontSize="20"
-                    FontWeight="SemiBold"
-                    Text="Payment Checkout" />
+                    FontSize="{StaticResource FontHeader}"
+                    FontWeight="{StaticResource FontWeightSemiBold}"
+                    Text="Payment Checkout"/>
             </StackPanel>
             <TextBlock
                 Grid.Column="1"
                 Margin="24,0,0,0"
                 VerticalAlignment="Center"
-                FontSize="16"
-                FontWeight="Medium"
-                Foreground="#9CA3AF"
-                Text="{Binding OrderIdentifier}" />
+                FontWeight="{StaticResource FontWeightMedium}"
+                Style="{StaticResource SubtitleMutedTextStyle}"
+                Text="{Binding OrderIdentifier}"/>
         </Grid>
     </ContentDialog.Title>
 
@@ -113,9 +139,9 @@
         Height="680"
         Margin="0,24,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!--  TOP: PAYMENT METHODS  -->
@@ -137,15 +163,15 @@
                 CornerRadius="16">
                 <StackPanel Spacing="8">
                     <FontIcon
-                        FontSize="28"
+                        Style="{StaticResource IconTitleStyle}"
                         Foreground="{Binding PaymentMethods[0].IsSelected, Converter={StaticResource ActiveTabForegroundConverter}, ConverterParameter=True}"
-                        Glyph="{Binding PaymentMethods[0].Glyph}" />
+                        Glyph="{Binding PaymentMethods[0].Glyph}"/>
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="15"
+                        FontSize="{StaticResource FontSubtitle}"
                         FontWeight="Bold"
                         Foreground="{Binding PaymentMethods[0].IsSelected, Converter={StaticResource ActiveTabForegroundConverter}, ConverterParameter=True}"
-                        Text="{Binding PaymentMethods[0].Label}" />
+                        Text="{Binding PaymentMethods[0].Label}"/>
                 </StackPanel>
             </Button>
 
@@ -163,15 +189,15 @@
                 CornerRadius="16">
                 <StackPanel Spacing="8">
                     <FontIcon
-                        FontSize="28"
+                        Style="{StaticResource IconTitleStyle}"
                         Foreground="{Binding PaymentMethods[1].IsSelected, Converter={StaticResource ActiveTabForegroundConverter}, ConverterParameter=True}"
-                        Glyph="{Binding PaymentMethods[1].Glyph}" />
+                        Glyph="{Binding PaymentMethods[1].Glyph}"/>
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="15"
+                        FontSize="{StaticResource FontSubtitle}"
                         FontWeight="Bold"
                         Foreground="{Binding PaymentMethods[1].IsSelected, Converter={StaticResource ActiveTabForegroundConverter}, ConverterParameter=True}"
-                        Text="{Binding PaymentMethods[1].Label}" />
+                        Text="{Binding PaymentMethods[1].Label}"/>
                 </StackPanel>
             </Button>
 
@@ -189,15 +215,15 @@
                 CornerRadius="16">
                 <StackPanel Spacing="8">
                     <FontIcon
-                        FontSize="28"
+                        Style="{StaticResource IconTitleStyle}"
                         Foreground="{Binding PaymentMethods[2].IsSelected, Converter={StaticResource ActiveTabForegroundConverter}, ConverterParameter=True}"
-                        Glyph="{Binding PaymentMethods[2].Glyph}" />
+                        Glyph="{Binding PaymentMethods[2].Glyph}"/>
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="15"
+                        FontSize="{StaticResource FontSubtitle}"
                         FontWeight="Bold"
                         Foreground="{Binding PaymentMethods[2].IsSelected, Converter={StaticResource ActiveTabForegroundConverter}, ConverterParameter=True}"
-                        Text="{Binding PaymentMethods[2].Label}" />
+                        Text="{Binding PaymentMethods[2].Label}"/>
                 </StackPanel>
             </Button>
         </Grid>
@@ -205,118 +231,119 @@
         <!--  MIDDLE: CONTENT  -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="280" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <Border
                 Padding="0,0,32,0"
-                BorderBrush="#F3F4F6"
+                BorderBrush="{StaticResource Gray100}"
                 BorderThickness="0,0,1,0">
                 <StackPanel Spacing="24">
                     <Border
                         Padding="24"
-                        Background="#FFF7ED"
-                        CornerRadius="16">
+                        Background="{StaticResource WarningSurfaceSoft}"
+                        CornerRadius="{StaticResource RadiusLarge}">
                         <StackPanel Spacing="8">
                             <TextBlock
                                 CharacterSpacing="100"
-                                FontSize="11"
+                                FontSize="{StaticResource FontCaption}"
                                 FontWeight="Bold"
-                                Foreground="#92400E"
-                                Text="TOTAL TO PAY" />
+                                Foreground="{StaticResource WarningTextDark}"
+                                Text="TOTAL TO PAY"/>
                             <TextBlock
-                                FontSize="36"
+                                FontSize="{StaticResource FontTitle}"
                                 FontWeight="Black"
-                                Foreground="#B45309"
-                                Text="{Binding Total, Converter={StaticResource CurrencyConverter}}" />
+                                Foreground="{StaticResource BrandPrimary}"
+                                Text="{Binding Total, Converter={StaticResource CurrencyConverter}}"/>
                         </StackPanel>
                     </Border>
 
                     <Border
                         Padding="20"
-                        Background="#F3F4F6"
-                        CornerRadius="16"
+                        Background="{StaticResource Gray100}"
+                        CornerRadius="{StaticResource RadiusLarge}"
                         Visibility="{Binding Method, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='Cash'}">
                         <StackPanel Spacing="8">
                             <TextBlock
                                 CharacterSpacing="50"
-                                FontSize="11"
                                 FontWeight="Bold"
-                                Foreground="#6B7280"
-                                Text="CHANGE DUE" />
+                                Style="{StaticResource CaptionTextStyle}"
+                                Text="CHANGE DUE"/>
                             <TextBlock
-                                FontSize="24"
+                                FontSize="{StaticResource FontTitle}"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource Amber600}"
-                                Text="{Binding Change, Converter={StaticResource CurrencyConverter}}" />
+                                Foreground="{StaticResource BrandPrimary}"
+                                Text="{Binding Change, Converter={StaticResource CurrencyConverter}}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Border>
 
-            <Grid Grid.Column="1" Padding="32,0,0,0">
+            <Grid Grid.Column="1"
+                  Padding="32,0,0,0">
                 <!--  CASH  -->
                 <Grid Visibility="{Binding Method, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='Cash'}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
                     <StackPanel Spacing="16">
                         <TextBlock
-                            FontSize="15"
+                            FontSize="{StaticResource FontSubtitle}"
                             FontWeight="SemiBold"
-                            Foreground="#374151"
-                            Text="Enter Cash Amount" />
+                            Foreground="{StaticResource Gray700}"
+                            Text="Enter Cash Amount"/>
                         <Border
                             Padding="20"
-                            Background="White"
-                            BorderBrush="#F3F4F6"
+                            Background="{StaticResource SurfaceBackground}"
+                            BorderBrush="{StaticResource Gray100}"
                             BorderThickness="2"
-                            CornerRadius="16">
+                            CornerRadius="{StaticResource RadiusLarge}">
                             <Grid>
                                 <TextBlock
                                     VerticalAlignment="Center"
-                                    FontSize="24"
+                                    FontSize="{StaticResource FontTitle}"
                                     FontWeight="Bold"
-                                    Foreground="#9CA3AF"
-                                    Text="$" />
+                                    Foreground="{StaticResource TextMuted}"
+                                    Text="$"/>
                                 <TextBlock
                                     HorizontalAlignment="Right"
-                                    FontSize="40"
+                                    FontSize="{StaticResource FontTitle}"
                                     FontWeight="Black"
-                                    Foreground="#111827"
-                                    Text="{Binding CashInput}" />
+                                    Foreground="{StaticResource Gray900}"
+                                    Text="{Binding CashInput}"/>
                             </Grid>
                         </Border>
 
-                        <StackPanel Orientation="Horizontal" Spacing="12">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="12">
                             <Button
                                 Command="{Binding AddQuickAmountCommand}"
                                 CommandParameter="1.0"
                                 Content="+$1"
-                                Style="{StaticResource QuickAmountButtonStyle}" />
+                                Style="{StaticResource QuickAmountButtonStyle}"/>
                             <Button
                                 Command="{Binding AddQuickAmountCommand}"
                                 CommandParameter="5.0"
                                 Content="+$5"
-                                Style="{StaticResource QuickAmountButtonStyle}" />
+                                Style="{StaticResource QuickAmountButtonStyle}"/>
                             <Button
                                 Command="{Binding AddQuickAmountCommand}"
                                 CommandParameter="10.0"
                                 Content="+$10"
-                                Style="{StaticResource QuickAmountButtonStyle}" />
+                                Style="{StaticResource QuickAmountButtonStyle}"/>
                             <Button
                                 Command="{Binding AddQuickAmountCommand}"
                                 CommandParameter="20.0"
                                 Content="+$20"
-                                Style="{StaticResource QuickAmountButtonStyle}" />
+                                Style="{StaticResource QuickAmountButtonStyle}"/>
                             <Button
                                 Command="{Binding AddQuickAmountCommand}"
                                 CommandParameter="50.0"
                                 Content="+$50"
-                                Style="{StaticResource QuickAmountButtonStyle}" />
+                                Style="{StaticResource QuickAmountButtonStyle}"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -331,21 +358,21 @@
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="1"
                             Content="1"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
                         <Button
                             Grid.Row="0"
                             Grid.Column="1"
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="2"
                             Content="2"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
                         <Button
                             Grid.Row="0"
                             Grid.Column="2"
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="3"
                             Content="3"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
 
                         <Button
                             Grid.Row="1"
@@ -353,21 +380,21 @@
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="4"
                             Content="4"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
                         <Button
                             Grid.Row="1"
                             Grid.Column="1"
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="5"
                             Content="5"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
                         <Button
                             Grid.Row="1"
                             Grid.Column="2"
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="6"
                             Content="6"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
 
                         <Button
                             Grid.Row="2"
@@ -375,21 +402,21 @@
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="7"
                             Content="7"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
                         <Button
                             Grid.Row="2"
                             Grid.Column="1"
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="8"
                             Content="8"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
                         <Button
                             Grid.Row="2"
                             Grid.Column="2"
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="9"
                             Content="9"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
 
                         <Button
                             Grid.Row="3"
@@ -397,23 +424,23 @@
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="."
                             Content="."
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
                         <Button
                             Grid.Row="3"
                             Grid.Column="1"
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="0"
                             Content="0"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Style="{StaticResource KeypadButtonStyle}"/>
                         <Button
                             Grid.Row="3"
                             Grid.Column="2"
-                            Background="#FEF2F2"
+                            Background="{StaticResource ErrorSurfaceSoft}"
                             Command="{Binding HandleKeypadCommand}"
                             CommandParameter="C"
                             Content="C"
-                            Foreground="#EF4444"
-                            Style="{StaticResource KeypadButtonStyle}" />
+                            Foreground="{StaticResource Error}"
+                            Style="{StaticResource KeypadButtonStyle}"/>
                     </Grid>
                 </Grid>
 
@@ -426,27 +453,25 @@
                         <Border
                             Width="120"
                             Height="120"
-                            Background="#F3F4F6"
-                            CornerRadius="60">
+                            Background="{StaticResource Gray100}"
+                            CornerRadius="{StaticResource Radius2XLarge}">
                             <FontIcon
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                FontSize="48"
-                                Foreground="#9CA3AF"
-                                Glyph="{Binding PaymentMethods[1].Glyph}" />
+                                Style="{StaticResource Icon3XLargeStyle}"
+                                Foreground="{StaticResource TextMuted}"
+                                Glyph="{Binding PaymentMethods[1].Glyph}"/>
                         </Border>
                         <StackPanel Spacing="8">
                             <TextBlock
                                 HorizontalAlignment="Center"
-                                FontSize="20"
                                 FontWeight="Bold"
-                                Foreground="#111827"
-                                Text="Ready for Card Payment" />
+                                Style="{StaticResource SubtitleTextStyle}"
+                                Text="Ready for Card Payment"/>
                             <TextBlock
                                 HorizontalAlignment="Center"
-                                FontSize="15"
-                                Foreground="#6B7280"
-                                Text="Insert, swipe, or tap your card on the terminal" />
+                                Style="{StaticResource SubtitleSecondaryTextStyle}"
+                                Text="Insert, swipe, or tap your card on the terminal"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -459,27 +484,25 @@
                         Spacing="24">
                         <Border
                             Padding="20"
-                            Background="White"
-                            BorderBrush="#F3F4F6"
+                            Background="{StaticResource SurfaceBackground}"
+                            BorderBrush="{StaticResource Gray100}"
                             BorderThickness="1"
                             CornerRadius="20">
                             <FontIcon
                                 FontSize="120"
-                                Foreground="#111827"
-                                Glyph="{Binding PaymentMethods[2].Glyph}" />
+                                Foreground="{StaticResource Gray900}"
+                                Glyph="{Binding PaymentMethods[2].Glyph}"/>
                         </Border>
                         <StackPanel Spacing="8">
                             <TextBlock
                                 HorizontalAlignment="Center"
-                                FontSize="20"
                                 FontWeight="Bold"
-                                Foreground="#111827"
-                                Text="Scan QR to Pay" />
+                                Style="{StaticResource SubtitleTextStyle}"
+                                Text="Scan QR to Pay"/>
                             <TextBlock
                                 HorizontalAlignment="Center"
-                                FontSize="15"
-                                Foreground="#6B7280"
-                                Text="Present this QR code to the customer terminal" />
+                                Style="{StaticResource SubtitleSecondaryTextStyle}"
+                                Text="Present this QR code to the customer terminal"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -496,11 +519,11 @@
             <Button
                 Click="CloseButton_Click"
                 Content="Back to Order"
-                Style="{StaticResource PaymentSecondaryButtonStyle}" />
+                Style="{StaticResource PaymentSecondaryButtonStyle}"/>
             <Button
                 Command="{Binding ConfirmCommand}"
                 Content="Complete Payment"
-                Style="{StaticResource PaymentPrimaryButtonStyle}" />
+                Style="{StaticResource PaymentPrimaryButtonStyle}"/>
         </StackPanel>
     </Grid>
 </ContentDialog>

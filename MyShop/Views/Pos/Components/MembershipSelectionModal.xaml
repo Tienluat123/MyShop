@@ -17,80 +17,87 @@
         <Thickness x:Key="ContentDialogPadding">0</Thickness>
         <Thickness x:Key="ContentDialogBorderThickness">0</Thickness>
 
-        <converters:StringFormatConverter x:Key="StringFormatConverter" />
-        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-        <SolidColorBrush x:Key="Amber600" Color="#D97706" />
-        <SolidColorBrush x:Key="Amber50" Color="#FFFBEB" />
-
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <Style
             x:Key="MembershipButtonStyle"
             BasedOn="{StaticResource DefaultButtonStyle}"
             TargetType="Button">
-            <Setter Property="Padding" Value="24,12" />
-            <Setter Property="CornerRadius" Value="24" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding"
+                    Value="{StaticResource SpaceXLarge_Medium}"/>
+            <Setter Property="CornerRadius"
+                    Value="{StaticResource RadiusXLarge}"/>
+            <Setter Property="FontWeight"
+                    Value="{StaticResource FontWeightSemiBold}"/>
         </Style>
 
         <Style
             x:Key="PrimaryMembershipButtonStyle"
             BasedOn="{StaticResource MembershipButtonStyle}"
             TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource Amber600}" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background"
+                    Value="{StaticResource BrandPrimary}"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
         </Style>
 
         <Style
             x:Key="SecondaryMembershipButtonStyle"
             BasedOn="{StaticResource MembershipButtonStyle}"
             TargetType="Button">
-            <Setter Property="Background" Value="#F3F4F6" />
-            <Setter Property="Foreground" Value="#4B5563" />
-            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background"
+                    Value="{StaticResource Gray100}"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Gray500}"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
         </Style>
     </ContentDialog.Resources>
 
     <ContentDialog.Title>
         <Grid HorizontalAlignment="Stretch">
-            <StackPanel Orientation="Horizontal" Spacing="12">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
                 <FontIcon
-                    FontSize="20"
-                    Foreground="{StaticResource Amber600}"
-                    Glyph="&#xE734;" />
+                    Style="{StaticResource IconHeaderStyle}"
+                    Foreground="{StaticResource BrandPrimary}"
+                    Glyph="&#xE734;"/>
                 <TextBlock
-                    FontSize="20"
-                    FontWeight="SemiBold"
-                    Text="Membership &amp; Loyalty" />
+                    FontSize="{StaticResource FontHeader}"
+                    FontWeight="{StaticResource FontWeightSemiBold}"
+                    Text="Membership &amp; Loyalty"/>
             </StackPanel>
         </Grid>
     </ContentDialog.Title>
 
-    <Grid Width="500" Margin="0,12,0,0">
+    <Grid Width="500"
+          Margin="0,12,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!--  Search Bar (Only visible when NOT registering)  -->
         <Border
             Grid.Row="0"
             Margin="0,0,0,24"
-            Background="White"
-            BorderBrush="#E5E7EB"
+            Background="{StaticResource SurfaceBackground}"
+            BorderBrush="{StaticResource BorderBrush}"
             BorderThickness="1"
             CornerRadius="12"
             Visibility="{Binding ShowRegister, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='False'}">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <FontIcon
                     HorizontalAlignment="Center"
-                    FontSize="16"
-                    Foreground="#9CA3AF"
-                    Glyph="&#xE721;" />
+                    Style="{StaticResource IconSubtitleStyle}"
+                    Foreground="{StaticResource TextMuted}"
+                    Glyph="&#xE721;"/>
                 <TextBox
                     x:Name="SearchBox"
                     Grid.Column="1"
@@ -98,12 +105,13 @@
                     VerticalAlignment="Center"
                     Background="Transparent"
                     BorderThickness="0"
-                    PlaceholderText="Search by Name or Phone Number..." />
+                    PlaceholderText="Search by Name or Phone Number..."/>
             </Grid>
         </Border>
 
         <!--  Results / Registration Form  -->
-        <Grid Grid.Row="1" MinHeight="350">
+        <Grid Grid.Row="1"
+              MinHeight="350">
             <!--  Search Results View  -->
             <Grid Visibility="{Binding ShowRegister, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='False'}">
                 <!--  Members List  -->
@@ -126,15 +134,15 @@
                                 CommandParameter="{Binding}">
                                 <Border
                                     Padding="16"
-                                    Background="White"
-                                    BorderBrush="#F3F4F6"
+                                    Background="{StaticResource SurfaceBackground}"
+                                    BorderBrush="{StaticResource Gray100}"
                                     BorderThickness="1"
-                                    CornerRadius="12">
+                                    CornerRadius="{StaticResource RadiusMedium}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
                                         <Border
@@ -142,42 +150,43 @@
                                             Width="40"
                                             Height="40"
                                             Margin="0,0,12,0"
-                                            Background="#F3F4FB"
-                                            CornerRadius="20">
+                                            Background="{StaticResource SurfaceBorderAlt}"
+                                            CornerRadius="{StaticResource RadiusXLarge}">
                                             <FontIcon
-                                                FontSize="18"
-                                                Foreground="#6366F1"
-                                                Glyph="&#xE77B;" />
+                                                Style="{StaticResource IconSubtitleStyle}"
+                                                Foreground="{StaticResource AccentIndigo}"
+                                                Glyph="&#xE77B;"/>
                                         </Border>
 
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="1"
+                                                    VerticalAlignment="Center">
                                             <TextBlock
-                                                FontSize="15"
+                                                FontSize="{StaticResource FontSubtitle}"
                                                 FontWeight="Bold"
-                                                Foreground="#111827"
-                                                Text="{Binding Name}" />
+                                                Foreground="{StaticResource Gray900}"
+                                                Text="{Binding Name}"/>
                                             <TextBlock
-                                                FontSize="13"
-                                                Foreground="#6B7280"
-                                                Text="{Binding Phone}" />
+                                                Style="{StaticResource BodySecondaryTextStyle}"
+                                                Text="{Binding Phone}"/>
                                         </StackPanel>
 
                                         <Border
                                             Grid.Column="2"
                                             Padding="8,4"
                                             VerticalAlignment="Center"
-                                            Background="{StaticResource Amber50}"
-                                            CornerRadius="8">
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                            Background="{StaticResource WarningSurfaceSoft}"
+                                            CornerRadius="{StaticResource RadiusSmall}">
+                                            <StackPanel Orientation="Horizontal"
+                                                        Spacing="4">
                                                 <FontIcon
-                                                    FontSize="12"
-                                                    Foreground="{StaticResource Amber600}"
-                                                    Glyph="&#xE734;" />
+                                                    Style="{StaticResource IconCaptionStyle}"
+                                                    Foreground="{StaticResource BrandPrimary}"
+                                                    Glyph="&#xE734;"/>
                                                 <TextBlock
-                                                    FontSize="12"
+                                                    FontSize="{StaticResource FontCaption}"
                                                     FontWeight="Bold"
-                                                    Foreground="{StaticResource Amber600}"
-                                                    Text="{Binding Points}" />
+                                                    Foreground="{StaticResource BrandPrimary}"
+                                                    Text="{Binding Points}"/>
                                             </StackPanel>
                                         </Border>
                                     </Grid>
@@ -196,35 +205,35 @@
                     <Border
                         Width="80"
                         Height="80"
-                        Background="#F9FAFB"
-                        CornerRadius="40">
+                        Background="{StaticResource SurfaceAlt}"
+                        CornerRadius="{StaticResource Radius2XLarge}">
                         <FontIcon
-                            FontSize="32"
-                            Foreground="#9CA3AF"
-                            Glyph="&#xE77B;" />
+                            Style="{StaticResource Icon2XLargeStyle}"
+                            Foreground="{StaticResource TextMuted}"
+                            Glyph="&#xE77B;"/>
                     </Border>
                     <StackPanel Spacing="8">
                         <TextBlock
                             HorizontalAlignment="Center"
-                            FontSize="18"
+                            FontSize="{StaticResource FontHeader}"
                             FontWeight="Bold"
-                            Foreground="#111827"
-                            Text="Customer Not Found" />
+                            Foreground="{StaticResource Gray900}"
+                            Text="Customer Not Found"/>
                         <TextBlock
                             HorizontalAlignment="Center"
-                            FontSize="14"
-                            Foreground="#6B7280"
-                            Text="Search by phone number to find existing members" />
+                            Style="{StaticResource BodySecondaryTextStyle}"
+                            Text="Search by phone number to find existing members"/>
                     </StackPanel>
                     <Button
                         Padding="24,12"
                         HorizontalAlignment="Center"
-                        Background="White"
-                        BorderBrush="#E5E7EB"
+                        Background="{StaticResource SurfaceBackground}"
+                        BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="1"
                         Command="{Binding ToggleRegisterCommand}"
                         Content="Register New Member"
-                        CornerRadius="12" />
+                        CornerRadius="{StaticResource RadiusMedium}"
+                        Style="{StaticResource AppOutlineButtonStyle}"/>
                 </StackPanel>
             </Grid>
 
@@ -232,74 +241,73 @@
             <Grid Visibility="{Binding ShowRegister, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='True'}">
                 <Border
                     Padding="32"
-                    Background="White"
-                    BorderBrush="#F3F4F6"
+                    Background="{StaticResource SurfaceBackground}"
+                    BorderBrush="{StaticResource Gray100}"
                     BorderThickness="1"
-                    CornerRadius="16">
+                    CornerRadius="{StaticResource RadiusLarge}">
                     <StackPanel Spacing="24">
                         <StackPanel Spacing="8">
                             <TextBlock
-                                FontSize="18"
+                                FontSize="{StaticResource FontHeader}"
                                 FontWeight="Bold"
-                                Foreground="#111827"
-                                Text="New Member Registration" />
+                                Foreground="{StaticResource Gray900}"
+                                Text="New Member Registration"/>
                             <TextBlock
-                                FontSize="14"
-                                Foreground="#6B7280"
-                                Text="Fill in the details to create a new membership account" />
+                                Style="{StaticResource BodySecondaryTextStyle}"
+                                Text="Fill in the details to create a new membership account"/>
                         </StackPanel>
 
                         <StackPanel Spacing="16">
                             <!--  Full Name  -->
                             <StackPanel Spacing="8">
                                 <TextBlock
-                                    FontSize="13"
+                                    FontSize="{StaticResource FontBody}"
                                     FontWeight="SemiBold"
-                                    Foreground="#374151"
-                                    Text="Full Name" />
+                                    Foreground="{StaticResource Gray700}"
+                                    Text="Full Name"/>
                                 <TextBox
                                     Padding="12"
-                                    Background="#F9FAFB"
-                                    BorderBrush="#E5E7EB"
-                                    CornerRadius="8"
+                                    Background="{StaticResource SurfaceAlt}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    CornerRadius="{StaticResource RadiusSmall}"
                                     PlaceholderText="e.g. John Doe"
-                                    Text="{Binding NewName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    Text="{Binding NewName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
 
                             <!--  Phone Number  -->
                             <StackPanel Spacing="8">
                                 <TextBlock
-                                    FontSize="13"
+                                    FontSize="{StaticResource FontBody}"
                                     FontWeight="SemiBold"
-                                    Foreground="#374151"
-                                    Text="Phone Number" />
+                                    Foreground="{StaticResource Gray700}"
+                                    Text="Phone Number"/>
                                 <TextBox
                                     Padding="12"
-                                    Background="#F9FAFB"
-                                    BorderBrush="#E5E7EB"
-                                    CornerRadius="8"
+                                    Background="{StaticResource SurfaceAlt}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    CornerRadius="{StaticResource RadiusSmall}"
                                     PlaceholderText="e.g. 0901234567"
-                                    Text="{Binding NewPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    Text="{Binding NewPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                         </StackPanel>
 
                         <Grid Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Button
                                 HorizontalAlignment="Stretch"
                                 Command="{Binding ToggleRegisterCommand}"
                                 Content="Cancel"
-                                Style="{StaticResource SecondaryMembershipButtonStyle}" />
+                                Style="{StaticResource SecondaryMembershipButtonStyle}"/>
                             <Button
                                 Grid.Column="1"
                                 Margin="12,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 Command="{Binding RegisterCommand}"
                                 Content="Create &amp; Select"
-                                Style="{StaticResource PrimaryMembershipButtonStyle}" />
+                                Style="{StaticResource PrimaryMembershipButtonStyle}"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -312,15 +320,14 @@
             Margin="0,24,0,0"
             Visibility="{Binding ShowRegister, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='False'}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <TextBlock
                 VerticalAlignment="Center"
-                FontSize="13"
-                Foreground="#6B7280"
-                Text="Points will be added to selected member" />
+                Style="{StaticResource BodySecondaryTextStyle}"
+                Text="Points will be added to selected member"/>
 
             <StackPanel
                 Grid.Column="1"
@@ -329,7 +336,7 @@
                 <Button
                     x:Name="SkipButton"
                     Content="Skip &amp; Pay"
-                    Style="{StaticResource SecondaryMembershipButtonStyle}" />
+                    Style="{StaticResource SecondaryMembershipButtonStyle}"/>
             </StackPanel>
         </Grid>
     </Grid>

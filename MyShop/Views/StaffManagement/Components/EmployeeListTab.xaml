@@ -6,10 +6,10 @@
 
     <Grid Margin="0,16,0,0"
           Background="{StaticResource SurfaceBackground}"
-          CornerRadius="12"
-          BorderBrush="#E5E7EB"
+          CornerRadius="{StaticResource RadiusMedium}"
+          BorderBrush="{StaticResource BorderBrush}"
           BorderThickness="1"
-          Padding="20">
+          Padding="{StaticResource SpaceXLarge}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -26,39 +26,41 @@
             </Grid.ColumnDefinitions>
 
             <Button Content="+ Thêm nhân viên"
-                    Height="40"
+                    Height="{StaticResource Size40}"
                     Background="{StaticResource BrandPrimary}"
                     Foreground="{StaticResource BrandPrimaryForeground}"
-                    Padding="16,0"
-                    FontSize="14"
+                    Padding="{StaticResource SpaceMedium}"
+                    FontSize="{StaticResource FontBody}"
                     BorderThickness="0"
-                    CornerRadius="8"
-                    FontWeight="SemiBold"
+                    CornerRadius="{StaticResource RadiusSmall}"
+                    FontWeight="{StaticResource FontWeightSemiBold}"
                     VerticalAlignment="Center"
+                    Style="{StaticResource AppPrimaryButtonStyle}"
                     Click="AddEmployee_Click"/>
 
             <ComboBox Grid.Column="1"
                       Margin="16,0,0,0"
                       Width="180"
-                      Height="40"
+                      Height="{StaticResource Size40}"
+                      Padding="{StaticResource SpaceMedium}"
                       PlaceholderText="Lọc theo chức vụ"
-                      CornerRadius="8"
+                      CornerRadius="{StaticResource RadiusSmall}"
                       VerticalAlignment="Center"/>
 
             <Grid Grid.Column="3"
                   Margin="12,0,0,0"
-                  Height="40">
+                  Height="{StaticResource Size40}">
 
                 <TextBox PlaceholderText="Tìm kiếm nhân viên..."
-                         CornerRadius="8"
+                         CornerRadius="{StaticResource RadiusSmall}"
                          Padding="12,8,36,8"
                          VerticalAlignment="Stretch"
                          VerticalContentAlignment="Center"
-                         FontWeight="SemiBold"/>
+                         FontWeight="{StaticResource FontWeightSemiBold}"/>
 
                 <FontIcon Glyph="&#xE721;"
-                          Foreground="{StaticResource TextSecondary}"
-                          FontSize="14"
+                          Foreground="{StaticResource TextMuted}"
+                          Style="{StaticResource IconBodyStyle}"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
                           Margin="0,0,12,0"
@@ -68,9 +70,9 @@
 
         <Grid Grid.Row="1"
               Background="{StaticResource SurfaceHover}"
-              Padding="16,12"
-              CornerRadius="6"
-              BorderBrush="#E5E7EB"
+              Padding="{StaticResource SpaceLarge_Medium}"
+              CornerRadius="{StaticResource RadiusSmall}"
+              BorderBrush="{StaticResource BorderBrush}"
               BorderThickness="0,0,0,1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="80"/>
@@ -83,39 +85,25 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="Mã NV"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondary}"
-                       FontSize="13"/>
+                       Style="{StaticResource StaffHeaderLabelTextStyle}"/>
             <TextBlock Grid.Column="1"
                        Text="Họ tên"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondary}"
-                       FontSize="13"/>
+                       Style="{StaticResource StaffHeaderLabelTextStyle}"/>
             <TextBlock Grid.Column="2"
                        Text="Liên hệ"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondary}"
-                       FontSize="13"/>
+                       Style="{StaticResource StaffHeaderLabelTextStyle}"/>
             <TextBlock Grid.Column="3"
                        Text="Chức vụ"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondary}"
-                       FontSize="13"/>
+                       Style="{StaticResource StaffHeaderLabelTextStyle}"/>
             <TextBlock Grid.Column="4"
                        Text="Lịch làm việc"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondary}"
-                       FontSize="13"/>
+                       Style="{StaticResource StaffHeaderLabelTextStyle}"/>
             <TextBlock Grid.Column="5"
                        Text="Trạng thái"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondary}"
-                       FontSize="13"/>
+                       Style="{StaticResource StaffHeaderLabelTextStyle}"/>
             <TextBlock Grid.Column="6"
                        Text="Thao tác"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondary}"
-                       FontSize="13"
+                       Style="{StaticResource StaffHeaderLabelTextStyle}"
                        HorizontalAlignment="Center"/>
         </Grid>
 
@@ -123,7 +111,7 @@
                     Spacing="0">
 
             <Grid Padding="16,16"
-                  BorderBrush="#F3F4F6"
+                  BorderBrush="{StaticResource Gray100}"
                   BorderThickness="0,0,0,1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"/>
@@ -138,18 +126,18 @@
                 <TextBlock Text="NV001"
                            VerticalAlignment="Center"
                            Foreground="{StaticResource TextSecondary}"
-                           FontWeight="Medium"/>
+                           FontWeight="{StaticResource FontWeightMedium}"/>
 
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             Spacing="12">
                     <PersonPicture Initials="VN"
-                                   Width="36"
-                                   Height="36"/>
+                                   Width="{StaticResource Size2XLarge}"
+                                   Height="{StaticResource Size2XLarge}"/>
                     <TextBlock Text="Nguyễn Văn Nam"
                                VerticalAlignment="Center"
                                Foreground="{StaticResource TextPrimary}"
-                               FontWeight="SemiBold"/>
+                               FontWeight="{StaticResource FontWeightSemiBold}"/>
                 </StackPanel>
 
                 <TextBlock Grid.Column="2"
@@ -158,15 +146,10 @@
                            Foreground="{StaticResource TextSecondary}"/>
 
                 <Border Grid.Column="3"
-                        Background="#FEE2E2"
-                        CornerRadius="12"
-                        Padding="12,4"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center">
+                        Style="{StaticResource StaffRoleAdminTagStyle}">
                     <TextBlock Text="Admin"
-                               Foreground="#DC2626"
-                               FontSize="12"
-                               FontWeight="Bold"/>
+                               Foreground="{StaticResource ErrorStrong}"
+                               Style="{StaticResource StaffTagTextStyle}"/>
                 </Border>
 
                 <StackPanel Grid.Column="4"
@@ -175,10 +158,11 @@
                     <Button Content="Xem lịch (3 ca)"
                             Background="{StaticResource SurfaceHover}"
                             Foreground="{StaticResource TextPrimary}"
-                            CornerRadius="16"
-                            Padding="12,6"
-                            FontWeight="SemiBold"
-                            BorderThickness="0">
+                            CornerRadius="{StaticResource RadiusLarge}"
+                            Padding="{StaticResource SpaceMedium_Small}"
+                            FontWeight="{StaticResource FontWeightSemiBold}"
+                            BorderThickness="0"
+                            Style="{StaticResource AppGhostButtonStyle}">
                         <Button.Flyout>
                             <Flyout>
                                 <comps:EmployeeScheduleFlyout/>
@@ -188,15 +172,10 @@
                 </StackPanel>
 
                 <Border Grid.Column="5"
-                        Background="#D1FAE5"
-                        CornerRadius="12"
-                        Padding="12,4"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center">
+                        Style="{StaticResource StaffStatusActiveTagStyle}">
                     <TextBlock Text="Đang làm"
-                               Foreground="#059669"
-                               FontSize="12"
-                               FontWeight="Bold"/>
+                               Foreground="{StaticResource SuccessStrong}"
+                               Style="{StaticResource StaffTagTextStyle}"/>
                 </Border>
 
                 <StackPanel Grid.Column="6"
@@ -207,28 +186,30 @@
                     <Button Background="Transparent"
                             BorderThickness="0"
                             Padding="8"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource RadiusSmall}"
                             ToolTipService.ToolTip="Chỉnh sửa"
-                            Click="EditEmployee_Click">
+                            Click="EditEmployee_Click"
+                            Style="{StaticResource AppIconButtonStyle}">
                         <FontIcon Glyph="&#xE70F;"
-                                  Foreground="#2563EB"
-                                  FontSize="14"/>
+                                  Foreground="{StaticResource InfoStrong}"
+                                  Style="{StaticResource IconBodyStyle}"/>
                     </Button>
 
                     <Button Background="Transparent"
                             BorderThickness="0"
                             Padding="8"
-                            CornerRadius="8"
-                            ToolTipService.ToolTip="Khóa tài khoản">
+                            CornerRadius="{StaticResource RadiusSmall}"
+                            ToolTipService.ToolTip="Khóa tài khoản"
+                            Style="{StaticResource AppIconButtonStyle}">
                         <FontIcon Glyph="&#xE72E;"
-                                  Foreground="#DC2626"
-                                  FontSize="14"/>
+                                  Foreground="{StaticResource ErrorStrong}"
+                                  Style="{StaticResource IconBodyStyle}"/>
                     </Button>
                 </StackPanel>
             </Grid>
 
             <Grid Padding="16,16"
-                  BorderBrush="#F3F4F6"
+                  BorderBrush="{StaticResource Gray100}"
                   BorderThickness="0,0,0,1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"/>
@@ -243,18 +224,18 @@
                 <TextBlock Text="NV002"
                            VerticalAlignment="Center"
                            Foreground="{StaticResource TextSecondary}"
-                           FontWeight="Medium"/>
+                           FontWeight="{StaticResource FontWeightMedium}"/>
 
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             Spacing="12">
                     <PersonPicture Initials="TL"
-                                   Width="36"
-                                   Height="36"/>
+                                   Width="{StaticResource Size2XLarge}"
+                                   Height="{StaticResource Size2XLarge}"/>
                     <TextBlock Text="Trần Thị Lan"
                                VerticalAlignment="Center"
                                Foreground="{StaticResource TextPrimary}"
-                               FontWeight="SemiBold"/>
+                               FontWeight="{StaticResource FontWeightSemiBold}"/>
                 </StackPanel>
 
                 <TextBlock Grid.Column="2"
@@ -263,15 +244,10 @@
                            Foreground="{StaticResource TextSecondary}"/>
 
                 <Border Grid.Column="3"
-                        Background="#DBEAFE"
-                        CornerRadius="12"
-                        Padding="12,4"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center">
+                        Style="{StaticResource StaffRoleSalesTagStyle}">
                     <TextBlock Text="Bán hàng"
-                               Foreground="#2563EB"
-                               FontSize="12"
-                               FontWeight="Bold"/>
+                               Foreground="{StaticResource InfoStrong}"
+                               Style="{StaticResource StaffTagTextStyle}"/>
                 </Border>
 
                 <TextBlock Grid.Column="4"
@@ -281,15 +257,10 @@
                            VerticalAlignment="Center"/>
 
                 <Border Grid.Column="5"
-                        Background="#D1FAE5"
-                        CornerRadius="12"
-                        Padding="12,4"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center">
+                        Style="{StaticResource StaffStatusActiveTagStyle}">
                     <TextBlock Text="Đang làm"
-                               Foreground="#059669"
-                               FontSize="12"
-                               FontWeight="Bold"/>
+                               Foreground="{StaticResource SuccessStrong}"
+                               Style="{StaticResource StaffTagTextStyle}"/>
                 </Border>
 
                 <StackPanel Grid.Column="6"
@@ -297,12 +268,26 @@
                             Spacing="16"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                    <FontIcon Glyph="&#xE70F;"
-                              Foreground="{StaticResource TextSecondary}"
-                              FontSize="16"/>
-                    <FontIcon Glyph="&#xE72E;"
-                              Foreground="#DC2626"
-                              FontSize="16"/>
+                    <Button Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8"
+                            CornerRadius="{StaticResource RadiusSmall}"
+                            ToolTipService.ToolTip="Chỉnh sửa"
+                            Style="{StaticResource AppIconButtonStyle}">
+                        <FontIcon Glyph="&#xE70F;"
+                                  Foreground="{StaticResource TextSecondary}"
+                                  Style="{StaticResource IconBodyStyle}"/>
+                    </Button>
+                    <Button Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8"
+                            CornerRadius="{StaticResource RadiusSmall}"
+                            ToolTipService.ToolTip="Khóa tài khoản"
+                            Style="{StaticResource AppIconButtonStyle}">
+                        <FontIcon Glyph="&#xE72E;"
+                                  Foreground="{StaticResource ErrorStrong}"
+                                  Style="{StaticResource IconBodyStyle}"/>
+                    </Button>
                 </StackPanel>
             </Grid>
 

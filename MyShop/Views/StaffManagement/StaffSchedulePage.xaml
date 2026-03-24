@@ -12,10 +12,11 @@
                     Value="Transparent"/>
             <Setter Property="Foreground"
                     Value="{StaticResource TextSecondary}"/>
+
             <Setter Property="CornerRadius"
-                    Value="8"/>
+                    Value="{StaticResource RadiusSmall}"/>
             <Setter Property="Padding"
-                    Value="24,8"/>
+                    Value="{StaticResource SpaceXLarge_Small}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
@@ -27,13 +28,13 @@
                                             <Setter Target="BgBorder.Background"
                                                     Value="{StaticResource SurfaceBackground}"/>
                                             <Setter Target="BgBorder.BorderBrush"
-                                                    Value="#E5E7EB"/>
+                                                    Value="{StaticResource BorderBrush}"/>
                                             <Setter Target="BgBorder.BorderThickness"
                                                     Value="1"/>
                                             <Setter Target="TextPresenter.Foreground"
                                                     Value="{StaticResource TextPrimary}"/>
                                             <Setter Target="TextPresenter.FontWeight"
-                                                    Value="SemiBold"/>
+                                                    Value="{StaticResource FontWeightSemiBold}"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Unchecked"/>
@@ -72,23 +73,20 @@
                     Spacing="20"
                     Margin="0,0,0,24">
             <Border Background="{StaticResource BrandPrimary}"
-                    CornerRadius="8"
-                    Padding="8">
+                    CornerRadius="{StaticResource RadiusSmall}"
+                    Padding="{StaticResource SpaceSmall}">
                 <FontIcon Glyph="&#xE716;"
                           Foreground="{StaticResource BrandPrimaryForeground}"
-                          FontSize="20"/>
+                          Style="{StaticResource IconHeaderStyle}"/>
             </Border>
             <TextBlock Text="Quản lý nhân viên"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       Foreground="{StaticResource TextPrimary}"
-                       VerticalAlignment="Center"/>
+                       Style="{StaticResource TitleTextStyle}"/>
         </StackPanel>
 
         <Border Grid.Row="1"
                 Background="{StaticResource SurfaceHover}"
-                CornerRadius="10"
-                Padding="4"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Padding="{StaticResource SpaceXSmall}"
                 HorizontalAlignment="Left"
                 Margin="0,0,0,24">
             <StackPanel Orientation="Horizontal">
