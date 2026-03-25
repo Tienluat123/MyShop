@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="MyShop.Views.AppConfig.Components.FunctionalitySettingsCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <!-- ===================== CARD CONTAINER ===================== -->
+        <Style x:Key="CardStyle"
+                TargetType="Border">
+            <Setter Property="Background"
+                    Value="White"/>
+            <Setter Property="CornerRadius"
+                    Value="12"/>
+            <Setter Property="Padding"
+                    Value="28"/>
+            <Setter Property="BorderBrush"
+                    Value="#E5E7EB"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+        </Style>
+
+        <!-- ===================== SECTION HEADER ===================== -->
+        <Style x:Key="SectionTitleStyle"
+                TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="15"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="#1F2937"/>
+        </Style>
+
+        <Style x:Key="SectionDescStyle"
+                TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12"/>
+            <Setter Property="Foreground"
+                    Value="#6B7280"/>
+            <Setter Property="TextWrapping"
+                    Value="Wrap"/>
+        </Style>
+
+        <!-- ===================== LABEL ===================== -->
+        <Style x:Key="FieldLabelStyle"
+                TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="13"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="#374151"/>
+            <Setter Property="Margin"
+                    Value="0,0,0,6"/>
+        </Style>
+
+        <!-- ===================== TOGGLE SWITCH ===================== -->
+        <Style x:Key="ConfigToggleStyle"
+                TargetType="ToggleSwitch">
+            <Setter Property="OnContent"
+                    Value=""/>
+            <Setter Property="OffContent"
+                    Value=""/>
+            <Setter Property="Margin"
+                    Value="0"/>
+        </Style>
+
+        <!-- ===================== DIVIDER ===================== -->
+        <Style x:Key="DividerStyle"
+                TargetType="Border">
+            <Setter Property="BorderBrush"
+                    Value="#F3F4F6"/>
+            <Setter Property="BorderThickness"
+                    Value="0,0,0,1"/>
+            <Setter Property="Margin"
+                    Value="0,4,0,16"/>
+        </Style>
+
+        <!-- ===================== ROW SETTING ===================== -->
+        <Style x:Key="SettingRowStyle"
+                TargetType="Grid">
+            <Setter Property="Margin"
+                    Value="0,0,0,20"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource CardStyle}">
+        <StackPanel>
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal"
+                    Spacing="10"
+                    Margin="0,0,0,4">
+                <Border Width="28"
+                        Height="28"
+                        Background="#FFF7ED"
+                        CornerRadius="7">
+                    <FontIcon Glyph="&#xE8B8;"
+                            FontFamily="Segoe MDL2 Assets"
+                              Foreground="#F97316"
+                            FontSize="14"
+                              HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="Functionality Settings"
+                        Style="{StaticResource SectionTitleStyle}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Text="Enable or disable system features according to your needs."
+                       Style="{StaticResource SectionDescStyle}"
+                    Margin="0,0,0,20"/>
+            <Border Style="{StaticResource DividerStyle}"/>
+
+            <!-- Auto Save Last Screen -->
+            <Grid Style="{StaticResource SettingRowStyle}"
+                    Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="Auto Save Last Screen"
+                               Style="{StaticResource FieldLabelStyle}"
+                            Margin="0"/>
+                    <TextBlock Text="Automatically open the last visited screen when you log in again."
+                               Style="{StaticResource SectionDescStyle}"/>
+                </StackPanel>
+                <ToggleSwitch Grid.Column="1"
+                              Style="{StaticResource ConfigToggleStyle}"
+                              IsOn="True"
+                              VerticalAlignment="Center"/>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

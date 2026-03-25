@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MyShop.Views.AppConfig.AppConfigPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:components="using:MyShop.Views.AppConfig.Components"
+    mc:Ignorable="d"
+    Background="#F3F4F6">
+
+    <Page.Resources>
+        <!-- ===================== PRIMARY BUTTON ===================== -->
+        <Style x:Key="PrimaryBtnStyle"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="#D97706"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+            <Setter Property="CornerRadius"
+                    Value="8"/>
+            <Setter Property="Padding"
+                    Value="20,10"/>
+            <Setter Property="FontSize"
+                    Value="13"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+        </Style>
+    </Page.Resources>
+
+    <!-- ===================== ROOT SCROLL ===================== -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="32,28,32,32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Page Header 0 -->
+                <RowDefinition Height="16"/>
+                <!-- Gap 1 -->
+                <RowDefinition Height="Auto"/>
+                <!-- Card 1 (Shop Info) -> Row 2 -->
+                <RowDefinition Height="16"/>
+                <!-- Gap 3 -->
+                <RowDefinition Height="Auto"/>
+                <!-- Card 2 (Display Settings) -> Row 4 -->
+                <RowDefinition Height="16"/>
+                <!-- Gap 5 -->
+                <RowDefinition Height="Auto"/>
+                <!-- Card 3 (Functionality Settings) -> Row 6 -->
+                <RowDefinition Height="24"/>
+                <!-- Gap 7 -->
+                <RowDefinition Height="Auto"/>
+                <!-- Buttons -> Row 8 -->
+            </Grid.RowDefinitions>
+
+            <!-- ===================== PAGE HEADER ===================== -->
+            <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    Spacing="14">
+                <Border Width="36"
+                        Height="36"
+                        Background="#FEF3C7"
+                        CornerRadius="10">
+                    <FontIcon Glyph="&#xE713;"
+                            FontFamily="Segoe MDL2 Assets"
+                              Foreground="#D97706"
+                            FontSize="18"
+                              HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="System Settings"
+                               FontSize="22"
+                            FontWeight="Bold"
+                            Foreground="#1F2937"/>
+                    <TextBlock Text="Configure options for your MyShop application."
+                               FontSize="12"
+                            Foreground="#6B7280"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ===================== CARD 1: SHOP INFO ===================== -->
+            <components:ShopInfoCard Grid.Row="2"/>
+
+            <!-- ===================== CARD 2: DISPLAY SETTINGS ===================== -->
+            <components:DisplaySettingsCard Grid.Row="4"/>
+
+            <!-- ===================== CARD 3: FUNCTIONALITY SETTINGS ===================== -->
+            <components:FunctionalitySettingsCard Grid.Row="6"/>
+
+            <!-- ===================== ACTION BUTTONS ===================== -->
+            <StackPanel Grid.Row="8"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="12">
+                <Button Style="{StaticResource PrimaryBtnStyle}"
+                        Content="Save Changes"
+                        Click="OnSaveClick"/>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

@@ -1,4 +1,5 @@
 using MyShop.Views;
+using MyShop.Views.AppConfig;
 using System;
 using Microsoft.UI.Xaml.Controls;
 
