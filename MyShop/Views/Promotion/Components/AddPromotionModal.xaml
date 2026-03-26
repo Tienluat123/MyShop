@@ -171,7 +171,3 @@
                                 SubmitClicked="SaveButton_Click"/>
         </Grid>
 </ContentDialog>
-</Grid>
-</Border>
-</Grid>
-</ContentDialog>
