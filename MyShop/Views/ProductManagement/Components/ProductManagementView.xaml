@@ -68,7 +68,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Button Grid.Column="0"
-                            Command="{Binding AddProductCommand}"
+                            Click="AddProduct_Click"
                             Background="#BB4D00"
                             BorderBrush="#BB4D00"
                             Foreground="White"
@@ -127,7 +127,7 @@
                         <ItemsRepeater ItemsSource="{Binding DisplayProducts}">
                             <ItemsRepeater.Layout>
                                 <StackLayout Orientation="Vertical"
-                                        Spacing="12"/>
+                                             Spacing="12"/>
                             </ItemsRepeater.Layout>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="viewModels:ProductListEntry">
@@ -163,7 +163,7 @@
                                                         VerticalAlignment="Center"
                                                         Spacing="4">
                                                 <StackPanel Orientation="Horizontal"
-                                                        Spacing="12">
+                                                            Spacing="12">
                                                     <TextBlock Text="{x:Bind Name}"
                                                                Style="{StaticResource BodyTextStyle}"
                                                                FontWeight="SemiBold"
@@ -211,7 +211,7 @@
                                                 <Button Background="Transparent"
                                                         BorderThickness="0"
                                                         Padding="8"
-                                                        Command="{Binding DataContext.EditProductCommand, ElementName=PageRoot}"
+                                                        Click="EditProduct_Click"
                                                         CommandParameter="{Binding}">
                                                     <FontIcon Glyph="&#xE70F;"
                                                               FontSize="16"

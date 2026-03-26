@@ -1,12 +1,24 @@
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace MyShop.ViewModels;
 
-public sealed class CustomerFormViewModel : BaseViewModel
+public partial class CustomerFormViewModel : ObservableObject
 {
     private readonly Action onCancel;
+
+    [ObservableProperty]
     private bool isEditMode;
+
+    [ObservableProperty]
     private string formTitle = string.Empty;
+
+    [ObservableProperty]
+    private string submitButtonText = "Create Customer";
+
+    [ObservableProperty]
+    private CustomerInputModel customerData = new();
 
     public CustomerFormViewModel(bool isEditMode, CustomerListItem? customer, Action onCancel)
     {
@@ -16,6 +28,7 @@ public sealed class CustomerFormViewModel : BaseViewModel
         if (isEditMode && customer is not null)
         {
             FormTitle = $"Edit: {customer.Name}";
+            SubmitButtonText = "Save Changes";
             CustomerData = new CustomerInputModel
             {
                 FullName = customer.Name,
@@ -29,47 +42,19 @@ public sealed class CustomerFormViewModel : BaseViewModel
         else
         {
             FormTitle = "Create New Customer";
+            SubmitButtonText = "Create Customer";
             CustomerData = new CustomerInputModel();
         }
-
-        SubmitCommand = new RelayCommand(Submit);
-        CancelCommand = new RelayCommand(() => this.onCancel());
     }
 
-    public bool IsEditMode
-    {
-        get => isEditMode;
-        set
-        {
-            if (isEditMode != value)
-            {
-                isEditMode = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    public string FormTitle
-    {
-        get => formTitle;
-        set
-        {
-            if (formTitle != value)
-            {
-                formTitle = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    public string SubmitButtonText => IsEditMode ? "Save Changes" : "Create Customer";
-
-    public CustomerInputModel CustomerData { get; }
-
-    public RelayCommand SubmitCommand { get; }
-    public RelayCommand CancelCommand { get; }
-
+    [RelayCommand]
     private void Submit()
+    {
+        onCancel();
+    }
+
+    [RelayCommand]
+    private void Cancel()
     {
         onCancel();
     }

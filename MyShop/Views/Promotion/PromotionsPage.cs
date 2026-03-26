@@ -2,6 +2,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using MyShop.ViewModels;
 using MyShop.Views.Promotion.Components;
+using System.Linq;
+
 namespace MyShop.Views.Promotion;
 
 public sealed partial class PromotionsPage : Page
@@ -19,50 +21,65 @@ public sealed partial class PromotionsPage : Page
         if (sender is ToggleSwitch switcher && switcher.DataContext is PromotionItem item)
         {
             // Tránh loop khi binding TwoWay
-            if (item.IsActive != switcher.IsOn) {
+            if (item.IsActive != switcher.IsOn)
+            {
                 ViewModel.ToggleActiveCommand.Execute(item);
             }
         }
     }
 
-private async void AddPromotion_Click(object sender, RoutedEventArgs e)
-{
-    var dialog = new AddPromotionModal()
+    private async void AddPromotion_Click(object sender, RoutedEventArgs e)
     {
-        XamlRoot = this.XamlRoot
-    };
+        var viewModel = new PromotionFormViewModel(isEditMode: false, promotion: null, onCancel: () => { });
+        var dialog = new AddPromotionModal(viewModel)
+        {
+            XamlRoot = this.XamlRoot
+        };
 
-    // Bỏ việc gán "var result =", vì khi dùng nút custom gọi Hide(), result luôn là None
-    await dialog.ShowAsync(); 
+        await dialog.ShowAsync();
 
-    // Kiểm tra trực tiếp xem object NewPromotion có dữ liệu hay không
-    if (dialog.NewPromotion != null)
-    {
-        // Thêm vào danh sách gốc
-        ViewModel.Promotions.Insert(0, dialog.NewPromotion);
-        
-        // Cập nhật lại bộ lọc và danh sách hiển thị trên UI
+        // Create and insert the new promotion into the list
+        var newPromotion = new PromotionItem
+        {
+            Id = ViewModel.Promotions.Any() ? ViewModel.Promotions.Max(p => p.Id) + 1 : 1,
+            Code = viewModel.PromotionData.Code.ToUpper(),
+            Type = viewModel.PromotionData.Type,
+            Value = viewModel.PromotionData.Value,
+            MinimumOrderAmount = viewModel.PromotionData.MinimumOrderAmount,
+            Target = viewModel.PromotionData.Target,
+            StartDate = viewModel.PromotionData.StartDate,
+            EndDate = viewModel.PromotionData.EndDate,
+            IsActive = true
+        };
+
+        ViewModel.Promotions.Insert(0, newPromotion);
         ViewModel.RebuildFilter();
     }
-}
-private async void EditPromotion_Click(object sender, RoutedEventArgs e)
+
+    private async void EditPromotion_Click(object sender, RoutedEventArgs e)
     {
-        // Lấy item được gắn vào dòng đó thông qua DataContext
         if (sender is Button btn && btn.DataContext is PromotionItem item)
         {
-            var dialog = new EditPromotionModal(item)
+            var viewModel = new PromotionFormViewModel(isEditMode: true, promotion: item, onCancel: () => { });
+            var dialog = new AddPromotionModal(viewModel)
             {
                 XamlRoot = this.XamlRoot
             };
 
-            var result = await dialog.ShowAsync();
+            await dialog.ShowAsync();
 
-            if (result == ContentDialogResult.Primary)
-            {
-                // Sau khi Modal cập nhật dữ liệu vào object 'item', 
-                // ta cần báo ViewModel làm mới danh sách hiển thị
-                ViewModel.RebuildFilter();
-            }
+            // The viewModel.PromotionData already has the updated values
+            // Now we need to apply them to the original item
+            item.Code = viewModel.PromotionData.Code;
+            item.Type = viewModel.PromotionData.Type;
+            item.Value = viewModel.PromotionData.Value;
+            item.MinimumOrderAmount = viewModel.PromotionData.MinimumOrderAmount;
+            item.Target = viewModel.PromotionData.Target;
+            item.StartDate = viewModel.PromotionData.StartDate;
+            item.EndDate = viewModel.PromotionData.EndDate;
+            item.IsActive = viewModel.PromotionData.IsActive;
+
+            ViewModel.RebuildFilter();
         }
     }
 
