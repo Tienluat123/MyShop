@@ -3,6 +3,7 @@ namespace MyShop.Models;
 public class AppConfig
 {
     public int Id { get; set; }
-    public string? Name { get; set; }
-    // Cứ tạm để rỗng vầy cho hết lỗi, mốt Văn Minh vào code tiếp
+    public string SettingKey { get; set; } = string.Empty; // VD: BackupPath, LogLevel, ShopName
+    public string SettingValue { get; set; } = string.Empty;
+    public string? Description { get; set; }
 }

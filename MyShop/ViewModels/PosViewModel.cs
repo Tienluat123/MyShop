@@ -10,12 +10,12 @@ public partial class PosViewModel : ObservableObject
 {
     private const double TAX_RATE = 0.0875;
 
-    public ObservableCollection<TempProduct> Products { get; } = new();
+    public ObservableCollection<Product> Products { get; } = new();
     public ObservableCollection<CategoryItem> Categories { get; } = new();
     public ObservableCollection<OrderItem> Order { get; } = new();
     public ObservableCollection<PosOrder> ActiveOrders { get; } = new();
 
-    public ObservableCollection<TempProduct> FilteredProducts { get; } = new();
+    public ObservableCollection<Product> FilteredProducts { get; } = new();
 
     [ObservableProperty]
     private string activeCategory = "Coffee";
@@ -64,7 +64,7 @@ public partial class PosViewModel : ObservableObject
             Order.Add(new OrderItem
             {
                 Product = product,
-                BasePrice = product.Price + 1.5,
+                BasePrice = (double)product.Price + 1.5,
                 Quantity = 1,
                 DrinkOptions = options
             });
@@ -76,7 +76,7 @@ public partial class PosViewModel : ObservableObject
             Order.Add(new OrderItem
             {
                 Product = secondProduct,
-                BasePrice = secondProduct.Price,
+                BasePrice = (double)secondProduct.Price,
                 Quantity = 2
             });
         }
@@ -102,17 +102,23 @@ public partial class PosViewModel : ObservableObject
         Categories.Add(new CategoryItem { Name = "Smoothies", IconKey = "IconSmoothies" });
         Categories.Add(new CategoryItem { Name = "Pastries", IconKey = "IconPastries" });
 
-        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new TempProduct { Id = 1, Name = "Caramel Latte", Price = 4.50, Category = "Coffee", ImageUrl = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new TempProduct { Id = 2, Name = "Matcha Latte", Price = 5.00, Category = "Tea", ImageUrl = "ms-appx:///Assets/matcha-latte.jpg" });
-        Products.Add(new TempProduct { Id = 3, Name = "Blueberry Muffin", Price = 3.25, Category = "Pastries", ImageUrl = "ms-appx:///Assets/muffin.jpg" });
-        Products.Add(new TempProduct { Id = 4, Name = "Croissant", Price = 2.75, Category = "Pastries", ImageUrl = "ms-appx:///Assets/croissant.jpg" });
+        // Mock product data (temporary - will be replaced with database)
+        // For UI development purposes only
+        var coffeeCategory = new Category { Id = 1, Name = "Coffee", IconGlyph = "☕" };
+        var teaCategory = new Category { Id = 2, Name = "Tea", IconGlyph = "🍵" };
+        var pastriesCategory = new Category { Id = 3, Name = "Pastries", IconGlyph = "🥐" };
+
+        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+        Products.Add(new Product { Id = 2, Name = "Matcha Latte", Price = 5.00m, CategoryId = 2, Category = teaCategory, ImagePath = "ms-appx:///Assets/matcha-latte.jpg" });
+        Products.Add(new Product { Id = 3, Name = "Blueberry Muffin", Price = 3.25m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/muffin.jpg" });
+        Products.Add(new Product { Id = 4, Name = "Croissant", Price = 2.75m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/croissant.jpg" });
     }
 
     private void RebuildFilter()
@@ -120,7 +126,7 @@ public partial class PosViewModel : ObservableObject
         FilteredProducts.Clear();
 
         var filtered = Products.Where(p =>
-            (ActiveCategory == "All" || p.Category == ActiveCategory) &&
+            (ActiveCategory == "All" || p.Category?.Name == ActiveCategory) &&
             (string.IsNullOrWhiteSpace(SearchQuery) || p.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
 
         foreach (var p in filtered)
@@ -135,12 +141,12 @@ public partial class PosViewModel : ObservableObject
     {
         foreach (var c in Categories)
             c.IsActive = (c == category);
-            
+
         ActiveCategory = category.Name;
     }
 
     [RelayCommand]
-    public void AddToCart(TempProduct product)
+    public void AddToCart(Product product)
     {
         var existing = Order.FirstOrDefault(i => i.Product.Id == product.Id && i.DrinkOptions == null);
 
@@ -153,7 +159,7 @@ public partial class PosViewModel : ObservableObject
             Order.Add(new OrderItem
             {
                 Product = product,
-                BasePrice = product.Price,
+                BasePrice = (double)product.Price,
                 Quantity = 1
             });
         }
@@ -164,8 +170,8 @@ public partial class PosViewModel : ObservableObject
     {
         // For customized items, we might want to check if the exact same customization exists
         // but for now let's just add it as a new item to be safe, or match exactly.
-        var existing = Order.FirstOrDefault(i => 
-            i.Product.Id == param.Product.Id && 
+        var existing = Order.FirstOrDefault(i =>
+            i.Product.Id == param.Product.Id &&
             AreOptionsEqual(i.DrinkOptions, param.Options));
 
         if (existing != null)
@@ -177,7 +183,7 @@ public partial class PosViewModel : ObservableObject
             Order.Add(new OrderItem
             {
                 Product = param.Product,
-                BasePrice = param.Product.Price, // In a real app, calculate based on options
+                BasePrice = (double)param.Product.Price, // In a real app, calculate based on options
                 Quantity = param.Quantity,
                 DrinkOptions = param.Options
             });
@@ -210,7 +216,7 @@ public partial class PosViewModel : ObservableObject
         param.Item.Quantity += param.Delta;
         if (param.Item.Quantity <= 0)
             Order.Remove(param.Item);
-            
+
         PlaceOrderCommand.NotifyCanExecuteChanged();
     }
 
@@ -243,7 +249,7 @@ public partial class PosViewModel : ObservableObject
         PlaceOrderRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    public PosOrder? FinalizeOrder(PaymentMethod method, TempCustomer? customer = null)
+    public PosOrder? FinalizeOrder(PaymentMethod method, Customer? customer = null)
     {
         if (!Order.Any()) return null;
 

@@ -12,13 +12,13 @@ public sealed partial class PosPage : Page
     public PosPage()
     {
         InitializeComponent();
-        
+
         ViewModel.PlaceOrderRequested += async (s, e) =>
         {
             var orderId = $"ID-{DateTime.Now:Hmmss}";
             var paymentModal = new PaymentModal(ViewModel.Total, orderId);
             paymentModal.XamlRoot = this.XamlRoot;
-            
+
             bool isPaid = false;
             PaymentMethod selectedMethod = PaymentMethod.Cash;
 
@@ -27,7 +27,7 @@ public sealed partial class PosPage : Page
                 isPaid = true;
                 selectedMethod = method;
             };
-            
+
             await paymentModal.ShowAsync();
 
             if (isPaid)
@@ -35,18 +35,18 @@ public sealed partial class PosPage : Page
                 // After payment, prompt for membership/loyalty
                 var memberModal = new MembershipSelectionModal();
                 memberModal.XamlRoot = this.XamlRoot;
-                
-                TempCustomer? selectedCustomer = null;
-                memberModal.ViewModel.MemberSelected += (member) => 
+
+                Customer? selectedCustomer = null;
+                memberModal.ViewModel.MemberSelected += (member) =>
                 {
                     selectedCustomer = member;
                 };
 
                 await memberModal.ShowAsync();
-                
+
                 // Finalize the order with payment method and member info
                 var finalizedOrder = ViewModel.FinalizeOrder(selectedMethod, selectedCustomer);
-                
+
                 if (finalizedOrder != null)
                 {
                     var receiptModal = new ReceiptModal(finalizedOrder);
@@ -60,7 +60,7 @@ public sealed partial class PosPage : Page
     private async void ProductCard_Click(object sender, RoutedEventArgs e)
     {
         var button = (Button)sender;
-        if (button.DataContext is not TempProduct selectedProduct) return;
+        if (button.DataContext is not Product selectedProduct) return;
 
         if (!selectedProduct.HasCustomization)
         {

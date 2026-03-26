@@ -33,14 +33,6 @@ public enum OrderStatus
     Refunded
 }
 
-public enum LoyaltyTier
-{
-    Regular,
-    Silver,
-    Gold,
-    VIP
-}
-
 public partial class DrinkOptions : ObservableObject
 {
     [ObservableProperty]
@@ -60,7 +52,7 @@ public partial class DrinkOptions : ObservableObject
 
 public partial class OrderItem : ObservableObject
 {
-    public TempProduct Product { get; set; } = null!;
+    public Product Product { get; set; } = null!;
 
     public double BasePrice { get; set; }
 
@@ -124,7 +116,7 @@ public class UpdateQtyParams
 
 public class AddCustomizedParams
 {
-    public TempProduct Product { get; set; } = null!;
+    public Product Product { get; set; } = null!;
     public DrinkOptions Options { get; set; } = null!;
     public int Quantity { get; set; }
 }

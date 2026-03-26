@@ -9,7 +9,7 @@ namespace MyShop.ViewModels;
 
 public partial class MembershipViewModel : ObservableObject
 {
-    private readonly ObservableCollection<TempCustomer> _allCustomers = new();
+    private readonly ObservableCollection<Customer> _allCustomers = new();
 
     [ObservableProperty]
     private string _searchQuery = "";
@@ -23,9 +23,9 @@ public partial class MembershipViewModel : ObservableObject
     [ObservableProperty]
     private string _newPhone = "";
 
-    public ObservableCollection<TempCustomer> FilteredCustomers { get; } = new();
+    public ObservableCollection<Customer> FilteredCustomers { get; } = new();
 
-    public event Action<TempCustomer?>? MemberSelected;
+    public event Action<Customer?>? MemberSelected;
 
     public MembershipViewModel()
     {
@@ -42,12 +42,12 @@ public partial class MembershipViewModel : ObservableObject
 
     private void LoadMockCustomers()
     {
-        _allCustomers.Add(new TempCustomer { Id = 1, Name = "Nguyen Van A", Phone = "0901234567", Points = 150 });
-        _allCustomers.Add(new TempCustomer { Id = 2, Name = "Tran Thi B", Phone = "0912345678", Points = 320 });
+        _allCustomers.Add(new Customer { Id = 1, Name = "Nguyen Van A", Phone = "0901234567", Points = 150 });
+        _allCustomers.Add(new Customer { Id = 2, Name = "Tran Thi B", Phone = "0912345678", Points = 320 });
     }
 
     [RelayCommand]
-    private void SelectMember(TempCustomer? customer)
+    private void SelectMember(Customer? customer)
     {
         MemberSelected?.Invoke(customer);
     }
@@ -56,13 +56,13 @@ public partial class MembershipViewModel : ObservableObject
     private void Register()
     {
         if (string.IsNullOrEmpty(NewName) || string.IsNullOrEmpty(NewPhone)) return;
-        
-        var newCust = new TempCustomer 
-        { 
-            Id = (int)DateTime.Now.Ticks, 
-            Name = NewName, 
-            Phone = NewPhone, 
-            Points = 0 
+
+        var newCust = new Customer
+        {
+            Id = (int)DateTime.Now.Ticks,
+            Name = NewName,
+            Phone = NewPhone,
+            Points = 0
         };
         MemberSelected?.Invoke(newCust);
     }
@@ -72,8 +72,8 @@ public partial class MembershipViewModel : ObservableObject
         FilteredCustomers.Clear();
         if (value.Length < 2) return;
 
-        var filtered = _allCustomers.Where(c => 
-            (c.Name != null && c.Name.Contains(value, StringComparison.OrdinalIgnoreCase)) || 
+        var filtered = _allCustomers.Where(c =>
+            (c.Name != null && c.Name.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
             (c.Phone != null && c.Phone.Contains(value)));
 
         foreach (var c in filtered) FilteredCustomers.Add(c);

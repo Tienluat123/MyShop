@@ -3,6 +3,9 @@ namespace MyShop.Models;
 public class Category
 {
     public int Id { get; set; }
-    public string? Name { get; set; }
-    // Cứ tạm để rỗng vầy cho hết lỗi, mốt Văn Minh vào code tiếp
+    public string Name { get; set; } = string.Empty;
+    public string? IconGlyph { get; set; }
+    
+    // Navigation properties
+    public ICollection<Product> Products { get; set; } = new List<Product>();
 }

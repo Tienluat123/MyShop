@@ -8,7 +8,7 @@ public sealed partial class ProductCustomizationModal : ContentDialog
 {
     public ProductCustomizationViewModel ViewModel;
 
-    public ProductCustomizationModal(TempProduct product, OrderItem? existingItem = null)
+    public ProductCustomizationModal(Product product, OrderItem? existingItem = null)
     {
         this.InitializeComponent();
         ViewModel = new ProductCustomizationViewModel(product, existingItem);
@@ -17,7 +17,7 @@ public sealed partial class ProductCustomizationModal : ContentDialog
         // Clear default title as we use custom header
         Title = "";
 
-        if (product.Category != "Coffee" && product.Category != "Tea")
+        if (product.Category?.Name != "Coffee" && product.Category?.Name != "Tea")
         {
             BeverageOptions.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
         }

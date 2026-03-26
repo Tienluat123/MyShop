@@ -35,9 +35,13 @@ public partial class OrderManagementViewModel : ObservableObject
 
     private void LoadSampleData()
     {
-        var coffee = new TempProduct { Name = "Caramel Macchiato", Price = 5.50, Category = "Coffee" };
-        var muffin = new TempProduct { Name = "Blueberry Muffin", Price = 3.25, Category = "Pastries" };
-        var tea = new TempProduct { Name = "Green Tea", Price = 4.00, Category = "Tea" };
+        var coffeeCategory = new Category { Id = 1, Name = "Coffee", IconGlyph = "☕" };
+        var pastriesCategory = new Category { Id = 3, Name = "Pastries", IconGlyph = "🥐" };
+        var teaCategory = new Category { Id = 2, Name = "Tea", IconGlyph = "🍵" };
+
+        var coffee = new Product { Id = 1, Name = "Caramel Macchiato", Price = 5.50m, CategoryId = 1, Category = coffeeCategory };
+        var muffin = new Product { Id = 3, Name = "Blueberry Muffin", Price = 3.25m, CategoryId = 3, Category = pastriesCategory };
+        var tea = new Product { Id = 2, Name = "Green Tea", Price = 4.00m, CategoryId = 2, Category = teaCategory };
 
         _allOrders.Add(new PosOrder
         {
@@ -55,7 +59,7 @@ public partial class OrderManagementViewModel : ObservableObject
             Status = OrderStatus.Preparing,
             Type = "Takeaway",
             CreatedAt = DateTime.Now.AddMinutes(-12),
-            Items = { 
+            Items = {
                 new OrderItem { Product = tea, Quantity = 1, BasePrice = 4.00 },
                 new OrderItem { Product = muffin, Quantity = 1, BasePrice = 3.25 }
             }
@@ -84,7 +88,7 @@ public partial class OrderManagementViewModel : ObservableObject
         if (order.Status == OrderStatus.Pending) order.Status = OrderStatus.Preparing;
         else if (order.Status == OrderStatus.Preparing) order.Status = OrderStatus.Ready;
         else if (order.Status == OrderStatus.Ready) order.Status = OrderStatus.Completed;
-        
+
         UpdateDisplayOrders();
     }
 
@@ -118,12 +122,12 @@ public partial class OrderManagementViewModel : ObservableObject
     private void UpdateDisplayOrders()
     {
         var activeStatuses = new[] { OrderStatus.Pending, OrderStatus.Preparing, OrderStatus.Ready };
-        
+
         ActiveCount = _allOrders.Count(o => activeStatuses.Contains(o.Status));
         HistoryCount = _allOrders.Count(o => !activeStatuses.Contains(o.Status));
 
         DisplayOrders.Clear();
-        var filtered = Filter == "Active" 
+        var filtered = Filter == "Active"
             ? _allOrders.Where(o => activeStatuses.Contains(o.Status))
             : _allOrders.Where(o => !activeStatuses.Contains(o.Status));
 

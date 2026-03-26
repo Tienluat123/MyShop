@@ -10,7 +10,7 @@ namespace MyShop.ViewModels;
 public partial class ProductCustomizationViewModel : ObservableObject
 {
     [ObservableProperty]
-    private TempProduct _product;
+    private Product _product;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TotalPrice))]
@@ -47,7 +47,7 @@ public partial class ProductCustomizationViewModel : ObservableObject
 
     public event Action<DrinkOptions, int>? DrinkConfirmed;
 
-    public ProductCustomizationViewModel(TempProduct product, OrderItem? existingItem = null)
+    public ProductCustomizationViewModel(Product product, OrderItem? existingItem = null)
     {
         Product = product;
         if (existingItem != null)
@@ -72,12 +72,12 @@ public partial class ProductCustomizationViewModel : ObservableObject
 
     private double CalculateBasePrice()
     {
-        double price = Product.Price;
-        if (Product.Category == "Coffee" || Product.Category == "Tea")
+        double price = (double)Product.Price;
+        if (Product.Category?.Name == "Coffee" || Product.Category?.Name == "Tea")
         {
             if (Size == "M") price += 0.5;
             else if (Size == "L") price += 1.0;
-            
+
             // Add-ons are $0.75 each in the web version
             price += AddOns.Count * 0.75;
         }
