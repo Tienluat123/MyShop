@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="using:MyShop.Views.Controls"
-    PrimaryButtonText="{Binding SubmitButtonText}"
     DefaultButton="Primary"
     CornerRadius="{StaticResource RadiusMedium}"
     Background="{StaticResource SurfaceBackground}">
@@ -72,9 +71,9 @@
             </StackPanel>
         </ScrollViewer>
         <ui:ModalFooter Grid.Row="2"
-                        CancelClicked="CancelButton_Click"
-                        CancelText="{Binding CancelButtonText}"
+                        CancelText="Discard"
                         SubmitText="{Binding SubmitButtonText}"
+                        CancelClicked="CancelButton_Click"
                         SubmitClicked="SaveButton_Click"/>
     </Grid>
 </ContentDialog>

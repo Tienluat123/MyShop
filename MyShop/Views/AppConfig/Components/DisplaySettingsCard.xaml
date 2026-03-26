@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="MyShop.Views.AppConfig.Components.DisplaySettingsCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <!-- ===================== CARD CONTAINER ===================== -->
+        <Style x:Key="CardStyle"
+                TargetType="Border">
+            <Setter Property="Background"
+                    Value="White"/>
+            <Setter Property="CornerRadius"
+                    Value="12"/>
+            <Setter Property="Padding"
+                    Value="28"/>
+            <Setter Property="BorderBrush"
+                    Value="#E5E7EB"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+        </Style>
+
+        <!-- ===================== SECTION HEADER ===================== -->
+        <Style x:Key="SectionTitleStyle"
+                TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="15"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="#1F2937"/>
+        </Style>
+
+        <Style x:Key="SectionDescStyle"
+                TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12"/>
+            <Setter Property="Foreground"
+                    Value="#6B7280"/>
+            <Setter Property="TextWrapping"
+                    Value="Wrap"/>
+        </Style>
+
+        <!-- ===================== LABEL ===================== -->
+        <Style x:Key="FieldLabelStyle"
+                TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="13"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="#374151"/>
+            <Setter Property="Margin"
+                    Value="0,0,0,6"/>
+        </Style>
+
+        <!-- ===================== COMBOBOX ===================== -->
+        <Style x:Key="ConfigComboStyle"
+                TargetType="ComboBox">
+            <Setter Property="Height"
+                    Value="42"/>
+            <Setter Property="CornerRadius"
+                    Value="8"/>
+            <Setter Property="Background"
+                    Value="#F9FAFB"/>
+            <Setter Property="BorderBrush"
+                    Value="#D1D5DB"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Padding"
+                    Value="12,0"/>
+            <Setter Property="FontSize"
+                    Value="13"/>
+            <Setter Property="Foreground"
+                    Value="#1F2937"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
+        </Style>
+
+        <!-- ===================== DIVIDER ===================== -->
+        <Style x:Key="DividerStyle"
+                TargetType="Border">
+            <Setter Property="BorderBrush"
+                    Value="#F3F4F6"/>
+            <Setter Property="BorderThickness"
+                    Value="0,0,0,1"/>
+            <Setter Property="Margin"
+                    Value="0,4,0,16"/>
+        </Style>
+
+        <!-- ===================== ROW SETTING ===================== -->
+        <Style x:Key="SettingRowStyle"
+                TargetType="Grid">
+            <Setter Property="Margin"
+                    Value="0,0,0,20"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource CardStyle}">
+        <StackPanel>
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal"
+                    Spacing="10"
+                    Margin="0,0,0,4">
+                <Border Width="28"
+                        Height="28"
+                        Background="#F0FDF4"
+                        CornerRadius="7">
+                    <FontIcon Glyph="&#xE7F4;"
+                            FontFamily="Segoe MDL2 Assets"
+                              Foreground="#22C55E"
+                            FontSize="14"
+                              HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="Display Settings"
+                        Style="{StaticResource SectionTitleStyle}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Text="Adjust interface and how data is presented."
+                       Style="{StaticResource SectionDescStyle}"
+                    Margin="0,0,0,20"/>
+            <Border Style="{StaticResource DividerStyle}"/>
+
+            <!-- Items Per Page -->
+            <Grid Style="{StaticResource SettingRowStyle}"
+                    Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="200"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="Items Per Page (Pagination)"
+                               Style="{StaticResource FieldLabelStyle}"
+                            Margin="0"/>
+                    <TextBlock Text="Number of products displayed on each list page."
+                               Style="{StaticResource SectionDescStyle}"/>
+                </StackPanel>
+                <ComboBox Grid.Column="1"
+                          Style="{StaticResource ConfigComboStyle}"
+                          SelectedIndex="1">
+                    <ComboBoxItem Content="5 items"/>
+                    <ComboBoxItem Content="10 items"/>
+                    <ComboBoxItem Content="20 items"/>
+                    <ComboBoxItem Content="50 items"/>
+                </ComboBox>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>
