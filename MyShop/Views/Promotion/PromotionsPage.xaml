@@ -2,246 +2,27 @@
     x:Class="MyShop.Views.Promotion.PromotionsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:vm="using:MyShop.ViewModels"
-    xmlns:controls="using:MyShop.Views.Controls"
-    mc:Ignorable="d"
-    Background="#F3F4F6">
+    xmlns:controls="using:MyShop.Views.Controls">
 
-    <Page.Resources>
-        <SolidColorBrush x:Key="AppOrange"
-                         Color="#D97706"/>
-
-        <Style x:Key="TableHeaderText"
-               TargetType="TextBlock">
-            <Setter Property="FontWeight"
-                    Value="Bold"/>
-            <Setter Property="FontSize"
-                    Value="11"/>
-            <Setter Property="Foreground"
-                    Value="#6B7280"/>
-            <Setter Property="VerticalAlignment"
-                    Value="Center"/>
-        </Style>
-
-        <Style x:Key="TableCellText"
-               TargetType="TextBlock">
-            <Setter Property="FontSize"
-                    Value="13"/>
-            <Setter Property="Foreground"
-                    Value="#1F2937"/>
-            <Setter Property="VerticalAlignment"
-                    Value="Center"/>
-            <Setter Property="TextTrimming"
-                    Value="CharacterEllipsis"/>
-        </Style>
-
-        <Style x:Key="ActionButtonStyle"
-               TargetType="Button">
-            <Setter Property="Background"
-                    Value="Transparent"/>
-            <Setter Property="BorderThickness"
-                    Value="0"/>
-            <Setter Property="Padding"
-                    Value="8"/>
-            <Setter Property="MinWidth"
-                    Value="32"/>
-        </Style>
-    </Page.Resources>
-
-    <Grid Padding="24"
-          RowSpacing="20">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <controls:PageHeaderControl Grid.Row="0"
-                                    Title="Promotions management"
-                                    Subtitle="Manage your promotions and discount campaigns"
-                                    Icon="&#xE8EC;"/>
-
-        <Grid Grid.Row="1"
-              ColumnSpacing="12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="400"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0"
-                    Content="+ Add a Promotion"
-                    Click="AddPromotion_Click"
-                    Background="{StaticResource AppOrange}"
-                    Foreground="White"
-                    Padding="20,10"
-                    CornerRadius="8"
-                    FontWeight="SemiBold"/>
-
-            <Grid Grid.Column="1">
-                <TextBox PlaceholderText="Search menu..."
-                         Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="36,8,12,8"
-                         CornerRadius="8"
-                         Background="White"
-                         BorderBrush="#E5E7EB"/>
-                <FontIcon Glyph="&#xE721;"
-                          FontSize="14"
-                          Foreground="#9CA3AF"
-                          HorizontalAlignment="Left"
-                          Margin="12,0,0,0"/>
-            </Grid>
-        </Grid>
-
-        <Border Grid.Row="2"
-                Background="White"
-                CornerRadius="12"
+        <!-- Shared Page Header -->
+        <Border Grid.Row="0"
+                Background="#FFFFFF"
                 BorderBrush="#E5E7EB"
-                BorderThickness="1"
-                Padding="16">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ItemsRepeater ItemsSource="{Binding PageItems}">
-                    <ItemsRepeater.Layout>
-                        <StackLayout Orientation="Vertical"
-                                Spacing="12"/>
-                    </ItemsRepeater.Layout>
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="vm:Promotion">
-                            <Border Background="White"
-                                    BorderBrush="#E5E7EB"
-                                    BorderThickness="1"
-                                    CornerRadius="10"
-                                    Padding="16">
-                                <Grid ColumnSpacing="16">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <!-- Promotion Code Badge -->
-                                    <Border Grid.Column="0"
-                                            Background="#FEF3C7"
-                                            CornerRadius="8"
-                                            Padding="12,8"
-                                            VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Code}"
-                                                   FontSize="12"
-                                                   FontWeight="Bold"
-                                                   Foreground="#92400E"/>
-                                    </Border>
-
-                                    <!-- Promotion Details -->
-                                    <StackPanel Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Spacing="6">
-                                        <StackPanel Orientation="Horizontal"
-                                                Spacing="12">
-                                            <TextBlock Text="{Binding TypeDisplay}"
-                                                       Style="{StaticResource BodyTextStyle}"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="#1F2937"/>
-                                            <Border Background="#DFE9F3"
-                                                    CornerRadius="6"
-                                                    Padding="8,4">
-                                                <TextBlock Text="{Binding ValueDisplay}"
-                                                           FontSize="12"
-                                                           FontWeight="Bold"
-                                                           Foreground="#1E40AF"/>
-                                            </Border>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal"
-                                                Spacing="16">
-                                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                                       Foreground="#6B7280">
-                                                <Run Text="Min: "/><Run Text="{Binding MinimumOrderDisplay}"/>
-                                            </TextBlock>
-                                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                                       Foreground="#6B7280">
-                                                <Run Text="Period: "/><Run Text="{Binding PeriodDisplay}"/>
-                                            </TextBlock>
-                                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                                       Foreground="#6B7280">
-                                                <Run Text="Target: "/><Run Text="{Binding TargetDisplay}"/>
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <!-- Status Toggle -->
-                                    <ToggleSwitch Grid.Column="2"
-                                                  IsOn="{Binding IsActive, Mode=TwoWay}"
-                                                  OnContent=""
-                                                  OffContent=""
-                                                  VerticalAlignment="Center"
-                                                  MinWidth="0"
-                                                  Toggled="PromotionStatus_Toggled"/>
-
-                                    <!-- Actions -->
-                                    <StackPanel Grid.Column="3"
-                                                Orientation="Horizontal"
-                                                Spacing="8"
-                                                VerticalAlignment="Center">
-                                        <Button Background="Transparent"
-                                                BorderThickness="0"
-                                                Padding="8"
-                                                Click="EditPromotion_Click">
-                                            <FontIcon Glyph="&#xE70F;"
-                                                      FontSize="16"
-                                                      Foreground="#6B7280"/>
-                                        </Button>
-                                        <Button Background="Transparent"
-                                                BorderThickness="0"
-                                                Padding="8"
-                                                Click="DeletePromotion_Click">
-                                            <FontIcon Glyph="&#xE74D;"
-                                                      FontSize="16"
-                                                      Foreground="#EF4444"/>
-                                        </Button>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
+                BorderThickness="0,0,0,1"
+                Padding="18,14">
+            <controls:PageHeaderControl Title="Promotions Management"
+                                        Subtitle="Manage your promotions and discount campaigns"
+                                        Icon="&#xE8EC;"/>
         </Border>
 
-        <Grid Grid.Row="3">
-            <TextBlock HorizontalAlignment="Left"
-                       VerticalAlignment="Center"
-                       Foreground="#6B7280"
-                       Text="{Binding SummaryText}"/>
-
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        Spacing="8">
-                <Button Content="&#xE76B;"
-                        FontFamily="Segoe MDL2 Assets"
-                        Command="{Binding PreviousPageCommand}"
-                        Background="White"
-                        BorderBrush="#E5E7EB"/>
-
-                <Border Background="{StaticResource AppOrange}"
-                        CornerRadius="4"
-                        Width="32"
-                        Height="32">
-                    <TextBlock Text="{Binding CurrentPage}"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               Foreground="White"
-                               FontWeight="Bold"/>
-                </Border>
-
-                <Button Content="&#xE76C;"
-                        FontFamily="Segoe MDL2 Assets"
-                        Command="{Binding NextPageCommand}"
-                        Background="White"
-                        BorderBrush="#E5E7EB"/>
-            </StackPanel>
-        </Grid>
+        <!-- Dynamic Content Area -->
+        <Frame x:Name="PromotionContentFrame"
+               Grid.Row="1"/>
     </Grid>
 </Page>

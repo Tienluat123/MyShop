@@ -2,246 +2,251 @@
     x:Class="MyShop.Views.CustomerManagement.Components.CustomerManagementView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:MyShop.ViewModels"
     xmlns:controls="using:MyShop.Views.Controls"
-    mc:Ignorable="d"
+    x:Name="PageRoot"
     Background="#F3F4F6">
 
     <Grid>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <Border Background="{StaticResource SurfaceBackground}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="0,0,0,1"
-                    Padding="28,14">
-                <controls:PageHeaderControl Title="Customer Management"
-                                            Subtitle="View and manage your customer database"
-                                            Icon="&#xE77B;">
-                    <controls:PageHeaderControl.Actions>
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="8">
-                            <Button Command="{Binding MapsToRulesCommand}"
-                                    Background="#FFFFFF"
-                                    BorderBrush="#E5E7EB"
-                                    CornerRadius="10"
-                                    Padding="14,8">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="6">
-                                    <FontIcon Glyph="&#xE713;"
-                                              Style="{StaticResource IconBodyStyle}"/>
-                                    <TextBlock Text="Rules"
-                                               Style="{StaticResource BodyTextStyle}"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Click="AddCustomerButton_Click"
-                                    Background="{StaticResource BrandPrimary}"
-                                    Foreground="White"
-                                    CornerRadius="10"
-                                    Padding="14,8">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="6">
-                                    <FontIcon Glyph="&#xE710;"/>
-                                    <TextBlock Text="Add Customer"
-                                               FontWeight="Bold"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-                    </controls:PageHeaderControl.Actions>
-                </controls:PageHeaderControl>
-            </Border>
-
-            <ScrollViewer Grid.Row="1"
-                          VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="28,24,28,24"
-                            Spacing="16">
-                    <Grid Background="#FFFFFF"
-                          CornerRadius="14"
-                          Padding="14"
-                          BorderBrush="#E5E7EB"
-                          BorderThickness="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Grid Grid.Column="0"
-                              Background="#F8FAFC"
-                              CornerRadius="10"
-                              VerticalAlignment="Center">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="16,12,16,20"
+                        Spacing="16">
+                
+                <Border Background="#FFFFFF"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16">
+                    <StackPanel Spacing="16">
+                        
+                        <!-- Actions Section -->
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="16"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE721;"
-                                      Foreground="#94A3B8"
-                                      Margin="12,0,8,0"
-                                      VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="1"
-                                     BorderThickness="0"
-                                     Background="Transparent"
-                                     PlaceholderText="Search by name or phone number..."
-                                     Text="{Binding SearchText, Mode=TwoWay}"
-                                     VerticalContentAlignment="Center"
-                                     Padding="0,0,0,0"/>
+
+                            <Button Grid.Column="0"
+                                    Command="{Binding MapsToAddCommand}"
+                                    Background="#BB4D00"
+                                    BorderBrush="#BB4D00"
+                                    Foreground="White"
+                                    CornerRadius="12"
+                                    Padding="14,8">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="8">
+                                    <FontIcon Glyph="&#xE710;"/>
+                                    <TextBlock Text="Add Customer"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Grid Grid.Column="2">
+                                <TextBox Padding="40,10,10,10"
+                                         Background="#F8FAFC"
+                                         BorderBrush="#E5E7EB"
+                                         CornerRadius="12"
+                                         PlaceholderText="Search by name or phone..."
+                                         Text="{Binding SearchText, Mode=TwoWay}"/>
+                                <FontIcon Glyph="&#xE721;"
+                                          Foreground="#94A3B8"
+                                          Margin="14,0,0,0"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"/>
+                            </Grid>
                         </Grid>
 
-                        <Button Grid.Column="2"
-                                Command="{Binding SearchCommand}"
-                                Background="#FFFFFF"
-                                BorderBrush="#E2E8F0"
-                                CornerRadius="10"
-                                Padding="14,8">
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="6">
-                                <FontIcon Glyph="&#xE71C;"
-                                          Foreground="#64748B"/>
-                                <TextBlock Text="Filter"
-                                           Foreground="#475569"
-                                           FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
+                        <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
 
-                    <Border Background="#FFFFFF"
-                            CornerRadius="14"
-                            BorderBrush="#E5E7EB"
-                            BorderThickness="1"
-                            Padding="16">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <ItemsRepeater ItemsSource="{Binding Customers}">
-                                <ItemsRepeater.Layout>
-                                    <StackLayout Orientation="Vertical"
-                                                 Spacing="12"/>
-                                </ItemsRepeater.Layout>
-                                <ItemsRepeater.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Background="White"
-                                                BorderBrush="#E5E7EB"
-                                                BorderThickness="1"
-                                                CornerRadius="10"
-                                                Padding="16">
-                                            <Grid ColumnSpacing="16">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                        <!-- Customer List -->
+                        <ItemsRepeater ItemsSource="{Binding DisplayCustomers}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Vertical"
+                                             Spacing="12"/>
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:CustomerListItem">
+                                    <Border Background="White"
+                                            BorderBrush="#E5E7EB"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="16">
+                                        <Grid ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
 
-                                                <!-- Avatar -->
-                                                <Border Grid.Column="0"
-                                                        Width="48"
-                                                        Height="48"
-                                                        CornerRadius="24"
-                                                        Background="#F1F5F9"
-                                                        VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Initials}"
-                                                               HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center"
-                                                               Foreground="#BB4D00"
-                                                               FontWeight="Bold"
-                                                               FontSize="14"/>
-                                                </Border>
+                                            <!-- Avatar -->
+                                            <Border Grid.Column="0"
+                                                    Width="48"
+                                                    Height="48"
+                                                    CornerRadius="24"
+                                                    Background="#F1F5F9"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind Initials}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#BB4D00"
+                                                           FontWeight="Bold"
+                                                           FontSize="14"/>
+                                            </Border>
 
-                                                <!-- Customer Details -->
-                                                <StackPanel Grid.Column="1"
-                                                            VerticalAlignment="Center"
+                                            <!-- Customer Details -->
+                                            <StackPanel Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        Spacing="4">
+                                                <StackPanel Orientation="Horizontal"
+                                                            Spacing="12">
+                                                    <TextBlock Text="{x:Bind Name}"
+                                                               Style="{StaticResource BodyTextStyle}"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#1E293B"/>
+                                                    <Border Background="#FEF3C7"
+                                                            CornerRadius="6"
+                                                            Padding="8,4">
+                                                        <TextBlock Text="{x:Bind Tier}"
+                                                                   FontSize="12"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="#92400E"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal"
+                                                            Spacing="16">
+                                                    <TextBlock Style="{StaticResource CaptionTextStyle}"
+                                                               Foreground="#6B7280">
+                                                        <Run Text="ID: "/><Run Text="{x:Bind Code}"/>
+                                                    </TextBlock>
+                                                    <TextBlock Style="{StaticResource CaptionTextStyle}"
+                                                               Foreground="#6B7280">
+                                                        <Run Text="Phone: "/><Run Text="{x:Bind Phone}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <!-- Stats -->
+                                            <StackPanel Grid.Column="2"
+                                                        VerticalAlignment="Center"
+                                                        Spacing="2">
+                                                <StackPanel Orientation="Horizontal"
                                                             Spacing="4">
-                                                    <StackPanel Orientation="Horizontal"
-                                                                Spacing="12">
-                                                        <TextBlock Text="{Binding Name}"
-                                                                   Style="{StaticResource BodyTextStyle}"
-                                                                   FontWeight="SemiBold"
-                                                                   Foreground="#1E293B"/>
-                                                        <Border Background="#FEF3C7"
-                                                                CornerRadius="6"
-                                                                Padding="8,4">
-                                                            <TextBlock Text="{Binding Tier}"
-                                                                       FontSize="12"
-                                                                       FontWeight="Bold"
-                                                                       Foreground="#92400E"/>
-                                                        </Border>
-                                                    </StackPanel>
-                                                    <StackPanel Orientation="Horizontal"
-                                                                Spacing="16">
-                                                        <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                                                   Foreground="#6B7280">
-                                                            <Run Text="ID: "/><Run Text="{Binding Code}"/>
-                                                        </TextBlock>
-                                                        <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                                                   Foreground="#6B7280">
-                                                            <Run Text="Phone: "/><Run Text="{Binding Phone}"/>
-                                                        </TextBlock>
-                                                        <StackPanel Orientation="Horizontal"
-                                                                    Spacing="4"
-                                                                    VerticalAlignment="Center">
-                                                            <FontIcon Glyph="&#xE734;"
-                                                                      Foreground="#F59E0B"
-                                                                      FontSize="12"/>
-                                                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                                                       Foreground="#6B7280"
-                                                                       Text="{Binding Points}"/>
-                                                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                                                       Foreground="#6B7280"
-                                                                       Text="pts"/>
-                                                        </StackPanel>
-                                                        <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                                                   Foreground="#6B7280">
-                                                            <Run Text="{Binding Visits}"/> <Run Text="visits"/>
-                                                        </TextBlock>
-                                                    </StackPanel>
+                                                    <FontIcon Glyph="&#xE734;"
+                                                              Foreground="#F59E0B"
+                                                              FontSize="12"/>
+                                                    <TextBlock Text="{x:Bind Points}"
+                                                               Style="{StaticResource BodyTextStyle}"
+                                                               FontWeight="Bold"/>
+                                                    <TextBlock Text="pts"
+                                                               Style="{StaticResource CaptionTextStyle}"/>
                                                 </StackPanel>
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}"
+                                                           Foreground="#6B7280">
+                                                    <Run Text="{x:Bind Visits}"/> <Run Text="visits"/>
+                                                </TextBlock>
+                                            </StackPanel>
 
-                                                <!-- Spacer -->
-                                                <Border Grid.Column="2"
-                                                        Width="0"/>
+                                            <!-- Actions -->
+                                            <StackPanel Grid.Column="3"
+                                                        Orientation="Horizontal"
+                                                        Spacing="8"
+                                                        VerticalAlignment="Center">
+                                                <Button Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="8"
+                                                        Command="{Binding DataContext.MapsToProfileCommand, ElementName=PageRoot}"
+                                                        CommandParameter="{Binding}">
+                                                    <FontIcon Glyph="&#xE72A;"
+                                                              FontSize="16"
+                                                              Foreground="#6B7280"/>
+                                                </Button>
+                                                <Button Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="8"
+                                                        Command="{Binding DataContext.EditCustomerCommand, ElementName=PageRoot}"
+                                                        CommandParameter="{Binding}">
+                                                    <FontIcon Glyph="&#xE70F;"
+                                                              FontSize="16"
+                                                              Foreground="#6B7280"/>
+                                                </Button>
+                                                <Button Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="8">
+                                                    <FontIcon Glyph="&#xE74D;"
+                                                              FontSize="16"
+                                                              Foreground="#EF4444"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
 
-                                                <!-- Actions -->
-                                                <StackPanel Grid.Column="3"
-                                                            Orientation="Horizontal"
-                                                            Spacing="8"
-                                                            VerticalAlignment="Center">
-                                                    <Button Background="Transparent"
-                                                            BorderThickness="0"
-                                                            Padding="8"
-                                                            Click="OpenProfileButton_Click"
-                                                            Tag="{Binding}">
-                                                        <FontIcon Glyph="&#xE72A;"
-                                                                  FontSize="16"
-                                                                  Foreground="#6B7280"/>
-                                                    </Button>
-                                                    <Button Background="Transparent"
-                                                            BorderThickness="0"
-                                                            Padding="8"
-                                                            Click="EditButton_Click"
-                                                            Tag="{Binding}">
-                                                        <FontIcon Glyph="&#xE70F;"
-                                                                  FontSize="16"
-                                                                  Foreground="#6B7280"/>
-                                                    </Button>
-                                                    <Button Background="Transparent"
-                                                            BorderThickness="0"
-                                                            Padding="8">
-                                                        <FontIcon Glyph="&#xE74D;"
-                                                                  FontSize="16"
-                                                                  Foreground="#EF4444"/>
-                                                    </Button>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsRepeater.ItemTemplate>
-                            </ItemsRepeater>
-                        </ScrollViewer>
-                    </Border>
-                </StackPanel>
-            </ScrollViewer>
-        </Grid>
+                        <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
+
+                        <!-- Paging Section -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="{Binding PagingSummary}"
+                                       Foreground="#64748B"
+                                       VerticalAlignment="Center"/>
+
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                <Button Command="{Binding PreviousPageCommand}"
+                                        Background="#FFFFFF"
+                                        BorderBrush="#E5E7EB"
+                                        CornerRadius="8"
+                                        Width="32"
+                                        Height="32">
+                                    <FontIcon Glyph="&#xE76B;"
+                                              Foreground="#94A3B8"
+                                              FontSize="12"/>
+                                </Button>
+                                <ItemsControl ItemsSource="{Binding PageNumbers}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"
+                                                        Spacing="6"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:Int32">
+                                            <Button Command="{Binding DataContext.GoToPageCommand, ElementName=PageRoot}"
+                                                    CommandParameter="{Binding}"
+                                                    Width="32"
+                                                    Height="32"
+                                                    CornerRadius="8"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="#E5E7EB"
+                                                    Foreground="#4B5563"
+                                                    Content="{Binding}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Command="{Binding NextPageCommand}"
+                                        Background="#FFFFFF"
+                                        BorderBrush="#E5E7EB"
+                                        CornerRadius="8"
+                                        Width="32"
+                                        Height="32">
+                                    <FontIcon Glyph="&#xE76C;"
+                                              Foreground="#94A3B8"
+                                              FontSize="12"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

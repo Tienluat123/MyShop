@@ -24,12 +24,18 @@ public sealed partial class CustomerPage : Page
     private void NavigateToManagement()
     {
         var viewModel = new CustomerManagementViewModel(
-            onAdd: () => NavigateToForm(isEditMode: false),
+            onAdd: () => ShowFormDialog(isEditMode: false),
             onRules: NavigateToRules,
             onProfile: NavigateToProfile,
-            onEdit: customer => NavigateToForm(isEditMode: true, customer));
+            onEdit: customer => ShowFormDialog(isEditMode: true, customer));
 
         CustomerContentFrame.Navigate(typeof(CustomerManagementView), viewModel);
+    }
+
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    private void LoyaltyRules_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        NavigateToRules();
     }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
@@ -47,9 +53,13 @@ public sealed partial class CustomerPage : Page
     }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    private void NavigateToForm(bool isEditMode, CustomerListItem? customer = null)
+    private async void ShowFormDialog(bool isEditMode, CustomerListItem? customer = null)
     {
-        var viewModel = new CustomerFormViewModel(isEditMode, customer, onCancel: NavigateToManagement);
-        CustomerContentFrame.Navigate(typeof(CustomerFormView), viewModel);
+        var viewModel = new CustomerFormViewModel(isEditMode, customer, onCancel: () => { });
+        var dialog = new CustomerFormView(viewModel)
+        {
+            XamlRoot = this.XamlRoot
+        };
+        await dialog.ShowAsync();
     }
 }

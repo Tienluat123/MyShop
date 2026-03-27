@@ -2,7 +2,31 @@
     x:Class="MyShop.Views.ProductManagement.ManageProductPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:MyShop.Views.Controls"
+    mc:Ignorable="d"
     Background="#F3F4F6">
 
-    <Frame x:Name="ProductContentFrame" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Shared Page Header -->
+        <Border Grid.Row="0"
+                Background="#FFFFFF"
+                BorderBrush="#E5E7EB"
+                BorderThickness="0,0,0,1"
+                Padding="18,14">
+            <controls:PageHeaderControl Title="Products Management"
+                                        Subtitle="System product catalog and inventory"
+                                        Icon="&#xE7B8;"/>
+        </Border>
+
+        <!-- Dynamic Content Area -->
+        <Frame x:Name="ProductContentFrame" 
+               Grid.Row="1" />
+    </Grid>
 </Page>

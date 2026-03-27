@@ -2,7 +2,48 @@
     x:Class="MyShop.Views.CustomerManagement.CustomerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Background="{StaticResource BgPage}">
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:MyShop.Views.Controls"
+    mc:Ignorable="d"
+    Background="#F3F4F6">
 
-    <Frame x:Name="CustomerContentFrame"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Shared Page Header -->
+        <Border Grid.Row="0"
+                Background="#FFFFFF"
+                BorderBrush="#E5E7EB"
+                BorderThickness="0,0,0,1"
+                Padding="18,14">
+            <controls:PageHeaderControl Title="Customer Management"
+                                        Subtitle="System customer database and loyalty program"
+                                        Icon="&#xE77B;">
+                <controls:PageHeaderControl.Actions>
+                    <Button Click="LoyaltyRules_Click"
+                            Background="#FFFFFF"
+                            BorderBrush="#D97706"
+                            Foreground="#D97706"
+                            CornerRadius="10"
+                            Padding="12,6">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <FontIcon Glyph="&#xE713;"
+                                      FontSize="14"/>
+                            <TextBlock Text="Loyalty Rules"
+                                       FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                </controls:PageHeaderControl.Actions>
+            </controls:PageHeaderControl>
+        </Border>
+
+        <!-- Dynamic Content Area -->
+        <Frame x:Name="CustomerContentFrame" 
+               Grid.Row="1" />
+    </Grid>
 </Page>
