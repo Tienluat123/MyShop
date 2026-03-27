@@ -166,6 +166,51 @@
                                FontSize="{StaticResource FontCaption}"
                                Foreground="{StaticResource TextPrimary}"
                                FontWeight="{StaticResource FontWeightBold}"/>
+                    <Button.Flyout>
+                        <Flyout>
+                            <StackPanel Spacing="16"
+                                        Width="260">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="12">
+                                    <PersonPicture Initials="HQ"
+                                                   Width="42"
+                                                   Height="42"/>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Lê Hoàng Quân"
+                                                   FontWeight="{StaticResource FontWeightBold}"
+                                                   FontSize="{StaticResource FontSubtitle}"
+                                                   Foreground="{StaticResource TextPrimary}"/>
+                                        <TextBlock Text="Mã NV: NV003"
+                                                   FontSize="{StaticResource FontCaption}"
+                                                   Foreground="{StaticResource TextSecondary}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <Border BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0,0,0,1"/>
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Ghi chú Ca Sáng - Thứ 2:"
+                                               FontWeight="{StaticResource FontWeightSemiBold}"
+                                               FontSize="{StaticResource FontBody}"
+                                               Foreground="{StaticResource BrandPrimary}"/>
+                                    <TextBox PlaceholderText="VD: Sắp xếp kho..."
+                                             Height="{StaticResource Size70}"
+                                             TextWrapping="Wrap"
+                                             AcceptsReturn="True"
+                                             CornerRadius="{StaticResource RadiusSmall}"
+                                             Foreground="{StaticResource TextPrimary}"/>
+                                </StackPanel>
+                                <Button Content="Lưu thông tin"
+                                        Background="{StaticResource BrandPrimary}"
+                                        Foreground="{StaticResource BrandPrimaryForeground}"
+                                        HorizontalAlignment="Right"
+                                        CornerRadius="{StaticResource RadiusSmall}"
+                                        Padding="{StaticResource SpaceLarge_Small}"
+                                        FontWeight="{StaticResource FontWeightSemiBold}"
+                                        BorderThickness="0"
+                                        Style="{StaticResource AppPrimaryButtonStyle}"/>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
                 </Button>
             </StackPanel>
 
