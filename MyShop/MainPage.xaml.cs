@@ -3,60 +3,65 @@ using MyShop.Views.AppConfig;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml.Controls;
+using MyShop.ViewModels;
+using MyShop.Views.CustomerManagement;
+using MyShop.Views.Pos;
+using MyShop.Views.ProductManagement;
+using MyShop.Views.Promotion;
+using MyShop.Views.StaffManagement;
 
 namespace MyShop.Views;
 
 public sealed partial class MainPage : Page
 {
+    private MainPageViewModel? _viewModel;
+
     public MainPage()
     {
         this.InitializeComponent();
 
-        // Set trang mặc định lúc mới mở app là Khach hang
-        NavView.SelectedItem = NavView.MenuItems[4];
-        ContentFrame.Navigate(typeof(CustomerManagement.CustomerPage));
+        // ✅ Set ViewModel as DataContext
+        _viewModel = new MainPageViewModel();
+        this.DataContext = _viewModel;
+
+        // Set default page
+        if (_viewModel.CurrentPageType != null)
+        {
+            ContentFrame.Navigate(_viewModel.CurrentPageType);
+        }
     }
 
-    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    /// <summary>
+    /// Handle navigation khi user click menu item
+    /// </summary>
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        if (args.InvokedItemContainer != null && args.InvokedItemContainer.Tag != null)
+        if (args.InvokedItemContainer?.Tag is not string tag)
+            return;
+
+        // Map tag to page type
+        Type? pageType = tag switch
         {
-            string navItemTag = args.InvokedItemContainer.Tag.ToString();
-            Type pageType = null;
+            "DashboardPage" => typeof(DashboardPage),
+            "PosPage" => typeof(PosPage),
+            "ManageProductPage" => typeof(ManageProductPage),
+            "CustomersPage" => typeof(CustomerPage),
+            "PromotionsPage" => typeof(PromotionsPage),
+            "StaffSchedulePage" => typeof(StaffSchedulePage),
+            "AppConfigPage" => typeof(AppConfigPage),
+            _ => null
+        };
 
-            switch (navItemTag)
+        if (pageType != null)
+        {
+            // Update ViewModel current page
+            if (_viewModel != null)
             {
-                case "DashboardPage":
-                    pageType = typeof(DashboardPage);
-                    break;
-                case "PosPage":
-                    pageType = typeof(Pos.PosPage);
-                    break;
-                case "ManageProductPage":
-                    pageType = typeof(ProductManagement.ManageProductPage);
-                    break;
-                case "CustomersPage":
-                    pageType = typeof(CustomerManagement.CustomerPage);
-                    break;
-                case "PromotionsPage":
-                    pageType = typeof(Promotion.PromotionsPage);
-                    break;
-                case "StaffSchedulePage":
-                    pageType = typeof(StaffManagement.StaffSchedulePage);
-                    break;
-                case "AppConfigPage":
-                    pageType = typeof(AppConfigPage);
-                    break;
-                default:
-                    pageType = typeof(DashboardPage);
-                    break;
+                _viewModel.CurrentPageType = pageType;
             }
 
-            if (pageType != null && ContentFrame.CurrentSourcePageType != pageType)
-            {
-                ContentFrame.Navigate(pageType);
-            }
+            // Navigate frame
+            ContentFrame.Navigate(pageType);
         }
     }
 }

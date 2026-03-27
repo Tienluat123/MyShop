@@ -4,9 +4,9 @@ using MyShop.ViewModels;
 
 namespace MyShop.Views.StaffManagement.Components;
 
-public sealed partial class EmployeeFormDialog : ContentDialog
+public sealed partial class EmployeeFormView : ContentDialog
 {
-    public EmployeeFormDialog(EmployeeFormViewModel viewModel)
+    public EmployeeFormView(EmployeeFormViewModel viewModel)
     {
         this.InitializeComponent();
         this.DataContext = viewModel;

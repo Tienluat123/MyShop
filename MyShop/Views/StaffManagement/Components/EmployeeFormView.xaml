@@ -1,5 +1,5 @@
 <ContentDialog
-    x:Class="MyShop.Views.StaffManagement.Components.EmployeeFormDialog"
+    x:Class="MyShop.Views.StaffManagement.Components.EmployeeFormView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="using:MyShop.Views.Controls"

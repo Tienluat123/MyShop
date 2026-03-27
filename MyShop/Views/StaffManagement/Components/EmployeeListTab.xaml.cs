@@ -27,7 +27,7 @@ public sealed partial class EmployeeListTab : UserControl
     private async void AddEmployee_Click(object sender, RoutedEventArgs e)
     {
         var viewModel = new EmployeeFormViewModel(isEditMode: false, employee: null, onCancel: () => { });
-        var dialog = new EmployeeFormDialog(viewModel)
+        var dialog = new EmployeeFormView(viewModel)
         {
             XamlRoot = this.XamlRoot
         };
@@ -60,7 +60,7 @@ public sealed partial class EmployeeListTab : UserControl
         };
 
         var viewModel = new EmployeeFormViewModel(isEditMode: true, employee: employeeData, onCancel: () => { });
-        var dialog = new EmployeeFormDialog(viewModel)
+        var dialog = new EmployeeFormView(viewModel)
         {
             XamlRoot = this.XamlRoot
         };

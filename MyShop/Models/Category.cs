@@ -1,11 +1,18 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace MyShop.Models;
 
-public class Category
+public partial class Category : ObservableObject
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string? IconGlyph { get; set; }
-    
+    [ObservableProperty]
+    private int id;
+
+    [ObservableProperty]
+    private string name = string.Empty;
+
+    [ObservableProperty]
+    private string? iconGlyph;
+
     // Navigation properties
     public ICollection<Product> Products { get; set; } = new List<Product>();
 }
