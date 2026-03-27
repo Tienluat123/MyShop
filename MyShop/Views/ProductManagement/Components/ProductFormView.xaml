@@ -8,35 +8,6 @@
 
     <Grid Width="500"
           Margin="-24">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-                <VisualState x:Name="NarrowState">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="0"/>
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="PriceGrid.ColumnDefinitions[0].Width"
-                                Value="*"/>
-                        <Setter Target="PriceGrid.ColumnDefinitions[1].Width"
-                                Value="0"/>
-                        <Setter Target="SellingSection.(Grid.Column)"
-                                Value="0"/>
-                        <Setter Target="SellingSection.(Grid.Row)"
-                                Value="1"/>
-                        <Setter Target="CostSection.Margin"
-                                Value="0"/>
-                        <Setter Target="SellingSection.Margin"
-                                Value="0,12,0,0"/>
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="WideState">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="600"/>
-                    </VisualState.StateTriggers>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -44,7 +15,6 @@
         </Grid.RowDefinitions>
 
         <ui:ModalHeader Grid.Row="0"
-                        Padding="32,24,32,12"
                         Title="{Binding FormTitle}"
                         Subtitle="Update product information in the system"
                         CancelClicked="CancelButton_Click"/>
@@ -52,92 +22,76 @@
         <ScrollViewer Grid.Row="1"
                       Padding="32,8,32,24"
                       MaxHeight="550">
-            <StackPanel Spacing="18">
+            <StackPanel Spacing="20">
 
-                <StackPanel Spacing="6">
-                    <TextBlock Text="PRODUCT NAME"
-                               Foreground="#94A3B8"
-                               FontWeight="Bold"
-                               FontSize="11"/>
-                    <TextBox Text="{Binding ProductData.Name, Mode=TwoWay}"
-                             PlaceholderText="Enter product name..."
-                             CornerRadius="12"
-                             Padding="14,10"/>
-                </StackPanel>
+                <ui:LabeledInputControl Label="PRODUCT NAME">
+                    <ui:LabeledInputControl.InputContent>
+                        <TextBox Text="{Binding ProductData.Name, Mode=TwoWay}"
+                                 PlaceholderText="Enter product name..."
+                                 CornerRadius="12"
+                                 Padding="14,10"/>
+                    </ui:LabeledInputControl.InputContent>
+                </ui:LabeledInputControl>
 
-                <StackPanel Spacing="6">
-                    <TextBlock Text="CATEGORY"
-                               Foreground="#94A3B8"
-                               FontWeight="Bold"
-                               FontSize="11"/>
-                    <Grid ColumnSpacing="10"
-                          RowSpacing="10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                <ui:LabeledInputControl Label="CATEGORY">
+                    <ui:LabeledInputControl.InputContent>
+                        <Grid ColumnSpacing="10" RowSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <ComboBox Grid.ColumnSpan="2"
-                                  ItemsSource="{Binding Categories}"
-                                  SelectedItem="{Binding ProductData.Category, Mode=TwoWay}"
-                                  PlaceholderText="Select category"
-                                  HorizontalAlignment="Stretch"
-                                  CornerRadius="12"/>
+                            <ComboBox Grid.ColumnSpan="2"
+                                      ItemsSource="{Binding Categories}"
+                                      SelectedItem="{Binding ProductData.Category, Mode=TwoWay}"
+                                      PlaceholderText="Select category"
+                                      HorizontalAlignment="Stretch"
+                                      CornerRadius="12"/>
 
-                        <TextBox Grid.Row="1"
-                                 Text="{Binding NewCategoryName, Mode=TwoWay}"
-                                 PlaceholderText="New category name..."
-                                 CornerRadius="12"/>
-                        <Button Grid.Row="1"
-                                Grid.Column="1"
-                                Command="{Binding AddCategoryCommand}"
-                                CornerRadius="12"
-                                MinWidth="50">
-                            <FontIcon Glyph="&#xE710;"
-                                      FontSize="16"/>
-                        </Button>
-                    </Grid>
-                </StackPanel>
+                            <TextBox Grid.Row="1"
+                                     Text="{Binding NewCategoryName, Mode=TwoWay}"
+                                     PlaceholderText="New category name..."
+                                     CornerRadius="12"
+                                     Padding="14,10"/>
+                            <Button Grid.Row="1"
+                                    Grid.Column="1"
+                                    Command="{Binding AddCategoryCommand}"
+                                    CornerRadius="12"
+                                    MinWidth="50"
+                                    Height="42">
+                                <FontIcon Glyph="&#xE710;" FontSize="16"/>
+                            </Button>
+                        </Grid>
+                    </ui:LabeledInputControl.InputContent>
+                </ui:LabeledInputControl>
 
-                <Grid x:Name="PriceGrid"
-                      ColumnSpacing="16">
+                <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
 
-                    <StackPanel x:Name="CostSection"
-                                Spacing="6">
-                        <TextBlock Text="COST PRICE"
-                                   Foreground="#94A3B8"
-                                   FontWeight="Bold"
-                                   FontSize="11"/>
-                        <TextBox Text="{Binding ProductData.CostPrice, Mode=TwoWay}"
-                                 PlaceholderText="0.00"
-                                 CornerRadius="12"
-                                 Padding="14,10"/>
-                    </StackPanel>
+                    <ui:LabeledInputControl Label="COST PRICE">
+                        <ui:LabeledInputControl.InputContent>
+                            <TextBox Text="{Binding ProductData.CostPrice, Mode=TwoWay}"
+                                     PlaceholderText="0.00"
+                                     CornerRadius="12"
+                                     Padding="14,10"/>
+                        </ui:LabeledInputControl.InputContent>
+                    </ui:LabeledInputControl>
 
-                    <StackPanel x:Name="SellingSection"
-                                Grid.Column="1"
-                                Spacing="6">
-                        <TextBlock Text="SELLING PRICE"
-                                   Foreground="#94A3B8"
-                                   FontWeight="Bold"
-                                   FontSize="11"/>
-                        <TextBox Text="{Binding ProductData.SellingPrice, Mode=TwoWay}"
-                                 PlaceholderText="0.00"
-                                 CornerRadius="12"
-                                 Padding="14,10"/>
-                    </StackPanel>
+                    <ui:LabeledInputControl Grid.Column="1" Label="SELLING PRICE">
+                        <ui:LabeledInputControl.InputContent>
+                            <TextBox Text="{Binding ProductData.SellingPrice, Mode=TwoWay}"
+                                     PlaceholderText="0.00"
+                                     CornerRadius="12"
+                                     Padding="14,10"/>
+                        </ui:LabeledInputControl.InputContent>
+                    </ui:LabeledInputControl>
                 </Grid>
             </StackPanel>
         </ScrollViewer>

@@ -1,173 +1,141 @@
 <ContentDialog
-        x:Class="MyShop.Views.Promotion.Components.AddPromotionModal"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:ui="using:MyShop.Views.Controls"
-        xmlns:converters="using:MyShop.Converters"
-        Style="{StaticResource DefaultContentDialogStyle}"
-        CornerRadius="28"
-        BorderThickness="0">
+    x:Class="MyShop.Views.Promotion.Components.AddPromotionModal"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="using:MyShop.Views.Controls"
+    xmlns:converters="using:MyShop.Converters"
+    CornerRadius="24"
+    BorderThickness="0">
 
-        <ContentDialog.Resources>
-                <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-                <Style TargetType="TextBlock"
-                       x:Key="LabelStyle">
-                        <Setter Property="FontSize"
-                                Value="13"/>
-                        <Setter Property="FontWeight"
-                                Value="SemiBold"/>
-                        <Setter Property="Foreground"
-                                Value="#374151"/>
-                        <Setter Property="Margin"
-                                Value="0,0,0,6"/>
-                </Style>
-                <Style TargetType="TextBox">
-                        <Setter Property="CornerRadius"
-                                Value="12"/>
-                        <Setter Property="Background"
-                                Value="#F9FAFB"/>
-                        <Setter Property="BorderBrush"
-                                Value="#F3F4F6"/>
-                        <Setter Property="Padding"
-                                Value="12,10"/>
-                </Style>
-                <Style TargetType="NumberBox">
-                        <Setter Property="CornerRadius"
-                                Value="12"/>
-                        <Setter Property="Background"
-                                Value="#F9FAFB"/>
-                        <Setter Property="BorderBrush"
-                                Value="#F3F4F6"/>
-                </Style>
-                <Style TargetType="ComboBox">
-                        <Setter Property="CornerRadius"
-                                Value="12"/>
-                        <Setter Property="Background"
-                                Value="#F9FAFB"/>
-                        <Setter Property="BorderBrush"
-                                Value="#F3F4F6"/>
-                        <Setter Property="HorizontalAlignment"
-                                Value="Stretch"/>
-                </Style>
-        </ContentDialog.Resources>
+    <ContentDialog.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </ContentDialog.Resources>
 
-        <Grid Width="500"
-              Margin="-24">
-                <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+    <Grid Width="500"
+          Margin="-24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-                <ui:ModalHeader Grid.Row="0"
-                                Title="{Binding FormTitle}"
-                                Subtitle="{Binding Subtitle}"
-                                CancelClicked="CancelButton_Click"/>
+        <ui:ModalHeader Grid.Row="0"
+                        Title="{Binding FormTitle}"
+                        Subtitle="{Binding Subtitle}"
+                        CancelClicked="CancelButton_Click"/>
 
-                <ScrollViewer Grid.Row="1"
-                              Padding="32,8,32,24"
-                              MaxHeight="550">
-                        <StackPanel Spacing="18">
-                                <StackPanel>
-                                        <TextBlock Text="PROMOTION CODE"
-                                                   Style="{StaticResource LabelStyle}"/>
-                                        <TextBox Text="{Binding PromotionData.Code, Mode=TwoWay}"
-                                                 PlaceholderText="e.g. GIAM30K"/>
-                                </StackPanel>
+        <ScrollViewer Grid.Row="1"
+                      Padding="32,8,32,24"
+                      MaxHeight="550">
+            <StackPanel Spacing="20">
 
-                                <Grid ColumnSpacing="16">
-                                        <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                                <TextBlock Text="TYPE"
-                                                           Style="{StaticResource LabelStyle}"/>
-                                                <ComboBox SelectedIndex="{Binding PromotionData.Type, Mode=TwoWay}">
-                                                        <ComboBoxItem Content="Percent (%)"/>
-                                                        <ComboBoxItem Content="Fixed Amount (đ)"/>
-                                                </ComboBox>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1">
-                                                <TextBlock Text="VALUE"
-                                                           Style="{StaticResource LabelStyle}"/>
-                                                <NumberBox Value="{Binding PromotionData.Value, Mode=TwoWay}"
-                                                           SpinButtonPlacementMode="Compact"/>
-                                        </StackPanel>
-                                </Grid>
+                <ui:LabeledInputControl Label="PROMOTION CODE">
+                    <ui:LabeledInputControl.InputContent>
+                        <TextBox Text="{Binding PromotionData.Code, Mode=TwoWay}"
+                                 PlaceholderText="e.g. GIAM30K"
+                                 CornerRadius="12"
+                                 Padding="14,10"/>
+                    </ui:LabeledInputControl.InputContent>
+                </ui:LabeledInputControl>
 
-                                <StackPanel>
-                                        <TextBlock Text="MINIMUM ORDER REQUIREMENT"
-                                                   Style="{StaticResource LabelStyle}"/>
-                                        <NumberBox Value="{Binding PromotionData.MinimumOrderAmount, Mode=TwoWay}"
-                                                   SpinButtonPlacementMode="Compact"/>
-                                </StackPanel>
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                                <StackPanel>
-                                        <TextBlock Text="TARGET AUDIENCE"
-                                                   Style="{StaticResource LabelStyle}"/>
-                                        <ComboBox SelectedIndex="{Binding PromotionData.Target, Mode=TwoWay}">
-                                                <ComboBoxItem Content="All Customers"/>
-                                                <ComboBoxItem Content="VIP Member"/>
-                                                <ComboBoxItem Content="New Customer"/>
-                                        </ComboBox>
-                                </StackPanel>
+                    <ui:LabeledInputControl Label="TYPE">
+                        <ui:LabeledInputControl.InputContent>
+                            <ComboBox SelectedIndex="{Binding PromotionData.Type, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch"
+                                      CornerRadius="12">
+                                <ComboBoxItem Content="Percent (%)"/>
+                                <ComboBoxItem Content="Fixed Amount (đ)"/>
+                            </ComboBox>
+                        </ui:LabeledInputControl.InputContent>
+                    </ui:LabeledInputControl>
 
-                                <Border Background="#F9FAFB"
-                                        Padding="16,12"
-                                        CornerRadius="16"
-                                        BorderBrush="#F3F4F6"
-                                        BorderThickness="1"
-                                        Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                                        <Grid>
-                                                <StackPanel VerticalAlignment="Center"
-                                                            Spacing="2">
-                                                        <TextBlock Text="ACTIVE STATUS"
-                                                                   FontWeight="Bold"
-                                                                   FontSize="14"
-                                                                   Foreground="#111827"/>
-                                                        <TextBlock Text="Toggle visibility of this promotion"
-                                                                   Foreground="#9CA3AF"
-                                                                   FontSize="12"/>
-                                                </StackPanel>
-                                                <ToggleSwitch IsOn="{Binding PromotionData.IsActive, Mode=TwoWay}"
-                                                              HorizontalAlignment="Right"
-                                                              OnContent=""
-                                                              OffContent=""/>
-                                        </Grid>
-                                </Border>
+                    <ui:LabeledInputControl Grid.Column="1" Label="VALUE">
+                        <ui:LabeledInputControl.InputContent>
+                            <NumberBox Value="{Binding PromotionData.Value, Mode=TwoWay}"
+                                       PlaceholderText="0.0"
+                                       CornerRadius="12"
+                                       SpinButtonPlacementMode="Compact"/>
+                        </ui:LabeledInputControl.InputContent>
+                    </ui:LabeledInputControl>
+                </Grid>
 
-                                <Grid ColumnSpacing="16">
-                                        <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                                <TextBlock Text="START DATE"
-                                                           Style="{StaticResource LabelStyle}"/>
-                                                <CalendarDatePicker Date="{Binding PromotionData.StartDate, Mode=TwoWay}"
-                                                                    CornerRadius="12"
-                                                                    PlaceholderText="Select start date"
-                                                                    Header=""
-                                                                    HorizontalAlignment="Stretch"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1">
-                                                <TextBlock Text="END DATE"
-                                                           Style="{StaticResource LabelStyle}"/>
-                                                <CalendarDatePicker Date="{Binding PromotionData.EndDate, Mode=TwoWay}"
-                                                                    HorizontalAlignment="Stretch"
-                                                                    CornerRadius="12"
-                                                                    PlaceholderText="Select end date"
-                                                                    Header=""/>
-                                        </StackPanel>
-                                </Grid>
+                <ui:LabeledInputControl Label="MINIMUM ORDER REQUIREMENT">
+                    <ui:LabeledInputControl.InputContent>
+                        <NumberBox Value="{Binding PromotionData.MinimumOrderAmount, Mode=TwoWay}"
+                                   PlaceholderText="0"
+                                   CornerRadius="12"
+                                   SpinButtonPlacementMode="Compact"/>
+                    </ui:LabeledInputControl.InputContent>
+                </ui:LabeledInputControl>
+
+                <ui:LabeledInputControl Label="TARGET AUDIENCE">
+                    <ui:LabeledInputControl.InputContent>
+                        <ComboBox SelectedIndex="{Binding PromotionData.Target, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch"
+                                  CornerRadius="12">
+                            <ComboBoxItem Content="All Customers"/>
+                            <ComboBoxItem Content="VIP Member"/>
+                            <ComboBoxItem Content="New Customer"/>
+                        </ComboBox>
+                    </ui:LabeledInputControl.InputContent>
+                </ui:LabeledInputControl>
+
+                <Border Background="#F9FAFB"
+                        Padding="16,12"
+                        CornerRadius="16"
+                        BorderBrush="#F3F4F6"
+                        BorderThickness="1"
+                        Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="ACTIVE STATUS" FontWeight="Bold" FontSize="14" Foreground="#111827"/>
+                            <TextBlock Text="Toggle visibility of this promotion" Foreground="#9CA3AF" FontSize="12"/>
                         </StackPanel>
-                </ScrollViewer>
+                        <ToggleSwitch IsOn="{Binding PromotionData.IsActive, Mode=TwoWay}"
+                                      HorizontalAlignment="Right"
+                                      OnContent="" OffContent=""/>
+                    </Grid>
+                </Border>
 
-                <ui:ModalFooter Grid.Row="2"
-                                CancelText="{Binding CancelButtonText}"
-                                SubmitText="{Binding SubmitButtonText}"
-                                CancelClicked="CancelButton_Click"
-                                SubmitClicked="SaveButton_Click"/>
-        </Grid>
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ui:LabeledInputControl Label="START DATE">
+                        <ui:LabeledInputControl.InputContent>
+                            <CalendarDatePicker Date="{Binding PromotionData.StartDate, Mode=TwoWay}"
+                                                PlaceholderText="Select start date"
+                                                HorizontalAlignment="Stretch"
+                                                CornerRadius="12"
+                                                Padding="12,8"/>
+                        </ui:LabeledInputControl.InputContent>
+                    </ui:LabeledInputControl>
+
+                    <ui:LabeledInputControl Grid.Column="1" Label="END DATE">
+                        <ui:LabeledInputControl.InputContent>
+                            <CalendarDatePicker Date="{Binding PromotionData.EndDate, Mode=TwoWay}"
+                                                PlaceholderText="Select end date"
+                                                HorizontalAlignment="Stretch"
+                                                CornerRadius="12"
+                                                Padding="12,8"/>
+                        </ui:LabeledInputControl.InputContent>
+                    </ui:LabeledInputControl>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <ui:ModalFooter Grid.Row="2"
+                        CancelText="{Binding CancelButtonText}"
+                        SubmitText="{Binding SubmitButtonText}"
+                        CancelClicked="CancelButton_Click"
+                        SubmitClicked="SaveButton_Click"/>
+    </Grid>
 </ContentDialog>
