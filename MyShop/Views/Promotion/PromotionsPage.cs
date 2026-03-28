@@ -1,93 +1,73 @@
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml;
 using MyShop.ViewModels;
 using MyShop.Views.Promotion.Components;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace MyShop.Views.Promotion;
 
 public sealed partial class PromotionsPage : Page
 {
-    private PromotionsViewModel ViewModel => (PromotionsViewModel)DataContext;
+    private PromotionsViewModel? viewModel;
 
     public PromotionsPage()
     {
-        this.InitializeComponent();
-        DataContext = new PromotionsViewModel();
+        InitializeComponent();
+        Loaded += PromotionsPage_Loaded;
     }
 
-    private void PromotionStatus_Toggled(object sender, RoutedEventArgs e)
+    private void PromotionsPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (sender is ToggleSwitch switcher && switcher.DataContext is PromotionItem item)
+        if (PromotionContentFrame.Content is null)
         {
-            // Tránh loop khi binding TwoWay
-            if (item.IsActive != switcher.IsOn)
-            {
-                ViewModel.ToggleActiveCommand.Execute(item);
-            }
+            NavigateToManagement();
         }
     }
 
-    private async void AddPromotion_Click(object sender, RoutedEventArgs e)
+    private void NavigateToManagement()
     {
-        var viewModel = new PromotionFormViewModel(isEditMode: false, promotion: null, onCancel: () => { });
-        var dialog = new AddPromotionModal(viewModel)
+        viewModel = new PromotionsViewModel(
+            onAdd: () => ShowPromotionFormDialog(isEditMode: false),
+            onEdit: promo => ShowPromotionFormDialog(isEditMode: true, promo));
+
+        PromotionContentFrame.Navigate(typeof(PromotionManagementView), viewModel);
+    }
+
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    private async void ShowPromotionFormDialog(bool isEditMode, PromotionItem? promo = null)
+    {
+        var formViewModel = new PromotionFormViewModel(isEditMode, promo, onCancel: () => { });
+        var dialog = new AddPromotionModal(formViewModel)
         {
             XamlRoot = this.XamlRoot
         };
 
-        await dialog.ShowAsync();
+        var result = await dialog.ShowAsync();
 
-        // Create and insert the new promotion into the list
-        var newPromotion = new PromotionItem
+        if (result == ContentDialogResult.Primary && isEditMode == false)
         {
-            Id = ViewModel.Promotions.Any() ? ViewModel.Promotions.Max(p => p.Id) + 1 : 1,
-            Code = viewModel.PromotionData.Code.ToUpper(),
-            Type = viewModel.PromotionData.Type,
-            Value = viewModel.PromotionData.Value,
-            MinimumOrderAmount = viewModel.PromotionData.MinimumOrderAmount,
-            Target = viewModel.PromotionData.Target,
-            StartDate = viewModel.PromotionData.StartDate,
-            EndDate = viewModel.PromotionData.EndDate,
-            IsActive = true
-        };
-
-        ViewModel.Promotions.Insert(0, newPromotion);
-        ViewModel.RebuildFilter();
-    }
-
-    private async void EditPromotion_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button btn && btn.DataContext is PromotionItem item)
-        {
-            var viewModel = new PromotionFormViewModel(isEditMode: true, promotion: item, onCancel: () => { });
-            var dialog = new AddPromotionModal(viewModel)
+            // If it's a new promotion, we need to add it to the list
+            // Note: In a real app, the ViewModel might handle this via a service,
+            // but here we follow the existing pattern of ViewModel holding mock data.
+            var newPromo = new PromotionItem
             {
-                XamlRoot = this.XamlRoot
+                Id = viewModel?.PageItems.Any() == true ? viewModel.PageItems.Max(p => p.Id) + 1 : 1,
+                Code = formViewModel.PromotionData.Code,
+                Type = formViewModel.PromotionData.Type,
+                Value = formViewModel.PromotionData.Value,
+                MinimumOrderAmount = formViewModel.PromotionData.MinimumOrderAmount,
+                Target = formViewModel.PromotionData.Target,
+                StartDate = formViewModel.PromotionData.StartDate,
+                EndDate = formViewModel.PromotionData.EndDate,
+                IsActive = true
             };
-
-            await dialog.ShowAsync();
-
-            // The viewModel.PromotionData already has the updated values
-            // Now we need to apply them to the original item
-            item.Code = viewModel.PromotionData.Code;
-            item.Type = viewModel.PromotionData.Type;
-            item.Value = viewModel.PromotionData.Value;
-            item.MinimumOrderAmount = viewModel.PromotionData.MinimumOrderAmount;
-            item.Target = viewModel.PromotionData.Target;
-            item.StartDate = viewModel.PromotionData.StartDate;
-            item.EndDate = viewModel.PromotionData.EndDate;
-            item.IsActive = viewModel.PromotionData.IsActive;
-
-            ViewModel.RebuildFilter();
+            viewModel?.AddNewPromotion(newPromo);
         }
-    }
-
-    private void DeletePromotion_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button btn && btn.DataContext is PromotionItem item)
+        else if (result == ContentDialogResult.Primary && isEditMode && promo != null)
         {
-            ViewModel.RemoveCommand.Execute(item);
+            // For edit mode, the data is typically bound or updated manually
+            // The existing RebuildFilter will refresh the view
+            viewModel?.RebuildFilter();
         }
     }
 }
