@@ -176,17 +176,6 @@ public partial class App : Application
                     {
                         dbContext.Database.Migrate();
                         LogMessage("✅ Database migrations applied successfully");
-
-                        // ✅ Initialize seed data (Coffee Shop mock data)
-                        try
-                        {
-                            SeedData.Initialize(dbContext);
-                            LogMessage("✅ Seed data initialized successfully");
-                        }
-                        catch (Exception seedEx)
-                        {
-                            LogMessage($"⚠️ Seed data warning: {seedEx.Message}");
-                        }
                     }
                     catch (Exception ex)
                     {

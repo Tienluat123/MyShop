@@ -13,6 +13,9 @@ public partial class Category : ObservableObject
     [ObservableProperty]
     private string? iconGlyph;
 
+    [ObservableProperty]
+    private string? description;
+
     // Navigation properties
     public ICollection<Product> Products { get; set; } = new List<Product>();
 }
