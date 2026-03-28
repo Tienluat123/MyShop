@@ -24,11 +24,11 @@
                 BorderThickness="0,0,0,1"/>
 
         <StackPanel Spacing="8">
-            <TextBlock Text="Ghi chú phân ca:"
+            <TextBlock Text="Shift Note:"
                        FontWeight="{StaticResource FontWeightSemiBold}"
                        FontSize="{StaticResource FontBody}"
                        Foreground="{StaticResource BrandPrimary}"/>
-            <TextBox PlaceholderText="VD: Lau dọn quầy, kiểm tra kho..."
+            <TextBox PlaceholderText="e.g. Clean counter, check inventory..."
                      Height="{StaticResource Size70}"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"
@@ -36,7 +36,7 @@
                      Foreground="{StaticResource TextPrimary}"/>
         </StackPanel>
 
-        <Button Content="Lưu thông tin"
+        <Button Content="Save"
                 Background="{StaticResource BrandPrimary}"
                 Foreground="{StaticResource BrandPrimaryForeground}"
                 HorizontalAlignment="Right"

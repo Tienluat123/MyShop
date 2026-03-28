@@ -8,7 +8,7 @@
                 Padding="{StaticResource SpaceSmall}"
                 Margin="0,0,0,8">
 
-        <TextBlock Text="Lịch tuần này của Nam"
+        <TextBlock Text="Nam's This Week Schedule"
                    FontWeight="{StaticResource FontWeightBold}"
                    FontSize="{StaticResource FontBody}"
                    Foreground="{StaticResource TextPrimary}"/>
@@ -31,7 +31,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Thứ 2"
+            <TextBlock Text="Monday"
                        FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
@@ -41,7 +41,7 @@
                 <Border Background="{StaticResource WarningSurface}"
                         CornerRadius="{StaticResource RadiusSmall}"
                         Padding="{StaticResource SpaceSmall_XSmall}">
-                    <TextBlock Text="Sáng"
+                    <TextBlock Text="Morning"
                                FontSize="{StaticResource FontCaption}"
                                Foreground="{StaticResource WarningStrong}"
                                FontWeight="{StaticResource FontWeightBold}"/>
@@ -49,7 +49,7 @@
                 <Border Background="{StaticResource AccentPurpleSurface}"
                         CornerRadius="{StaticResource RadiusSmall}"
                         Padding="{StaticResource SpaceSmall_XSmall}">
-                    <TextBlock Text="Tối"
+                    <TextBlock Text="Evening"
                                FontSize="{StaticResource FontCaption}"
                                Foreground="{StaticResource AccentPurple}"
                                FontWeight="{StaticResource FontWeightBold}"/>
@@ -57,7 +57,7 @@
             </StackPanel>
 
             <TextBlock Grid.Row="1"
-                       Text="Thứ 3"
+                       Text="Tuesday"
                        FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
@@ -76,20 +76,20 @@
             </StackPanel>
 
             <TextBlock Grid.Row="2"
-                       Text="Thứ 4"
+                       Text="Wednesday"
                        FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
             <TextBlock Grid.Row="2"
                        Grid.Column="1"
-                       Text="Nghỉ phép"
+                       Text="Leave"
                        Foreground="{StaticResource TextMuted}"
                        FontStyle="Italic"
                        FontSize="{StaticResource FontCaption}"
                        VerticalAlignment="Center"/>
 
             <TextBlock Grid.Row="3"
-                       Text="Thứ 5"
+                       Text="Thursday"
                        FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
@@ -100,7 +100,7 @@
                 <Border Background="{StaticResource InfoSurface}"
                         CornerRadius="{StaticResource RadiusSmall}"
                         Padding="{StaticResource SpaceSmall_XSmall}">
-                    <TextBlock Text="Chiều"
+                    <TextBlock Text="Afternoon"
                                FontSize="{StaticResource FontCaption}"
                                Foreground="{StaticResource InfoStrong}"
                                FontWeight="{StaticResource FontWeightBold}"/>
@@ -108,12 +108,12 @@
             </StackPanel>
 
             <TextBlock Grid.Row="4"
-                       Text="Thứ 6"
+                       Text="Friday"
                        FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>
             <TextBlock Grid.Row="5"
-                       Text="Thứ 7"
+                       Text="Saturday"
                        FontWeight="{StaticResource FontWeightSemiBold}"
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"/>

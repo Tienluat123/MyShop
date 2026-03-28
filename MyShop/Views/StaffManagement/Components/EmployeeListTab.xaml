@@ -7,7 +7,7 @@
 
     <UserControl.Resources>
         <DataTemplate x:Key="EmployeeCardTemplate"
-                x:DataType="viewModels:EmployeeListItem">
+                      x:DataType="viewModels:EmployeeListItem">
             <Border Background="White"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1"
@@ -71,13 +71,13 @@
                             <TextBlock Style="{StaticResource CaptionTextStyle}"
                                        Foreground="{StaticResource TextSecondary}"
                                        Visibility="{Binding ShiftCount, Converter={StaticResource StringToVisibilityConverter}}">
-                                <Run Text="Shifts: "/><Run Text="{Binding ShiftCount}"/><Run Text=" ca"/>
+                                <Run Text="Shifts: "/><Run Text="{Binding ShiftCount}"/><Run Text=" shift"/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource CaptionTextStyle}"
                                        Foreground="{StaticResource TextSecondary}"
                                        FontStyle="Italic"
                                        Visibility="{Binding ShiftCount, Converter={StaticResource StringToVisibilityConverter}}">
-                                <Run Text="Chưa phân ca"/>
+                                <Run Text="Not assigned"/>
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
@@ -109,7 +109,7 @@
                                 BorderThickness="0"
                                 Padding="8"
                                 CornerRadius="{StaticResource RadiusSmall}"
-                                ToolTipService.ToolTip="Chỉnh sửa"
+                                ToolTipService.ToolTip="Edit"
                                 Tag="{Binding}"
                                 Click="EditEmployee_Click"
                                 Style="{StaticResource AppIconButtonStyle}">
@@ -121,7 +121,7 @@
                                 BorderThickness="0"
                                 Padding="8"
                                 CornerRadius="{StaticResource RadiusSmall}"
-                                ToolTipService.ToolTip="Khóa tài khoản"
+                                ToolTipService.ToolTip="Lock Account"
                                 Style="{StaticResource AppIconButtonStyle}">
                             <FontIcon Glyph="&#xE72E;"
                                       Foreground="{StaticResource ErrorStrong}"
@@ -154,7 +154,7 @@
                 <ColumnDefinition Width="300"/>
             </Grid.ColumnDefinitions>
 
-            <Button Content="+ Thêm nhân viên"
+            <Button Content="+ Add Employee"
                     Height="{StaticResource Size40}"
                     Background="{StaticResource BrandPrimary}"
                     Foreground="{StaticResource BrandPrimaryForeground}"
@@ -172,7 +172,7 @@
                       Width="180"
                       Height="{StaticResource Size40}"
                       Padding="{StaticResource SpaceMedium}"
-                      PlaceholderText="Lọc theo chức vụ"
+                      PlaceholderText="Filter by position"
                       CornerRadius="{StaticResource RadiusSmall}"
                       VerticalAlignment="Center"/>
 
@@ -181,7 +181,7 @@
                   Height="{StaticResource Size40}">
 
                 <TextBox x:Name="SearchTextBox"
-                         PlaceholderText="Tìm kiếm nhân viên..."
+                         PlaceholderText="Search employees..."
                          CornerRadius="{StaticResource RadiusSmall}"
                          Padding="12,8,36,8"
                          VerticalAlignment="Stretch"

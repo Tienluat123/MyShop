@@ -70,7 +70,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <controls:PageHeaderControl Title="Quản lý nhân viên"
+        <controls:PageHeaderControl Title="Staff Management"
                                     Subtitle="Manage your staff and their work schedules"
                                     Icon="&#xE8A4;"/>
 
@@ -82,13 +82,13 @@
                 Margin="0,0,0,24">
             <StackPanel Orientation="Horizontal">
                 <RadioButton x:Name="TabWeekly"
-                             Content="Lịch phân ca (Tuần)"
+                             Content="Weekly Schedule"
                              Style="{StaticResource SegmentedTabStyle}"
                              IsChecked="True"
                              Checked="Tab_Checked"/>
 
                 <RadioButton x:Name="TabList"
-                             Content="Danh sách nhân sự"
+                             Content="Staff List"
                              Style="{StaticResource SegmentedTabStyle}"
                              Checked="Tab_Checked"/>
             </StackPanel>

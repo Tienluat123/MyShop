@@ -34,35 +34,35 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Ca làm việc"
+            <TextBlock Text="Shifts"
                        Style="{StaticResource StaffHeaderLabelTextStyle}"
                        FontWeight="{StaticResource FontWeightBold}"/>
             <TextBlock Grid.Column="1"
-                       Text="Thứ 2"
+                       Text="Monday"
                        Style="{StaticResource StaffHeaderLabelTextStyle}"
                        HorizontalAlignment="Center"/>
             <TextBlock Grid.Column="2"
-                       Text="Thứ 3"
+                       Text="Tuesday"
                        Style="{StaticResource StaffHeaderLabelTextStyle}"
                        HorizontalAlignment="Center"/>
             <TextBlock Grid.Column="3"
-                       Text="Thứ 4"
+                       Text="Wednesday"
                        Style="{StaticResource StaffHeaderLabelTextStyle}"
                        HorizontalAlignment="Center"/>
             <TextBlock Grid.Column="4"
-                       Text="Thứ 5"
+                       Text="Thursday"
                        Style="{StaticResource StaffHeaderLabelTextStyle}"
                        HorizontalAlignment="Center"/>
             <TextBlock Grid.Column="5"
-                       Text="Thứ 6"
+                       Text="Friday"
                        Style="{StaticResource StaffHeaderLabelTextStyle}"
                        HorizontalAlignment="Center"/>
             <TextBlock Grid.Column="6"
-                       Text="Thứ 7"
+                       Text="Saturday"
                        Style="{StaticResource StaffHeaderLabelTextStyle}"
                        HorizontalAlignment="Center"/>
             <TextBlock Grid.Column="7"
-                       Text="Chủ Nhật"
+                       Text="Sunday"
                        Style="{StaticResource StaffHeaderLabelTextStyle}"
                        FontWeight="{StaticResource FontWeightBold}"
                        Foreground="{StaticResource ErrorStrong}"
@@ -85,7 +85,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel VerticalAlignment="Top">
-                <TextBlock Text="CA SÁNG"
+                <TextBlock Text="MORNING SHIFT"
                            Style="{StaticResource BodyTextStyle}"
                            FontWeight="{StaticResource FontWeightBold}"
                            Foreground="{StaticResource BrandPrimary}"/>
@@ -130,18 +130,18 @@
                                 <Border BorderBrush="{StaticResource BorderBrush}"
                                         BorderThickness="0,0,0,1"/>
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Ghi chú Ca Sáng - Thứ 2:"
+                                    <TextBlock Text="Morning Shift - Monday Note:"
                                                FontWeight="{StaticResource FontWeightSemiBold}"
                                                FontSize="{StaticResource FontBody}"
                                                Foreground="{StaticResource BrandPrimary}"/>
-                                    <TextBox PlaceholderText="VD: Lau dọn quầy..."
+                                    <TextBox PlaceholderText="e.g. Clean counter..."
                                              Height="{StaticResource Size70}"
                                              TextWrapping="Wrap"
                                              AcceptsReturn="True"
                                              CornerRadius="{StaticResource RadiusSmall}"
                                              Foreground="{StaticResource TextPrimary}"/>
                                 </StackPanel>
-                                <Button Content="Lưu thông tin"
+                                <Button Content="Save"
                                         Background="{StaticResource BrandPrimary}"
                                         Foreground="{StaticResource BrandPrimaryForeground}"
                                         HorizontalAlignment="Right"
@@ -195,7 +195,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel VerticalAlignment="Top">
-                <TextBlock Text="CA CHIỀU"
+                <TextBlock Text="AFTERNOON SHIFT"
                            Style="{StaticResource BodyTextStyle}"
                            FontWeight="{StaticResource FontWeightBold}"
                            Foreground="{StaticResource InfoStrong}"/>
@@ -240,18 +240,18 @@
                                 <Border BorderBrush="{StaticResource BorderBrush}"
                                         BorderThickness="0,0,0,1"/>
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Ghi chú Ca Chiều - Thứ 2:"
+                                    <TextBlock Text="Afternoon Shift - Monday Note:"
                                                FontWeight="{StaticResource FontWeightSemiBold}"
                                                FontSize="{StaticResource FontBody}"
                                                Foreground="{StaticResource BrandPrimary}"/>
-                                    <TextBox PlaceholderText="Nhập ghi chú..."
+                                    <TextBox PlaceholderText="Enter note..."
                                              Height="{StaticResource Size70}"
                                              TextWrapping="Wrap"
                                              AcceptsReturn="True"
                                              CornerRadius="{StaticResource RadiusSmall}"
                                              Foreground="{StaticResource TextPrimary}"/>
                                 </StackPanel>
-                                <Button Content="Lưu thông tin"
+                                <Button Content="Save"
                                         Background="{StaticResource BrandPrimary}"
                                         Foreground="{StaticResource BrandPrimaryForeground}"
                                         HorizontalAlignment="Right"
@@ -283,7 +283,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel VerticalAlignment="Top">
-                <TextBlock Text="CA TỐI"
+                <TextBlock Text="EVENING SHIFT"
                            Style="{StaticResource BodyTextStyle}"
                            FontWeight="{StaticResource FontWeightBold}"
                            Foreground="{StaticResource AccentPurple}"/>
