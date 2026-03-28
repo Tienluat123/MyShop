@@ -1,14 +1,25 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace MyShop.Models;
 
-public class Product
+public partial class Product : ObservableObject
 {
-    public int Id { get; set; }
-    public int CategoryId { get; set; } // Thuộc loại nào
-    public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; } // Giá bán
-    public string? ImagePath { get; set; } // Đường dẫn ảnh
+    [ObservableProperty]
+    private int id;
 
-    // UI/Display helpers
+    [ObservableProperty]
+    private int categoryId; // Thuộc loại nào
+
+    [ObservableProperty]
+    private string name = string.Empty;
+
+    [ObservableProperty]
+    private decimal price; // Giá bán
+
+    [ObservableProperty]
+    private string? imagePath; // Đường dẫn ảnh
+
+    // UI/Display helpers - computed properties
     public bool HasCustomization => Category?.Name != "Pastries";
     public string DisplayPrice => HasCustomization ? $"from {Price:C}" : $"{Price:C}";
 

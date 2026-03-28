@@ -1,13 +1,24 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace MyShop.Models;
 
-public class OrderDetail
+public partial class OrderDetail : ObservableObject
 {
-    public int Id { get; set; }
-    public int OrderId { get; set; } // Thuộc hóa đơn nào
-    public int ProductId { get; set; } // Mua sản phẩm gì
-    public int Quantity { get; set; } // Số lượng
-    public decimal UnitPrice { get; set; } // Giá tại thời điểm mua
-    
+    [ObservableProperty]
+    private int id;
+
+    [ObservableProperty]
+    private int orderId; // Thuộc hóa đơn nào
+
+    [ObservableProperty]
+    private int productId; // Mua sản phẩm gì
+
+    [ObservableProperty]
+    private int quantity; // Số lượng
+
+    [ObservableProperty]
+    private decimal unitPrice; // Giá tại thời điểm mua
+
     // Navigation properties
     public Order? Order { get; set; }
     public Product? Product { get; set; }

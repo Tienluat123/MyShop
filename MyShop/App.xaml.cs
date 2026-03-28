@@ -1,7 +1,13 @@
 using System;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Uno.Resizetizer;
 using MyShop.Views;
+using MyShop.Data;
+using MyShop.Services;
+using MyShop.Di;
+using MyShop.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyShop;
 
@@ -25,6 +31,8 @@ public partial class App : Application
         MainWindow.UseStudio();
 #endif
 
+        // Setup Dependency Injection trước khi tạo UI
+        RegisterServices();
 
         // Do not repeat app initialization when the Window already has content,
         // just ensure that the window is active
@@ -50,6 +58,212 @@ public partial class App : Application
         MainWindow.SetWindowIcon();
         // Ensure the current window is active
         MainWindow.Activate();
+    }
+
+    /// <summary>
+    /// Register tất cả services vào Dependency Injection Container
+    /// Gọi trong OnLaunched trước khi initialize UI
+    /// </summary>
+    private void RegisterServices()
+    {
+        var container = ServiceContainer.Instance;
+
+        // Create log file to track database initialization
+        var logPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "MyShop",
+            "database.log"
+        );
+        Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+
+        void LogMessage(string message)
+        {
+            System.Diagnostics.Debug.WriteLine(message);
+            try { File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}\n"); }
+            catch { }
+        }
+
+        try
+        {
+            LogMessage("====== DATABASE INITIALIZATION START ======");
+
+            // ===== Load Database Configuration from appsettings.json =====
+            // Try multiple paths for configuration file
+            var pathsToTry = new[]
+            {
+                Path.Combine(AppContext.BaseDirectory, "appsettings.json"), // Same dir as executable
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "appsettings.json"), // Project root (debug)
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyShop", "appsettings.json") // User data
+            };
+
+            DatabaseConfig dbConfig = null;
+            string foundPath = null;
+
+            foreach (var path in pathsToTry)
+            {
+                var fullPath = Path.GetFullPath(path);
+                LogMessage($"🔍 Looking for config at: {fullPath}");
+
+                if (File.Exists(fullPath))
+                {
+                    foundPath = fullPath;
+                    break;
+                }
+            }
+
+            if (foundPath != null)
+            {
+                try
+                {
+                    var json = File.ReadAllText(foundPath);
+                    using (var doc = JsonDocument.Parse(json))
+                    {
+                        var dbElement = doc.RootElement.GetProperty("Database");
+                        dbConfig = new DatabaseConfig
+                        {
+                            Host = dbElement.GetProperty("Host").GetString() ?? "localhost",
+                            Database = dbElement.GetProperty("Database").GetString() ?? "postgres",
+                            Username = dbElement.GetProperty("Username").GetString() ?? "postgres",
+                            Password = dbElement.GetProperty("Password").GetString() ?? "password",
+                            Port = dbElement.GetProperty("Port").GetInt32(),
+                            SslMode = dbElement.GetProperty("SslMode").GetString() ?? "Require"
+                        };
+                    }
+                    LogMessage($"✅ Loaded config from: {foundPath}");
+                    LogMessage($"   Host: {dbConfig.Host}:{dbConfig.Port}, DB: {dbConfig.Database}, User: {dbConfig.Username}");
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"❌ Failed to parse appsettings.json from {foundPath}: {ex.Message}");
+                    dbConfig = CreateDefaultConfig();
+                }
+            }
+            else
+            {
+                LogMessage($"⚠️ appsettings.json not found in any location. Using default config.");
+                dbConfig = CreateDefaultConfig();
+            }
+
+            // ===== Setup Database Context (PostgreSQL via Supabase) =====
+            var connectionString = dbConfig.GetConnectionString();
+            LogMessage($"📡 Database config loaded - Host: {dbConfig.Host}, Port: {dbConfig.Port}");
+
+            AppDbContext dbContext = null;
+            try
+            {
+                var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+                    .UseNpgsql(connectionString, options =>
+                    {
+                        options.EnableRetryOnFailure(
+                            maxRetryCount: 3,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorCodesToAdd: null
+                        );
+                    })
+                    .Options;
+
+                dbContext = new AppDbContext(dbContextOptions);
+
+                // ✅ Test connection first
+                LogMessage("🔍 Testing database connection...");
+                var canConnect = dbContext.Database.CanConnect();
+                if (canConnect)
+                {
+                    LogMessage("✅ Database connection successful!");
+
+                    // ✅ Apply migrations (tạo database schema)
+                    try
+                    {
+                        dbContext.Database.Migrate();
+                        LogMessage("✅ Database migrations applied successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogMessage($"⚠️ Migration warning: {ex.Message}");
+                        // Fallback: create schema if migrations fail
+                        try
+                        {
+                            dbContext.Database.EnsureCreated();
+                            LogMessage("✅ Database schema created (fallback)");
+                        }
+                        catch (Exception ex2) { LogMessage($"❌ Schema creation failed: {ex2.Message}"); }
+                    }
+                }
+                else
+                {
+                    LogMessage("⚠️ Cannot connect to database - will retry on first access");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"❌ Database initialization error: {ex.Message}");
+                LogMessage($"   Inner exception: {ex.InnerException?.Message}");
+                LogMessage("   App will continue - ensure Supabase is accessible");
+
+                // Create DbContext anyway - connection will be attempted on first use
+                var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+                    .UseNpgsql(connectionString, options =>
+                    {
+                        options.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorCodesToAdd: null);
+                    })
+                    .Options;
+
+                dbContext = new AppDbContext(dbContextOptions);
+            }
+
+            // ===== Register Data Access Layer (Repositories) =====
+            container.Register<IRepository<Product>>(new Repository<Product>(dbContext));
+            container.Register<IRepository<Category>>(new Repository<Category>(dbContext));
+            container.Register<IRepository<Customer>>(new Repository<Customer>(dbContext));
+            container.Register<IRepository<Order>>(new Repository<Order>(dbContext));
+            container.Register<IRepository<OrderDetail>>(new Repository<OrderDetail>(dbContext));
+            container.Register<IRepository<User>>(new Repository<User>(dbContext));
+            container.Register<IRepository<Promotion>>(new Repository<Promotion>(dbContext));
+            container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
+            container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
+            container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
+
+            // ===== Register Business Logic Layer (Services) =====
+            container.Register<IProductService>(new ProductService(
+                container.Get<IRepository<Product>>(),
+                container.Get<IRepository<Category>>()
+            ));
+
+            container.Register<ICustomerService>(new CustomerService(
+                container.Get<IRepository<Customer>>()
+            ));
+
+            container.Register<IOrderService>(new OrderService(
+                container.Get<IRepository<Order>>(),
+                container.Get<IRepository<Customer>>(),
+                container.Get<IRepository<User>>()
+            ));
+
+            LogMessage("✅ All services registered successfully");
+            LogMessage("====== DATABASE INITIALIZATION END ======");
+        }
+        catch (Exception ex)
+        {
+            LogMessage($"❌ ERROR registering services: {ex.Message}");
+            LogMessage($"StackTrace: {ex.StackTrace}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Tạo mặc định DatabaseConfig khi không đọc được appsettings.json
+    /// </summary>
+    private DatabaseConfig CreateDefaultConfig()
+    {
+        return new DatabaseConfig
+        {
+            Host = "db.YOUR_PROJECT_ID.supabase.co",
+            Database = "postgres",
+            Username = "postgres",
+            Password = "your_password",
+            Port = 5432,
+            SslMode = "Require"
+        };
     }
 
     /// <summary>

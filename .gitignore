@@ -495,10 +495,10 @@ uno.config.json
 # === Additional for WebAssembly ===
 wwwroot/_framework/
 dist/
-docs/GUIDE_CUSTOMER_MANAGEMENT.md
-docs/PROJECT_STATUS.md
-docs/SETUP_FOR_TEAM.md
-docs/TASK_TEMPLATES.md
-docs/TEAM_ONBOARDING.md
-docs/YÊU_CẦU_CHUNG.md
 MyShop/appsettings.json
+docs/YÊU_CẦU_CHUNG.md
+docs/TEAM_ONBOARDING.md
+docs/TASK_TEMPLATES.md
+docs/SETUP_FOR_TEAM.md
+docs/PROJECT_STATUS.md
+docs/GUIDE_CUSTOMER_MANAGEMENT.md
