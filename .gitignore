@@ -495,7 +495,13 @@ uno.config.json
 # === Additional for WebAssembly ===
 wwwroot/_framework/
 dist/
+
+# === Local Configuration (DO NOT COMMIT) ===
 MyShop/appsettings.json
+MyShop/ReadMe.md
+ReadMe.md
+
+# === Team Documentation (Individual Setup) ===
 docs/YÊU_CẦU_CHUNG.md
 docs/TEAM_ONBOARDING.md
 docs/TASK_TEMPLATES.md
