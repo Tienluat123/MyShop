@@ -62,13 +62,13 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border
-            Grid.Row="0"
-            Padding="{StaticResource SpaceXLarge_Large}"
-            Background="{StaticResource SurfaceBackground}"
-            BorderBrush="{StaticResource Gray100}"
-            BorderThickness="0,0,0,1"
-            CornerRadius="24,24,0,0">
+        <StackPanel Grid.Row="0">
+            <Border
+                Padding="{StaticResource SpaceXLarge_Large}"
+                Background="{StaticResource SurfaceBackground}"
+                BorderBrush="{StaticResource Gray100}"
+                BorderThickness="0,0,0,1"
+                CornerRadius="24,24,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -117,7 +117,48 @@
                     </Button>
                 </StackPanel>
             </Grid>
-        </Border>
+            </Border>
+
+            <Border Padding="24,12"
+                    Background="{StaticResource SurfaceBackground}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Visibility="{Binding Filter, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='History'}">
+                <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Right">
+                    <TextBlock Text="Filter by Date:" 
+                               VerticalAlignment="Center" 
+                               Style="{StaticResource SubheadingStyle}" 
+                               Foreground="{StaticResource TextSecondary}" />
+                    
+                    <CalendarDatePicker PlaceholderText="Start Date" 
+                                        Date="{Binding SearchStartDate, Mode=TwoWay}"
+                                        Background="{StaticResource SecondaryBackground}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        MinHeight="40"
+                                        FontSize="14" />
+                                        
+                    <TextBlock Text="-" 
+                               VerticalAlignment="Center" 
+                               Style="{StaticResource BodyStyle}" 
+                               Foreground="{StaticResource TextTertiary}" />
+                               
+                    <CalendarDatePicker PlaceholderText="End Date" 
+                                        Date="{Binding SearchEndDate, Mode=TwoWay}"
+                                        Background="{StaticResource SecondaryBackground}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        MinHeight="40"
+                                        FontSize="14" />
+                                        
+                    <Button Content="Search" 
+                            Command="{Binding SearchByDateRangeCommand}" 
+                            Style="{StaticResource PrimaryButtonStyle}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
 
         <GridView
             x:Name="OrderGridView"

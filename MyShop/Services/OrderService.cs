@@ -62,12 +62,12 @@ public interface IOrderService
     /// <summary>
     /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang
     /// </summary>
-    PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, params string[] statuses);
+    PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, params string[] statuses);
 
     /// <summary>
     /// Đếm số lượng đơn hàng theo danh sách trạng thái
     /// </summary>
-    int GetCountByStatus(params string[] statuses);
+    int GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, params string[] statuses);
 }
 
 
@@ -317,12 +317,25 @@ public class OrderService : IOrderService
     /// <summary>
     /// Đếm số lượng đơn hàng theo danh sách trạng thái
     /// </summary>
-    public int GetCountByStatus(params string[] statuses)
+    public int GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, params string[] statuses)
     {
         if (statuses == null || statuses.Length == 0) return 0;
         try
         {
-            return _orderRepository.Query().Count(o => statuses.Contains(o.Status));
+            var query = _orderRepository.Query().Where(o => statuses.Contains(o.Status));
+            
+            if (startDate.HasValue)
+            {
+                query = query.Where(o => o.OrderDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(o => o.OrderDate <= endOfDay);
+            }
+
+            return query.Count();
         }
         catch (Exception ex)
         {
@@ -333,7 +346,7 @@ public class OrderService : IOrderService
     /// <summary>
     /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang
     /// </summary>
-    public PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, params string[] statuses)
+    public PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, params string[] statuses)
     {
         if (paging == null) throw new ArgumentNullException(nameof(paging));
         paging.Validate();
@@ -345,6 +358,18 @@ public class OrderService : IOrderService
             if (statuses != null && statuses.Length > 0)
             {
                 query = query.Where(o => statuses.Contains(o.Status));
+            }
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(o => o.OrderDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                // Include the entire end date day
+                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(o => o.OrderDate <= endOfDay);
             }
 
             if (sortDescending)
@@ -377,4 +402,3 @@ public class OrderService : IOrderService
     }
 
 }
-

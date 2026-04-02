@@ -44,6 +44,12 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private string _pagingSummary = "Showing 0-0 in 0 items";
 
+    [ObservableProperty]
+    private DateTimeOffset? _searchStartDate;
+
+    [ObservableProperty]
+    private DateTimeOffset? _searchEndDate;
+
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
 
@@ -72,7 +78,7 @@ public partial class OrderManagementViewModel : ObservableObject
                 HasMoreData = true;
 
                 var paging = new PagingRequest { PageNumber = _currentPage, PageSize = PageSize };
-                var pagedResult = _orderService.GetPagedOrdersByStatuses(paging, false, activeStatuses);
+                var pagedResult = _orderService.GetPagedOrdersByStatuses(paging, false, SearchStartDate?.DateTime, SearchEndDate?.DateTime, activeStatuses);
                 
                 var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
                 
@@ -88,14 +94,23 @@ public partial class OrderManagementViewModel : ObservableObject
                 // History Paging
                 var historyStatuses = new[] { "Paid", "Cancelled" };
                 var paging = new PagingRequest { PageNumber = CurrentPageHistory, PageSize = PageSizeHistory };
-                var pagedResult = _orderService.GetPagedOrdersByStatuses(paging, true, historyStatuses);
+                var pagedResult = _orderService.GetPagedOrdersByStatuses(
+                    paging, 
+                    true, 
+                    SearchStartDate?.DateTime, 
+                    SearchEndDate?.DateTime, 
+                    historyStatuses);
                 
                 var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
                 
                 DisplayOrders.Clear();
                 foreach (var o in mappedOrders) DisplayOrders.Add(o);
 
-                int historyCountFromDb = _orderService.GetCountByStatus("Paid", "Cancelled"); // Real exact count
+                int historyCountFromDb = _orderService.GetCountByStatus(
+                    SearchStartDate?.DateTime, 
+                    SearchEndDate?.DateTime, 
+                    "Paid", "Cancelled");
+
                 TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
                 if (TotalPagesHistory < 1) TotalPagesHistory = 1;
 
@@ -132,7 +147,12 @@ public partial class OrderManagementViewModel : ObservableObject
             _currentPage++;
 
             var activeStatuses = new[] { "Pending", "Preparing", "Ready" };
-            var pagedResult = _orderService.GetPagedOrdersByStatuses(new PagingRequest { PageNumber = _currentPage, PageSize = PageSize }, false, activeStatuses);
+            var pagedResult = _orderService.GetPagedOrdersByStatuses(
+                new PagingRequest { PageNumber = _currentPage, PageSize = PageSize }, 
+                false, 
+                null, 
+                null, 
+                activeStatuses);
             
             var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
             
@@ -149,6 +169,13 @@ public partial class OrderManagementViewModel : ObservableObject
         {
             IsLoadingMore = false;
         }
+    }
+
+    [RelayCommand]
+    private void SearchByDateRange()
+    {
+        CurrentPageHistory = 1;
+        LoadOrders();
     }
 
     [RelayCommand]
@@ -313,9 +340,13 @@ public partial class OrderManagementViewModel : ObservableObject
     {
         try
         {
-            ActiveCount = _orderService.GetCountByStatus("Pending", "Preparing", "Ready");
-            // Assuming anything not in active is history, or specifically Paid/Cancelled
-            HistoryCount = _orderService.GetCountByStatus("Paid", "Cancelled");
+            ActiveCount = _orderService.GetCountByStatus(null, null, "Pending", "Preparing", "Ready");
+            
+            // History count uses the date range bounds
+            HistoryCount = _orderService.GetCountByStatus(
+                SearchStartDate?.DateTime, 
+                SearchEndDate?.DateTime, 
+                "Paid", "Cancelled");
         }
         catch { /* ignored */ }
     }
