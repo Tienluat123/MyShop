@@ -1,5 +1,6 @@
 using MyShop.Data;
 using MyShop.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyShop.Services;
 
@@ -121,10 +122,7 @@ public class OrderService : IOrderService
 
         try
         {
-            var allOrders = _orderRepository.GetAll().Items;
-            return allOrders
-                .Where(o => o.CustomerId == customerId)
-                .ToList();
+            return _orderRepository.Find(o => o.CustomerId == customerId).ToList();
         }
         catch (Exception ex)
         {
@@ -142,10 +140,7 @@ public class OrderService : IOrderService
 
         try
         {
-            var allOrders = _orderRepository.GetAll().Items;
-            return allOrders
-                .Where(o => o.Status == status)
-                .ToList();
+            return _orderRepository.Find(o => o.Status == status).ToList();
         }
         catch (Exception ex)
         {
@@ -175,14 +170,13 @@ public class OrderService : IOrderService
     {
         try
         {
-            var allOrders = _orderRepository.GetAll().Items;
-            return allOrders
+            return _orderRepository.Query()
                 .Where(o =>
                     o.OrderDate >= startDate &&
                     o.OrderDate <= endDate &&
                     o.Status == "Paid"
                 )
-                .Sum(o => o.TotalAmount);
+                .Sum(o => (decimal?)o.TotalAmount) ?? 0;
         }
         catch (Exception ex)
         {
@@ -204,6 +198,15 @@ public class OrderService : IOrderService
 
         if (order.UserId <= 0)
             throw new ArgumentException("Phải chọn nhân viên hợp lệ", nameof(order.UserId));
+
+        // Tự động tính TotalAmount nếu có OrderDetails
+        if (order.OrderDetails?.Any() == true)
+        {
+            order.SubTotal = order.OrderDetails.Sum(od => od.Quantity * od.UnitPrice);
+
+            // Xem lại công thức tính
+            order.TotalAmount = order.SubTotal - order.DiscountAmount;
+        }
 
         if (order.TotalAmount < 0)
             throw new ArgumentException("Tổng tiền không được âm", nameof(order.TotalAmount));
@@ -284,12 +287,19 @@ public class OrderService : IOrderService
             if (order == null)
                 throw new KeyNotFoundException($"Đơn hàng với ID {orderId} không tìm thấy");
 
+            // Ngăn chặn thay đổi nếu đơn hàng đã thanh toán hoặc đã hủy (trừ Admin có thể cần can thiệp)
+            if (order.Status == "Paid" && newStatus != "Paid")
+                throw new InvalidOperationException("Không thể thay đổi trạng thái của đơn hàng đã thanh toán");
+            
+            if (order.Status == "Cancelled")
+                throw new InvalidOperationException("Không thể thay đổi trạng thái của đơn hàng đã hủy");
+
             order.Status = newStatus;
             Update(order);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not InvalidOperationException && ex is not KeyNotFoundException)
         {
-            throw new InvalidOperationException($"Lỗi khi cập nhật trạng thái đơn hàng", ex);
+            throw new InvalidOperationException($"Lỗi hệ thống khi cập nhật trạng thái đơn hàng", ex);
         }
     }
 }

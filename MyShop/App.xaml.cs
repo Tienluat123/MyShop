@@ -1,13 +1,16 @@
 using System;
+using System.ComponentModel;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Uno.Resizetizer;
-using MyShop.Views;
 using MyShop.Data;
-using MyShop.Services;
 using MyShop.Di;
 using MyShop.Models;
-using Microsoft.EntityFrameworkCore;
+using MyShop.Services;
+using MyShop.ViewModels;
+using MyShop.Views;
+using Uno.Resizetizer;
 
 namespace MyShop;
 
@@ -21,6 +24,11 @@ public partial class App : Application
     {
         this.InitializeComponent();
     }
+
+    /// <summary>
+    /// Static provider to access services globally if needed (like in XAML)
+    /// </summary>
+    public static IServiceProvider Services { get; private set; } = null!;
 
     protected Window? MainWindow { get; private set; }
 
@@ -66,7 +74,8 @@ public partial class App : Application
     /// </summary>
     private void RegisterServices()
     {
-        var container = ServiceContainer.Instance;
+         var container = ServiceContainer.Instance;
+        var services = new ServiceCollection();
 
         // Create log file to track database initialization
         var logPath = Path.Combine(
@@ -212,7 +221,7 @@ public partial class App : Application
             }
 
             // ===== Register Data Access Layer (Repositories) =====
-            container.Register<IRepository<Product>>(new Repository<Product>(dbContext));
+             container.Register<IRepository<Product>>(new Repository<Product>(dbContext));
             container.Register<IRepository<Category>>(new Repository<Category>(dbContext));
             container.Register<IRepository<Customer>>(new Repository<Customer>(dbContext));
             container.Register<IRepository<Order>>(new Repository<Order>(dbContext));
@@ -222,6 +231,18 @@ public partial class App : Application
             container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
             container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
+
+            // Use InMemoryRepository for demo, or switch to Repository<T> for DB
+            services.AddSingleton<IRepository<Product>>(new InMemoryRepository<Product>());
+            services.AddSingleton<IRepository<Category>>(new InMemoryRepository<Category>());
+            services.AddSingleton<IRepository<Customer>>(new InMemoryRepository<Customer>());
+            services.AddSingleton<IRepository<Order>>(new InMemoryRepository<Order>());
+            services.AddSingleton<IRepository<OrderDetail>>(new InMemoryRepository<OrderDetail>());
+            services.AddSingleton<IRepository<User>>(new InMemoryRepository<User>());
+            services.AddSingleton<IRepository<Promotion>>(new InMemoryRepository<Promotion>());
+            services.AddSingleton<IRepository<AppConfig>>(new InMemoryRepository<AppConfig>());
+            services.AddSingleton<IRepository<UserSetting>>(new InMemoryRepository<UserSetting>());
+            services.AddSingleton<IRepository<WorkSchedule>>(new InMemoryRepository<WorkSchedule>());
 
             // ===== Register Business Logic Layer (Services) =====
             container.Register<IProductService>(new ProductService(
@@ -239,7 +260,27 @@ public partial class App : Application
                 container.Get<IRepository<User>>()
             ));
 
-            LogMessage("✅ All services registered successfully");
+            services.AddSingleton<IProductService, ProductService>();
+            services.AddSingleton<ICustomerService, CustomerService>();
+            services.AddSingleton<IOrderService, OrderService>();
+
+            // ===== Register ViewModels =====
+            services.AddTransient<OrderManagementViewModel>();
+            // Add other viewmodels as needed...
+
+            // Build Provider
+            Services = services.BuildServiceProvider();
+
+            // Seed Mock Data
+            SampleDataSeeder.Seed(
+                Services.GetRequiredService<IRepository<Product>>(),
+                Services.GetRequiredService<IRepository<Category>>(),
+                Services.GetRequiredService<IRepository<Order>>(),
+                Services.GetRequiredService<IRepository<Customer>>(),
+                Services.GetRequiredService<IRepository<User>>()
+            );
+
+            LogMessage("✅ All services registered successfully with Microsoft DI");
             LogMessage("====== DATABASE INITIALIZATION END ======");
         }
         catch (Exception ex)

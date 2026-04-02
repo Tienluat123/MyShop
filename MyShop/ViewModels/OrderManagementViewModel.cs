@@ -4,12 +4,14 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MyShop.Models;
+using MyShop.Services;
+using MyShop.Data;
 
 namespace MyShop.ViewModels;
 
 public partial class OrderManagementViewModel : ObservableObject
 {
-    private readonly ObservableCollection<PosOrder> _allOrders;
+    private readonly IOrderService _orderService;
 
     [ObservableProperty]
     private string _filter = "Active"; // "Active" or "History"
@@ -22,58 +24,107 @@ public partial class OrderManagementViewModel : ObservableObject
 
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
 
-    public OrderManagementViewModel(ObservableCollection<PosOrder> orders)
+    public OrderManagementViewModel(IOrderService orderService)
     {
-        _allOrders = orders;
-        if (!_allOrders.Any())
-        {
-            LoadSampleData();
-        }
-        UpdateDisplayOrders();
-        _allOrders.CollectionChanged += (s, e) => UpdateDisplayOrders();
+        _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+        
+        // Load initial data
+        LoadOrders();
     }
 
-    private void LoadSampleData()
+    [RelayCommand]
+    public void LoadOrders()
     {
-        var coffeeCategory = new Category { Id = 1, Name = "Coffee", IconGlyph = "☕" };
-        var pastriesCategory = new Category { Id = 3, Name = "Pastries", IconGlyph = "🥐" };
-        var teaCategory = new Category { Id = 2, Name = "Tea", IconGlyph = "🍵" };
-
-        var coffee = new Product { Id = 1, Name = "Caramel Macchiato", Price = 5.50m, CategoryId = 1, Category = coffeeCategory };
-        var muffin = new Product { Id = 3, Name = "Blueberry Muffin", Price = 3.25m, CategoryId = 3, Category = pastriesCategory };
-        var tea = new Product { Id = 2, Name = "Green Tea", Price = 4.00m, CategoryId = 2, Category = teaCategory };
-
-        _allOrders.Add(new PosOrder
+        try
         {
-            OrderId = "ORD-1234",
-            Status = OrderStatus.Pending,
-            Type = "Dine-in",
-            Table = "5",
-            CreatedAt = DateTime.Now.AddMinutes(-5),
-            Items = { new OrderItem { Product = coffee, Quantity = 2, BasePrice = 5.50 } }
-        });
+            var pagedResult = _orderService.GetAll();
+            var allEntities = pagedResult.Items;
 
-        _allOrders.Add(new PosOrder
-        {
-            OrderId = "ORD-5678",
-            Status = OrderStatus.Preparing,
-            Type = "Takeaway",
-            CreatedAt = DateTime.Now.AddMinutes(-12),
-            Items = {
-                new OrderItem { Product = tea, Quantity = 1, BasePrice = 4.00 },
-                new OrderItem { Product = muffin, Quantity = 1, BasePrice = 3.25 }
+            var mappedOrders = allEntities.Select(MapToPosOrder).ToList();
+            
+            DisplayOrders.Clear();
+            
+            var activeStatuses = new[] { OrderStatus.Pending, OrderStatus.Preparing, OrderStatus.Ready };
+            
+            if (Filter == "Active")
+            {
+                foreach (var o in mappedOrders.Where(o => activeStatuses.Contains(o.Status)))
+                    DisplayOrders.Add(o);
             }
-        });
+            else
+            {
+                foreach (var o in mappedOrders.Where(o => !activeStatuses.Contains(o.Status)))
+                    DisplayOrders.Add(o);
+            }
 
-        _allOrders.Add(new PosOrder
+            ActiveCount = mappedOrders.Count(o => activeStatuses.Contains(o.Status));
+            HistoryCount = mappedOrders.Count(o => !activeStatuses.Contains(o.Status));
+        }
+        catch (Exception)
         {
-            OrderId = "ORD-9012",
-            Status = OrderStatus.Completed,
-            Type = "Dine-in",
-            Table = "12",
-            CreatedAt = DateTime.Now.AddHours(-1),
-            Items = { new OrderItem { Product = coffee, Quantity = 1, BasePrice = 5.50 } }
-        });
+            // Log or handle error
+        }
+    }
+
+    [RelayCommand]
+    public void LoadOrderPage(int pageNumber)
+    {
+        try
+        {
+            var paging = new PagingRequest { PageNumber = pageNumber, PageSize = 20 };
+            var pagedResult = _orderService.GetAll(paging);
+            
+            // Add to display list or replace depending on UX needs
+            foreach (var entity in pagedResult.Items)
+            {
+                DisplayOrders.Add(MapToPosOrder(entity));
+            }
+        }
+        catch (Exception)
+        {
+            // Log or handle error
+        }
+    }
+
+    private PosOrder MapToPosOrder(Order order)
+    {
+        var posOrder = new PosOrder
+        {
+            OrderId = $"ORD-{order.Id}",
+            Status = MapToStatus(order.Status),
+            CreatedAt = order.OrderDate,
+            Subtotal = (double)order.SubTotal,
+            Total = (double)order.TotalAmount,
+            // Add other mappings as needed
+        };
+
+        if (order.OrderDetails != null)
+        {
+            foreach (var detail in order.OrderDetails)
+            {
+                posOrder.Items.Add(new OrderItem
+                {
+                    Product = detail.Product ?? new Product { Name = $"Product {detail.ProductId}" },
+                    Quantity = detail.Quantity,
+                    BasePrice = (double)detail.UnitPrice
+                });
+            }
+        }
+
+        return posOrder;
+    }
+
+    private OrderStatus MapToStatus(string status)
+    {
+        return status switch
+        {
+            "Pending" => OrderStatus.Pending,
+            "Preparing" => OrderStatus.Preparing,
+            "Ready" => OrderStatus.Ready,
+            "Paid" => OrderStatus.Completed,
+            "Cancelled" => OrderStatus.Voided,
+            _ => OrderStatus.Pending
+        };
     }
 
     [RelayCommand]
@@ -85,55 +136,82 @@ public partial class OrderManagementViewModel : ObservableObject
     [RelayCommand]
     private void UpdateStatus(PosOrder order)
     {
-        if (order.Status == OrderStatus.Pending) order.Status = OrderStatus.Preparing;
-        else if (order.Status == OrderStatus.Preparing) order.Status = OrderStatus.Ready;
-        else if (order.Status == OrderStatus.Ready) order.Status = OrderStatus.Completed;
+        var currentStatus = order.Status;
+        OrderStatus nextStatus = currentStatus;
 
-        UpdateDisplayOrders();
+        if (currentStatus == OrderStatus.Pending) nextStatus = OrderStatus.Preparing;
+        else if (currentStatus == OrderStatus.Preparing) nextStatus = OrderStatus.Ready;
+        else if (currentStatus == OrderStatus.Ready) nextStatus = OrderStatus.Completed;
+
+        if (nextStatus != currentStatus)
+        {
+            try
+            {
+                int numericId = ExtractId(order.OrderId);
+                _orderService.UpdateOrderStatus(numericId, MapFromStatus(nextStatus));
+                LoadOrders(); // Refresh from service
+            }
+            catch (Exception) { /* Handle error */ }
+        }
     }
 
     [RelayCommand]
     private void VoidOrder(PosOrder order)
     {
-        order.Status = OrderStatus.Voided;
-        UpdateDisplayOrders();
+        try
+        {
+            int numericId = ExtractId(order.OrderId);
+            _orderService.UpdateOrderStatus(numericId, "Cancelled");
+            LoadOrders();
+        }
+        catch (Exception) { /* Handle error */ }
     }
 
     [RelayCommand]
     private void RefundOrder(PosOrder order)
     {
-        order.Status = OrderStatus.Refunded;
-        UpdateDisplayOrders();
+        // For demo, we just update status to something representing refund if available in service
+        // or just local update if service doesn't support it yet
+        try
+        {
+            int numericId = ExtractId(order.OrderId);
+            _orderService.UpdateOrderStatus(numericId, "Cancelled"); // Or "Refunded" if supported
+            LoadOrders();
+        }
+        catch (Exception) { /* Handle error */ }
     }
 
     [RelayCommand]
     private void ClearHistory()
     {
-        var activeStatuses = new[] { OrderStatus.Pending, OrderStatus.Preparing, OrderStatus.Ready };
-        var historyOrders = _allOrders.Where(o => !activeStatuses.Contains(o.Status)).ToList();
-        foreach (var order in historyOrders)
-        {
-            _allOrders.Remove(order);
-        }
+        // Currently we don't have a bulk delete in service, so we do it one by one or just empty the local list for demo
+        DisplayOrders.Clear();
+        HistoryCount = 0;
     }
 
-    partial void OnFilterChanged(string value) => UpdateDisplayOrders();
+    partial void OnFilterChanged(string value) => LoadOrders();
 
-    private void UpdateDisplayOrders()
+    private void UpdateDisplayOrders() => LoadOrders();
+
+    private int ExtractId(string orderId)
     {
-        var activeStatuses = new[] { OrderStatus.Pending, OrderStatus.Preparing, OrderStatus.Ready };
+        if (string.IsNullOrEmpty(orderId)) return 0;
+        var parts = orderId.Split('-');
+        if (parts.Length > 1 && int.TryParse(parts[1], out int id))
+            return id;
+        return 0;
+    }
 
-        ActiveCount = _allOrders.Count(o => activeStatuses.Contains(o.Status));
-        HistoryCount = _allOrders.Count(o => !activeStatuses.Contains(o.Status));
-
-        DisplayOrders.Clear();
-        var filtered = Filter == "Active"
-            ? _allOrders.Where(o => activeStatuses.Contains(o.Status))
-            : _allOrders.Where(o => !activeStatuses.Contains(o.Status));
-
-        foreach (var order in filtered)
+    private string MapFromStatus(OrderStatus status)
+    {
+        return status switch
         {
-            DisplayOrders.Add(order);
-        }
+            OrderStatus.Pending => "Pending",
+            OrderStatus.Preparing => "Preparing",
+            OrderStatus.Ready => "Ready",
+            OrderStatus.Completed => "Paid",
+            OrderStatus.Voided => "Cancelled",
+            _ => "Pending"
+        };
     }
 }

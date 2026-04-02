@@ -45,7 +45,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
   </ItemGroup>
-  
+
   <!-- Copy appsettings.json to output directory -->
   <ItemGroup>
     <None Update="appsettings.json">

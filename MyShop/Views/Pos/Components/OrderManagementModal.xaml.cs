@@ -9,10 +9,10 @@ public sealed partial class OrderManagementModal : ContentDialog
 {
     public OrderManagementViewModel ViewModel;
 
-    public OrderManagementModal(ObservableCollection<PosOrder> orders)
+    public OrderManagementModal()
     {
         this.InitializeComponent();
-        ViewModel = new OrderManagementViewModel(orders);
+        ViewModel = App.Services.GetRequiredService<OrderManagementViewModel>();
         DataContext = ViewModel;
     }
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace MyShop.Data;
 
@@ -146,6 +147,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         {
             throw new InvalidOperationException($"Lỗi khi xóa {typeof(TEntity).Name} với ID {id}: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Lấy IQueryable để thực hiện LINQ queries phức tạp
+    /// </summary>
+    public IQueryable<TEntity> Query()
+    {
+        return _dbSet.AsQueryable();
+    }
+
+    /// <summary>
+    /// Tìm kiếm entities theo điều kiện
+    /// </summary>
+    public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+    {
+        return _dbSet.Where(predicate).ToList();
     }
 
     /// <summary>

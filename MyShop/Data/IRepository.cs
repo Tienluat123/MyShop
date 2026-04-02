@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 namespace MyShop.Data;
 
 /// <summary>
@@ -39,6 +40,16 @@ public interface IRepository<TEntity> where TEntity : class
     /// </summary>
     /// <param name="id">ID của entity cần xóa</param>
     void Delete(int id);
+
+    /// <summary>
+    /// Lấy IQueryable để thực hiện LINQ queries phức tạp
+    /// </summary>
+    IQueryable<TEntity> Query();
+
+    /// <summary>
+    /// Tìm kiếm entities theo điều kiện
+    /// </summary>
+    IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
 
     /// <summary>
     /// Lưu tất cả thay đổi vào database
