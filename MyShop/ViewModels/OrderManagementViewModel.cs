@@ -12,6 +12,8 @@ namespace MyShop.ViewModels;
 public partial class OrderManagementViewModel : ObservableObject
 {
     private readonly IOrderService _orderService;
+    private readonly IProductService _productService;
+
 
     [ObservableProperty]
     private string _filter = "Active"; // "Active" or "History"
@@ -53,9 +55,10 @@ public partial class OrderManagementViewModel : ObservableObject
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
 
-    public OrderManagementViewModel(IOrderService orderService)
+    public OrderManagementViewModel(IOrderService orderService, IProductService productService)
     {
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+        _productService = productService ?? throw new ArgumentNullException(nameof(productService));
         
         _currentPageHistory = 1;
         LoadOrders();
@@ -223,9 +226,11 @@ public partial class OrderManagementViewModel : ObservableObject
         {
             foreach (var detail in order.OrderDetails)
             {
+                var product = detail.Product ?? _productService.GetById(detail.ProductId) ?? new Product { Name = $"Product {detail.ProductId}" };
+                
                 posOrder.Items.Add(new OrderItem
                 {
-                    Product = detail.Product ?? new Product { Name = $"Product {detail.ProductId}" },
+                    Product = product,
                     Quantity = detail.Quantity,
                     BasePrice = (double)detail.UnitPrice
                 });
