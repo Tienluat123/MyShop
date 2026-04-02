@@ -35,44 +35,44 @@ public static class SampleDataSeeder
         var staff = userRepo.Add(new User { FullName = "Staff member", Role = "2" });
 
         // 5. Seed Orders (Sample data from VM)
-        var order1 = new Order
-        {
-            CustomerId = customer.Id,
-            UserId = staff.Id,
-            OrderDate = DateTime.Now.AddMinutes(-5),
-            Status = "Pending",
-            OrderDetails = new List<OrderDetail>
-            {
-                new OrderDetail { ProductId = coffee.Id, Quantity = 2, UnitPrice = 5.50m }
-            }
-        };
-        orderRepo.Add(order1);
+        var random = new Random();
+        var statuses = new[] { "Pending", "Preparing", "Ready", "Paid", "Cancelled" };
+        var products = new[] { coffee, tea, muffin };
 
-        var order2 = new Order
+        for (int i = 1; i <= 50; i++)
         {
-            CustomerId = customer.Id,
-            UserId = staff.Id,
-            OrderDate = DateTime.Now.AddMinutes(-12),
-            Status = "Preparing",
-            OrderDetails = new List<OrderDetail>
+            // Randomize order data
+            int statusIndex = random.Next(statuses.Length);
+            // Bias towards active for testing (70% active)
+            if (random.Next(10) < 7) 
             {
-                new OrderDetail { ProductId = tea.Id, Quantity = 1, UnitPrice = 4.00m },
-                new OrderDetail { ProductId = muffin.Id, Quantity = 1, UnitPrice = 3.25m }
+               statusIndex = random.Next(3); // Pending, Preparing, Ready
             }
-        };
-        orderRepo.Add(order2);
 
-        var order3 = new Order
-        {
-            CustomerId = customer.Id,
-            UserId = staff.Id,
-            OrderDate = DateTime.Now.AddHours(-1),
-            Status = "Paid",
-            OrderDetails = new List<OrderDetail>
+            int hoursAgo = random.Next(1, 48); // Last 48 hours
+            
+            var order = new Order
             {
-                new OrderDetail { ProductId = coffee.Id, Quantity = 1, UnitPrice = 5.50m }
+                CustomerId = customer.Id,
+                UserId = staff.Id,
+                OrderDate = DateTime.Now.AddHours(-hoursAgo).AddMinutes(random.Next(-60, 0)),
+                Status = statuses[statusIndex],
+                OrderDetails = new List<OrderDetail>()
+            };
+
+            int numItems = random.Next(1, 4);
+            for (int j = 0; j < numItems; j++)
+            {
+                var product = products[random.Next(products.Length)];
+                order.OrderDetails.Add(new OrderDetail
+                {
+                    ProductId = product.Id,
+                    Quantity = random.Next(1, 4),
+                    UnitPrice = product.Price
+                });
             }
-        };
-        orderRepo.Add(order3);
+
+            orderRepo.Add(order);
+        }
     }
 }

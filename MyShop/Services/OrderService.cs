@@ -58,7 +58,18 @@ public interface IOrderService
     /// Cập nhật trạng thái đơn hàng
     /// </summary>
     void UpdateOrderStatus(int orderId, string newStatus);
+
+    /// <summary>
+    /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang
+    /// </summary>
+    PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, params string[] statuses);
+
+    /// <summary>
+    /// Đếm số lượng đơn hàng theo danh sách trạng thái
+    /// </summary>
+    int GetCountByStatus(params string[] statuses);
 }
+
 
 /// <summary>
 /// Order Service Implementation
@@ -302,4 +313,68 @@ public class OrderService : IOrderService
             throw new InvalidOperationException($"Lỗi hệ thống khi cập nhật trạng thái đơn hàng", ex);
         }
     }
+
+    /// <summary>
+    /// Đếm số lượng đơn hàng theo danh sách trạng thái
+    /// </summary>
+    public int GetCountByStatus(params string[] statuses)
+    {
+        if (statuses == null || statuses.Length == 0) return 0;
+        try
+        {
+            return _orderRepository.Query().Count(o => statuses.Contains(o.Status));
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Lỗi khi đếm số lượng đơn hàng", ex);
+        }
+    }
+
+    /// <summary>
+    /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang
+    /// </summary>
+    public PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, params string[] statuses)
+    {
+        if (paging == null) throw new ArgumentNullException(nameof(paging));
+        paging.Validate();
+
+        try
+        {
+            var query = _orderRepository.Query();
+            
+            if (statuses != null && statuses.Length > 0)
+            {
+                query = query.Where(o => statuses.Contains(o.Status));
+            }
+
+            if (sortDescending)
+            {
+                query = query.OrderByDescending(o => o.OrderDate);
+            }
+            else
+            {
+                query = query.OrderBy(o => o.OrderDate);
+            }
+
+            var totalItems = query.Count();
+            var items = query.Skip(paging.GetSkip()).Take(paging.PageSize).ToList();
+
+            return new PagedResult<Order>
+            {
+                Items = items,
+                Pagination = new PagingMetadata
+                {
+                    PageNumber = paging.PageNumber,
+                    PageSize = paging.PageSize,
+                    TotalItems = totalItems
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Lỗi khi lấy danh sách đơn hàng phân trang", ex);
+        }
+    }
+
 }
+

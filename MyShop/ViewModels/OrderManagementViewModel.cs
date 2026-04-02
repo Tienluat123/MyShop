@@ -22,69 +22,163 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private int _historyCount;
 
+    [ObservableProperty]
+    private bool _isLoadingMore;
+
+    [ObservableProperty]
+    private bool _hasMoreData = true;
+
+    // Infinite scroll for active tab
+    private int _currentPage = 1;
+    private const int PageSize = 20;
+
+    // Standard paging for history tab
+    private const int PageSizeHistory = 4;
+    
+    [ObservableProperty]
+    private int _currentPageHistory = 1;
+
+    [ObservableProperty]
+    private int _totalPagesHistory;
+
+    [ObservableProperty]
+    private string _pagingSummary = "Showing 0-0 in 0 items";
+
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
+    public ObservableCollection<int> PageNumbers { get; } = new();
 
     public OrderManagementViewModel(IOrderService orderService)
     {
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         
-        // Load initial data
+        _currentPageHistory = 1;
         LoadOrders();
     }
 
     [RelayCommand]
     public void LoadOrders()
     {
+        if (IsLoadingMore) return;
+        
         try
         {
-            var pagedResult = _orderService.GetAll();
-            var allEntities = pagedResult.Items;
+            IsLoadingMore = true;
 
-            var mappedOrders = allEntities.Select(MapToPosOrder).ToList();
-            
-            DisplayOrders.Clear();
-            
-            var activeStatuses = new[] { OrderStatus.Pending, OrderStatus.Preparing, OrderStatus.Ready };
-            
+            var activeStatuses = new[] { "Pending", "Preparing", "Ready" };
+
             if (Filter == "Active")
             {
-                foreach (var o in mappedOrders.Where(o => activeStatuses.Contains(o.Status)))
-                    DisplayOrders.Add(o);
+                _currentPage = 1;
+                HasMoreData = true;
+
+                var paging = new PagingRequest { PageNumber = _currentPage, PageSize = PageSize };
+                var pagedResult = _orderService.GetPagedOrdersByStatuses(paging, false, activeStatuses);
+                
+                var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
+                
+                DisplayOrders.Clear();
+                foreach (var o in mappedOrders) DisplayOrders.Add(o);
+
+                HasMoreData = _currentPage < pagedResult.Pagination.TotalPages;
+                PageNumbers.Clear();
+                PagingSummary = "";
             }
             else
             {
-                foreach (var o in mappedOrders.Where(o => !activeStatuses.Contains(o.Status)))
-                    DisplayOrders.Add(o);
+                // History Paging
+                var historyStatuses = new[] { "Paid", "Cancelled" };
+                var paging = new PagingRequest { PageNumber = CurrentPageHistory, PageSize = PageSizeHistory };
+                var pagedResult = _orderService.GetPagedOrdersByStatuses(paging, true, historyStatuses);
+                
+                var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
+                
+                DisplayOrders.Clear();
+                foreach (var o in mappedOrders) DisplayOrders.Add(o);
+
+                int historyCountFromDb = _orderService.GetCountByStatus("Paid", "Cancelled"); // Real exact count
+                TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
+                if (TotalPagesHistory < 1) TotalPagesHistory = 1;
+
+                PageNumbers.Clear();
+                for (int i = 1; i <= TotalPagesHistory; i++)
+                    PageNumbers.Add(i);
+
+                var start = historyCountFromDb == 0 ? 0 : ((CurrentPageHistory - 1) * PageSizeHistory) + 1;
+                var end = Math.Min(start + PageSizeHistory - 1, historyCountFromDb);
+                PagingSummary = $"Showing {start}-{end} in {historyCountFromDb} items";
             }
 
-            ActiveCount = mappedOrders.Count(o => activeStatuses.Contains(o.Status));
-            HistoryCount = mappedOrders.Count(o => !activeStatuses.Contains(o.Status));
+            LoadCounts();
         }
         catch (Exception)
         {
             // Log or handle error
+        }
+        finally
+        {
+            IsLoadingMore = false;
         }
     }
 
     [RelayCommand]
-    public void LoadOrderPage(int pageNumber)
+    public void LoadMoreOrders()
     {
+        if (Filter != "Active") return; // Only used for Active tab
+        if (IsLoadingMore || !HasMoreData) return;
+
         try
         {
-            var paging = new PagingRequest { PageNumber = pageNumber, PageSize = 20 };
-            var pagedResult = _orderService.GetAll(paging);
+            IsLoadingMore = true;
+            _currentPage++;
+
+            var activeStatuses = new[] { "Pending", "Preparing", "Ready" };
+            var pagedResult = _orderService.GetPagedOrdersByStatuses(new PagingRequest { PageNumber = _currentPage, PageSize = PageSize }, false, activeStatuses);
             
-            // Add to display list or replace depending on UX needs
-            foreach (var entity in pagedResult.Items)
-            {
-                DisplayOrders.Add(MapToPosOrder(entity));
-            }
+            var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
+            
+            foreach (var o in mappedOrders)
+                DisplayOrders.Add(o);
+
+            HasMoreData = _currentPage < pagedResult.Pagination.TotalPages;
         }
         catch (Exception)
         {
             // Log or handle error
         }
+        finally
+        {
+            IsLoadingMore = false;
+        }
     }
+
+    [RelayCommand]
+    private void GoToPage(int page)
+    {
+        if (page < 1 || page > TotalPagesHistory) return;
+        CurrentPageHistory = page;
+        LoadOrders();
+    }
+
+    [RelayCommand]
+    private void NextPage()
+    {
+        if (CurrentPageHistory < TotalPagesHistory)
+        {
+            CurrentPageHistory++;
+            LoadOrders();
+        }
+    }
+
+    [RelayCommand]
+    private void PreviousPage()
+    {
+        if (CurrentPageHistory > 1)
+        {
+            CurrentPageHistory--;
+            LoadOrders();
+        }
+    }
+
 
     private PosOrder MapToPosOrder(Order order)
     {
@@ -213,5 +307,16 @@ public partial class OrderManagementViewModel : ObservableObject
             OrderStatus.Voided => "Cancelled",
             _ => "Pending"
         };
+    }
+
+    private void LoadCounts()
+    {
+        try
+        {
+            ActiveCount = _orderService.GetCountByStatus("Pending", "Preparing", "Ready");
+            // Assuming anything not in active is history, or specifically Paid/Cancelled
+            HistoryCount = _orderService.GetCountByStatus("Paid", "Cancelled");
+        }
+        catch { /* ignored */ }
     }
 }

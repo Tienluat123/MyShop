@@ -16,54 +16,38 @@
         <Thickness x:Key="ContentDialogPadding">0</Thickness>
         <Thickness x:Key="ContentDialogBorderThickness">0</Thickness>
 
-        <converters:StatusToBrushConverter x:Key="StatusBgConverter"
-                                           IsBackground="True"/>
-        <converters:StatusToBrushConverter x:Key="StatusFgConverter"
-                                           IsBackground="False"/>
+        <converters:StatusToBrushConverter x:Key="StatusBgConverter" IsBackground="True" />
+        <converters:StatusToBrushConverter x:Key="StatusFgConverter" IsBackground="False" />
         <converters:EqualityToBrushConverter
             x:Key="ActiveBgConverter"
             FalseBrush="Transparent"
-            TrueBrush="White"/>
+            TrueBrush="White" />
         <converters:EqualityToBrushConverter
             x:Key="ActiveFgConverter"
             FalseBrush="{StaticResource TextMuted}"
-            TrueBrush="{StaticResource BrandPrimary}"/>
-        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
-        <converters:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter"/>
-        <converters:TimeAgoConverter x:Key="TimeAgoConverter"/>
-        <converters:StatusToNextStatusTextConverter x:Key="StatusToNextStatusTextConverter"/>
-        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            TrueBrush="{StaticResource BrandPrimary}" />
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        <converters:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter" />
+        <converters:TimeAgoConverter x:Key="TimeAgoConverter" />
+        <converters:StatusToNextStatusTextConverter x:Key="StatusToNextStatusTextConverter" />
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
 
-        <Style x:Key="FilterButtonStyle"
-               TargetType="Button">
-            <Setter Property="Background"
-                    Value="Transparent"/>
-            <Setter Property="Padding"
-                    Value="{StaticResource SpaceLarge_Small}"/>
-            <Setter Property="FontSize"
-                    Value="{StaticResource FontBody}"/>
-            <Setter Property="FontWeight"
-                    Value="{StaticResource FontWeightBold}"/>
-            <Setter Property="BorderThickness"
-                    Value="0"/>
-            <Setter Property="CornerRadius"
-                    Value="{StaticResource RadiusSmall}"/>
+        <Style x:Key="FilterButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="{StaticResource SpaceLarge_Small}" />
+            <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+            <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="{StaticResource RadiusSmall}" />
         </Style>
 
-        <Style x:Key="OrderCardStyle"
-               TargetType="Border">
-            <Setter Property="Background"
-                    Value="{StaticResource SurfaceBackground}"/>
-            <Setter Property="BorderBrush"
-                    Value="{StaticResource Gray100}"/>
-            <Setter Property="BorderThickness"
-                    Value="1"/>
-            <Setter Property="CornerRadius"
-                    Value="{StaticResource RadiusLarge}"/>
-            <Setter Property="Padding"
-                    Value="{StaticResource SpaceXLarge}"/>
-            <Setter Property="Margin"
-                    Value="{StaticResource SpaceSmall}"/>
+        <Style x:Key="OrderCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource SurfaceBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Gray100}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+            <Setter Property="Padding" Value="{StaticResource SpaceXLarge}" />
+            <Setter Property="Margin" Value="{StaticResource SpaceSmall}" />
         </Style>
     </ContentDialog.Resources>
 
@@ -73,9 +57,9 @@
         Background="{StaticResource SurfaceAlt}"
         CornerRadius="{StaticResource RadiusXLarge}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Border
@@ -87,18 +71,16 @@
             CornerRadius="24,24,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
                     <TextBlock
                         FontSize="{StaticResource FontHeader}"
                         FontWeight="{StaticResource FontWeightBold}"
-                        Text="Order Management"/>
-                    <TextBlock
-                        Style="{StaticResource BodyMutedTextStyle}"
-                        Text="Track and update orders"/>
+                        Text="Order Management" />
+                    <TextBlock Style="{StaticResource BodyMutedTextStyle}" Text="Track and update orders" />
                 </StackPanel>
 
                 <StackPanel
@@ -116,14 +98,14 @@
                                 CommandParameter="Active"
                                 Content="{Binding ActiveCount, Converter={StaticResource StringFormatConverter}, ConverterParameter='Active ({0})'}"
                                 Foreground="{Binding Filter, Converter={StaticResource ActiveFgConverter}, ConverterParameter='Active'}"
-                                Style="{StaticResource FilterButtonStyle}"/>
+                                Style="{StaticResource FilterButtonStyle}" />
                             <Button
                                 Background="{Binding Filter, Converter={StaticResource ActiveBgConverter}, ConverterParameter='History'}"
                                 Command="{Binding SetFilterCommand}"
                                 CommandParameter="History"
                                 Content="{Binding HistoryCount, Converter={StaticResource StringFormatConverter}, ConverterParameter='History ({0})'}"
                                 Foreground="{Binding Filter, Converter={StaticResource ActiveFgConverter}, ConverterParameter='History'}"
-                                Style="{StaticResource FilterButtonStyle}"/>
+                                Style="{StaticResource FilterButtonStyle}" />
                         </StackPanel>
                     </Border>
                     <Button
@@ -131,41 +113,40 @@
                         Click="CloseBtn_Click"
                         CornerRadius="{StaticResource RadiusLarge}"
                         Style="{StaticResource AppIconButtonStyle}">
-                        <FontIcon Style="{StaticResource IconBodyStyle}"
-                                  Glyph="&#xE711;"/>
+                        <FontIcon Glyph="&#xE711;" Style="{StaticResource IconBodyStyle}" />
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
         <GridView
+            x:Name="OrderGridView"
             Grid.Row="1"
             Padding="20"
+            HorizontalAlignment="Center"
+            HorizontalContentAlignment="Center"
             ItemsSource="{Binding DisplayOrders}"
+            Loaded="OrderGridView_Loaded"
             SelectionMode="None">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Border Width="400"
-                            Style="{StaticResource OrderCardStyle}">
+                    <Border Width="400" Height="300" Style="{StaticResource OrderCardStyle}">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <!--  Header Area  -->
-                            <Grid Grid.Row="0"
-                                  Margin="0,0,0,16">
+                            <Grid Grid.Row="0" Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <StackPanel Grid.Column="0"
-                                            Spacing="4">
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="8">
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Border
                                             Padding="8,2"
                                             Background="{StaticResource WarningSurfaceSoft}"
@@ -174,7 +155,7 @@
                                                 FontSize="{StaticResource FontCaption}"
                                                 FontWeight="Black"
                                                 Foreground="{StaticResource BrandPrimary}"
-                                                Text="{Binding OrderId}"/>
+                                                Text="{Binding OrderId}" />
                                         </Border>
                                         <Border
                                             Padding="8,2"
@@ -184,20 +165,19 @@
                                                 FontSize="{StaticResource FontCaption}"
                                                 FontWeight="Bold"
                                                 Foreground="{Binding Status, Converter={StaticResource StatusFgConverter}}"
-                                                Text="{Binding Status}"/>
+                                                Text="{Binding Status}" />
                                         </Border>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
                                         <TextBlock
                                             FontWeight="Bold"
                                             Style="{StaticResource CaptionMutedTextStyle}"
-                                            Text="{Binding Type}"/>
+                                            Text="{Binding Type}" />
                                         <TextBlock
                                             FontWeight="Bold"
                                             Style="{StaticResource CaptionMutedTextStyle}"
                                             Text="{Binding Table, Converter={StaticResource StringFormatConverter}, ConverterParameter='· Table {0}'}"
-                                            Visibility="{Binding Table, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='NotNull'}"/>
+                                            Visibility="{Binding Table, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='NotNull'}" />
                                     </StackPanel>
                                 </StackPanel>
 
@@ -207,40 +187,41 @@
                                     Spacing="4"
                                     Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Active'}">
                                     <FontIcon
-                                        Style="{StaticResource IconBodyStyle}"
                                         Foreground="{StaticResource TextMuted}"
-                                        Glyph="&#xE916;"/>
+                                        Glyph="&#xE916;"
+                                        Style="{StaticResource IconBodyStyle}" />
                                     <TextBlock
                                         FontWeight="Bold"
                                         Style="{StaticResource CaptionMutedTextStyle}"
-                                        Text="{Binding CreatedAt, Converter={StaticResource TimeAgoConverter}}"/>
+                                        Text="{Binding CreatedAt, Converter={StaticResource TimeAgoConverter}}" />
                                 </StackPanel>
                             </Grid>
 
                             <!--  Items List  -->
-                            <ItemsControl Grid.Row="1"
-                                          ItemsSource="{Binding Items}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,0,0,8">
-                                            <TextBlock
-                                                FontSize="{StaticResource FontBody}"
-                                                FontWeight="Medium"
-                                                Foreground="{StaticResource Gray500}">
-                                                <Run Text="{Binding Product.Name}"/>
-                                                <Run Foreground="{StaticResource Gray300}"
-                                                     Text=" x"/>
-                                                <Run Foreground="{StaticResource Gray300}"
-                                                     Text="{Binding Quantity}"/>
-                                            </TextBlock>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding Items}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,0,0,8">
+                                                <TextBlock
+                                                    FontSize="{StaticResource FontBody}"
+                                                    FontWeight="Medium"
+                                                    Foreground="{StaticResource Gray500}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    MaxLines="1"
+                                                    TextWrapping="NoWrap">
+                                                    <Run Text="{Binding Product.Name}" />
+                                                    <Run Foreground="{StaticResource Gray300}" Text=" x" />
+                                                    <Run Foreground="{StaticResource Gray300}" Text="{Binding Quantity}" />
+                                                </TextBlock>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
 
                             <!--  Footer / Actions  -->
-                            <Grid Grid.Row="2"
-                                  Margin="0,16,0,0">
+                            <Grid Grid.Row="2" Margin="0,16,0,0">
                                 <StackPanel
                                     Orientation="Horizontal"
                                     Spacing="8"
@@ -257,9 +238,9 @@
                                         CornerRadius="12"
                                         Style="{StaticResource AppIconButtonStyle}">
                                         <FontIcon
-                                            Style="{StaticResource IconSubtitleStyle}"
                                             Foreground="{StaticResource Error}"
-                                            Glyph="&#xE74D;"/>
+                                            Glyph="&#xE74D;"
+                                            Style="{StaticResource IconSubtitleStyle}" />
                                     </Button>
                                     <Button
                                         Width="300"
@@ -273,14 +254,12 @@
                                         CommandParameter="{Binding}"
                                         CornerRadius="12"
                                         Style="{StaticResource AppOutlineButtonStyle}">
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="8">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock
                                                 FontSize="{StaticResource FontCaption}"
                                                 FontWeight="Bold"
-                                                Text="{Binding Status, Converter={StaticResource StatusToNextStatusTextConverter}}"/>
-                                            <FontIcon Style="{StaticResource IconCaptionStyle}"
-                                                      Glyph="&#xE76C;"/>
+                                                Text="{Binding Status, Converter={StaticResource StatusToNextStatusTextConverter}}" />
+                                            <FontIcon Glyph="&#xE76C;" Style="{StaticResource IconCaptionStyle}" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
@@ -296,15 +275,13 @@
                                     CornerRadius="12"
                                     Style="{StaticResource AppOutlineButtonStyle}"
                                     Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Refund'}">
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="8">
-                                        <FontIcon Style="{StaticResource IconBodyStyle}"
-                                                  Glyph="&#xE777;"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon Glyph="&#xE777;" Style="{StaticResource IconBodyStyle}" />
                                         <TextBlock
                                             FontSize="{StaticResource FontCaption}"
                                             FontWeight="Bold"
                                             Foreground="{StaticResource AccentPurple}"
-                                            Text="REFUND ORDER"/>
+                                            Text="REFUND ORDER" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -322,26 +299,66 @@
             BorderThickness="0,1,0,0"
             CornerRadius="0,0,24,24"
             Visibility="{Binding Filter, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='History'}">
-            <Button
-                Padding="24,10"
-                HorizontalAlignment="Center"
-                Background="Transparent"
-                Command="{Binding ClearHistoryCommand}"
-                CornerRadius="12"
-                Style="{StaticResource AppGhostButtonStyle}">
-                <StackPanel Orientation="Horizontal"
-                            Spacing="8">
-                    <FontIcon
-                        Style="{StaticResource IconSubtitleStyle}"
-                        Foreground="{StaticResource Error}"
-                        Glyph="&#xE74D;"/>
-                    <TextBlock
-                        FontSize="{StaticResource FontBody}"
-                        FontWeight="Bold"
-                        Foreground="{StaticResource Error}"
-                        Text="Clear Order History"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="{Binding PagingSummary}"
+                           Foreground="#64748B"
+                           VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,16,0" VerticalAlignment="Center">
+                    <Button Command="{Binding PreviousPageCommand}"
+                            Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource Gray100}"
+                            CornerRadius="8" Width="36" Height="36">
+                        <FontIcon Glyph="&#xE76B;" Foreground="{StaticResource TextMuted}" FontSize="12"/>
+                    </Button>
+                    <ItemsControl ItemsSource="{Binding PageNumbers}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="6"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:Int32">
+                                <Button Command="{Binding DataContext.GoToPageCommand, ElementName=ModalRoot}"
+                                        CommandParameter="{Binding}"
+                                        Width="36" Height="36" CornerRadius="8"
+                                        Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource Gray100}"
+                                        Foreground="{StaticResource TextBrand}" Content="{Binding}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Command="{Binding NextPageCommand}"
+                            Background="{StaticResource SurfaceAlt}" BorderBrush="{StaticResource Gray100}"
+                            CornerRadius="8" Width="36" Height="36">
+                        <FontIcon Glyph="&#xE76C;" Foreground="{StaticResource TextMuted}" FontSize="12"/>
+                    </Button>
                 </StackPanel>
-            </Button>
+
+                <Button Grid.Column="2"
+                    Padding="24,10"
+                    HorizontalAlignment="Center"
+                    Background="Transparent"
+                    Command="{Binding ClearHistoryCommand}"
+                    CornerRadius="12"
+                    Style="{StaticResource AppGhostButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon
+                            Foreground="{StaticResource Error}"
+                            Glyph="&#xE74D;"
+                            Style="{StaticResource IconSubtitleStyle}" />
+                        <TextBlock
+                            FontSize="{StaticResource FontBody}"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource Error}"
+                            Text="Clear Order History" />
+                    </StackPanel>
+                </Button>
+            </Grid>
         </Border>
     </Grid>
 </ContentDialog>
