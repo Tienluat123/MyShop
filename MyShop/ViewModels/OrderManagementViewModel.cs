@@ -30,6 +30,12 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasMoreData = true;
 
+    [ObservableProperty]
+    private PosOrder _selectedOrderDetails;
+
+    [ObservableProperty]
+    private bool _isOrderDetailOpen;
+
     // Infinite scroll for active tab
     private int _currentPage = 1;
     private const int PageSize = 20;
@@ -182,6 +188,23 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void ViewOrderDetail(PosOrder order)
+    {
+        if (order != null)
+        {
+            SelectedOrderDetails = order;
+            IsOrderDetailOpen = true;
+        }
+    }
+
+    [RelayCommand]
+    private void CloseOrderDetail()
+    {
+        IsOrderDetailOpen = false;
+        SelectedOrderDetails = null;
+    }
+
+    [RelayCommand]
     private void GoToPage(int page)
     {
         if (page < 1 || page > TotalPagesHistory) return;
@@ -217,13 +240,11 @@ public partial class OrderManagementViewModel : ObservableObject
             OrderId = $"ORD-{order.Id}",
             Status = MapToStatus(order.Status),
             CreatedAt = order.OrderDate,
-            Subtotal = (double)order.SubTotal,
-            Total = (double)order.TotalAmount,
-            // Add other mappings as needed
         };
 
         if (order.OrderDetails != null)
         {
+            double computedSubtotal = 0;
             foreach (var detail in order.OrderDetails)
             {
                 var product = detail.Product ?? _productService.GetById(detail.ProductId) ?? new Product { Name = $"Product {detail.ProductId}" };
@@ -234,7 +255,13 @@ public partial class OrderManagementViewModel : ObservableObject
                     Quantity = detail.Quantity,
                     BasePrice = (double)detail.UnitPrice
                 });
+                
+                computedSubtotal += (double)detail.UnitPrice * detail.Quantity;
             }
+            
+            posOrder.Subtotal = computedSubtotal;
+            // Additional taxes or discounts could be handled here
+            posOrder.Total = computedSubtotal;
         }
 
         return posOrder;
