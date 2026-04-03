@@ -29,7 +29,7 @@ public enum OrderStatus
     Preparing,
     Ready,
     Completed,
-    Voided,
+    Cancelled,
     Refunded
 }
 

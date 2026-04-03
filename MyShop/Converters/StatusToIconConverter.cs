@@ -16,7 +16,7 @@ public class StatusToIconConverter : IValueConverter
             OrderStatus.Preparing => "&#xE916;", // Timer/Recent
             OrderStatus.Ready => "&#xE73E;",     // CheckMark
             OrderStatus.Completed => "&#xE7BA;", // Home/Check
-            OrderStatus.Voided => "&#xE711;",    // Cancel
+            OrderStatus.Cancelled => "&#xE711;",    // Cancel
             OrderStatus.Refunded => "&#xE777;",  // Refresh/Rotate
             _ => "&#xE819;"
         };

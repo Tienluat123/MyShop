@@ -320,7 +320,7 @@
                                         Background="Transparent"
                                         BorderBrush="{StaticResource ErrorSurface}"
                                         BorderThickness="1"
-                                        Command="{Binding DataContext.VoidOrderCommand, ElementName=ModalRoot}"
+                                        Command="{Binding DataContext.CancelOrderCommand, ElementName=ModalRoot}"
                                         CommandParameter="{Binding}"
                                         CornerRadius="12"
                                         Style="{StaticResource AppIconButtonStyle}">

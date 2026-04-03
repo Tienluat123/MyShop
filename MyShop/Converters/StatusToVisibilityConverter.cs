@@ -7,7 +7,7 @@ namespace MyShop.Converters;
 
 public class StatusToVisibilityConverter : IValueConverter
 {
-    public string Target { get; set; } = "Active"; // "Active", "Void", "Refund"
+    public string Target { get; set; } = "Active"; // "Active", "Cancel", "Refund"
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
@@ -18,7 +18,7 @@ public class StatusToVisibilityConverter : IValueConverter
         bool isVisible = target switch
         {
             "Active" => status == OrderStatus.Pending || status == OrderStatus.Preparing || status == OrderStatus.Ready,
-            "Void" => status == OrderStatus.Pending || status == OrderStatus.Preparing || status == OrderStatus.Ready,
+            "Cancel" => status == OrderStatus.Pending || status == OrderStatus.Preparing || status == OrderStatus.Ready,
             "Refund" => status == OrderStatus.Completed,
             _ => false
         };

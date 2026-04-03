@@ -318,7 +318,7 @@ public partial class OrderManagementViewModel : ObservableObject
             "Preparing" => OrderStatus.Preparing,
             "Ready" => OrderStatus.Ready,
             "Paid" => OrderStatus.Completed,
-            "Cancelled" => OrderStatus.Voided,
+            "Cancelled" => OrderStatus.Cancelled,
             _ => OrderStatus.Pending
         };
     }
@@ -352,7 +352,7 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void VoidOrder(PosOrder order)
+    private void CancelOrder(PosOrder order)
     {
         try
         {
@@ -411,7 +411,7 @@ public partial class OrderManagementViewModel : ObservableObject
             OrderStatus.Preparing => "Preparing",
             OrderStatus.Ready => "Ready",
             OrderStatus.Completed => "Paid",
-            OrderStatus.Voided => "Cancelled",
+            OrderStatus.Cancelled => "Cancelled",
             _ => "Pending"
         };
     }
