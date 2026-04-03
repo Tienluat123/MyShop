@@ -1,4 +1,4 @@
-<ContentDialog
+﻿<ContentDialog
     x:Class="MyShop.Views.Pos.Components.OrderManagementModal"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,8 +9,8 @@
     MinHeight="800"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
-    CornerRadius="{StaticResource RadiusXLarge}"
-    BorderThickness="0">
+    BorderThickness="0"
+    CornerRadius="{StaticResource RadiusXLarge}">
 
     <ContentDialog.Resources>
         <x:Double x:Key="ContentDialogMaxWidth">1200</x:Double>
@@ -177,7 +177,7 @@
             HorizontalAlignment="Center"
             HorizontalContentAlignment="Center"
             IsItemClickEnabled="True"
-            ItemClick="OrderGridView_ItemClick"
+            ItemClickCommand="{Binding ViewOrderDetailCommand}"
             ItemsSource="{Binding DisplayOrders}"
             Loaded="OrderGridView_Loaded"
             SelectionMode="None">
@@ -254,7 +254,10 @@
                             </Grid>
 
                             <!--  Items List  -->
-                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" IsHitTestVisible="False">
+                            <ScrollViewer
+                                Grid.Row="1"
+                                IsHitTestVisible="False"
+                                VerticalScrollBarVisibility="Hidden">
                                 <ItemsControl ItemsSource="{Binding Items}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>

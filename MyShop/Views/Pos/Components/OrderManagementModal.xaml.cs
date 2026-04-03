@@ -61,15 +61,4 @@ public sealed partial class OrderManagementModal : ContentDialog
 
         return null;
     }
-
-    private void OrderGridView_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is PosOrder order)
-        {
-            if (ViewModel.ViewOrderDetailCommand.CanExecute(order))
-            {
-                ViewModel.ViewOrderDetailCommand.Execute(order);
-            }
-        }
-    }
 }
