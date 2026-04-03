@@ -330,7 +330,7 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void UpdateStatus(PosOrder order)
+    private void UpdateOrderStatus(PosOrder order)
     {
         var currentStatus = order.Status;
         OrderStatus nextStatus = currentStatus;

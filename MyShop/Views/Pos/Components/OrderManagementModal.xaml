@@ -337,7 +337,7 @@
                                         Background="{StaticResource SurfaceAlt}"
                                         BorderBrush="{StaticResource Gray100}"
                                         BorderThickness="1"
-                                        Command="{Binding DataContext.UpdateStatusCommand, ElementName=ModalRoot}"
+                                        Command="{Binding DataContext.UpdateOrderStatusCommand, ElementName=ModalRoot}"
                                         CommandParameter="{Binding}"
                                         CornerRadius="12"
                                         Style="{StaticResource AppOutlineButtonStyle}">
