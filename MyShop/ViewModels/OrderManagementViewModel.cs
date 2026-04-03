@@ -58,6 +58,12 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private DateTimeOffset? _searchEndDate;
 
+    [ObservableProperty]
+    private ObservableCollection<string> _statusFilterOptions = new();
+
+    [ObservableProperty]
+    private string _selectedStatusFilter;
+
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
 
@@ -67,7 +73,36 @@ public partial class OrderManagementViewModel : ObservableObject
         _productService = productService ?? throw new ArgumentNullException(nameof(productService));
         
         _currentPageHistory = 1;
+        InitializeFilterOptions();
         LoadOrders();
+    }
+
+    private void InitializeFilterOptions()
+    {
+        if (Filter == "Active")
+        {
+            StatusFilterOptions = new ObservableCollection<string> { "All Active", "Pending", "Preparing", "Ready" };
+        }
+        else
+        {
+            StatusFilterOptions = new ObservableCollection<string> { "All History", "Paid", "Cancelled" };
+        }
+        
+        _selectedStatusFilter = StatusFilterOptions.First();
+        OnPropertyChanged(nameof(SelectedStatusFilter));
+    }
+
+    partial void OnSelectedStatusFilterChanged(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return;
+        
+        _currentPage = 1;
+        CurrentPageHistory = 1;
+        
+        if (!IsLoadingMore)
+        {
+            LoadOrders();
+        }
     }
 
     [RelayCommand]
@@ -79,10 +114,12 @@ public partial class OrderManagementViewModel : ObservableObject
         {
             IsLoadingMore = true;
 
-            var activeStatuses = new[] { "Pending", "Preparing", "Ready" };
-
             if (Filter == "Active")
             {
+                var activeStatuses = SelectedStatusFilter == "All Active" || string.IsNullOrEmpty(SelectedStatusFilter)
+                    ? new[] { "Pending", "Preparing", "Ready" }
+                    : new[] { SelectedStatusFilter };
+
                 _currentPage = 1;
                 HasMoreData = true;
 
@@ -101,7 +138,10 @@ public partial class OrderManagementViewModel : ObservableObject
             else
             {
                 // History Paging
-                var historyStatuses = new[] { "Paid", "Cancelled" };
+                var historyStatuses = SelectedStatusFilter == "All History" || string.IsNullOrEmpty(SelectedStatusFilter)
+                    ? new[] { "Paid", "Cancelled" }
+                    : new[] { SelectedStatusFilter };
+                    
                 var paging = new PagingRequest { PageNumber = CurrentPageHistory, PageSize = PageSizeHistory };
                 var pagedResult = _orderService.GetPagedOrdersByStatuses(
                     paging, 
@@ -155,7 +195,10 @@ public partial class OrderManagementViewModel : ObservableObject
             IsLoadingMore = true;
             _currentPage++;
 
-            var activeStatuses = new[] { "Pending", "Preparing", "Ready" };
+            var activeStatuses = SelectedStatusFilter == "All Active" || string.IsNullOrEmpty(SelectedStatusFilter)
+                ? new[] { "Pending", "Preparing", "Ready" }
+                : new[] { SelectedStatusFilter };
+                
             var pagedResult = _orderService.GetPagedOrdersByStatuses(
                 new PagingRequest { PageNumber = _currentPage, PageSize = PageSize }, 
                 false, 
@@ -342,7 +385,12 @@ public partial class OrderManagementViewModel : ObservableObject
         HistoryCount = 0;
     }
 
-    partial void OnFilterChanged(string value) => LoadOrders();
+    partial void OnFilterChanged(string value)
+    {
+        InitializeFilterOptions();
+        LoadOrders();
+    }
+
 
     private void UpdateDisplayOrders() => LoadOrders();
 
