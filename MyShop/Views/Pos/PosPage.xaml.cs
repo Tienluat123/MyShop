@@ -9,8 +9,13 @@ namespace MyShop.Views.Pos;
 
 public sealed partial class PosPage : Page
 {
+    public PosViewModel ViewModel { get; }
+
     public PosPage()
     {
+        ViewModel = App.Services.GetRequiredService<PosViewModel>();
+        this.DataContext = ViewModel;
+
         InitializeComponent();
 
         ViewModel.PlaceOrderRequested += async (s, e) =>

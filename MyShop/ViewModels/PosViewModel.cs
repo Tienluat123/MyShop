@@ -49,16 +49,11 @@ public partial class PosViewModel : ObservableObject
 
     public event EventHandler? PlaceOrderRequested;
 
-    public PosViewModel() : this(
-        App.Services.GetRequiredService<IProductService>(),
-        App.Services.GetRequiredService<ICategoryService>())
-    {
-    }
 
     public PosViewModel(IProductService productService, ICategoryService categoryService)
     {
-        _productService = productService;
-        _categoryService = categoryService;
+        _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+        _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         
         // Initial data loading
         InitializeAsync();
