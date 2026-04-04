@@ -2,13 +2,17 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using MyShop.Models;
+using MyShop.Services;
 
 namespace MyShop.ViewModels;
 
 public partial class PosViewModel : ObservableObject
 {
     private const double TAX_RATE = 0.0875;
+    private readonly IProductService _productService;
+    private readonly ICategoryService _categoryService;
 
     public ObservableCollection<Product> Products { get; } = new();
     public ObservableCollection<CategoryItem> Categories { get; } = new();
@@ -16,6 +20,9 @@ public partial class PosViewModel : ObservableObject
     public ObservableCollection<PosOrder> ActiveOrders { get; } = new();
 
     public ObservableCollection<Product> FilteredProducts { get; } = new();
+
+    [ObservableProperty]
+    private bool isLoading;
 
     [ObservableProperty]
     private string activeCategory = "Coffee";
@@ -42,10 +49,19 @@ public partial class PosViewModel : ObservableObject
 
     public event EventHandler? PlaceOrderRequested;
 
-    public PosViewModel()
+    public PosViewModel() : this(
+        App.Services.GetRequiredService<IProductService>(),
+        App.Services.GetRequiredService<ICategoryService>())
     {
-        LoadMockData();
-        RebuildFilter();
+    }
+
+    public PosViewModel(IProductService productService, ICategoryService categoryService)
+    {
+        _productService = productService;
+        _categoryService = categoryService;
+        
+        // Initial data loading
+        InitializeAsync();
 
         // Add some customized items for verification
         var product = Products.FirstOrDefault();
@@ -80,6 +96,17 @@ public partial class PosViewModel : ObservableObject
                 Quantity = 2
             });
         }
+    }
+
+    private async void InitializeAsync()
+    {
+        await LoadCategories();
+        await LoadProductsForSale();
+        
+        // Load mock data for things not yet in DB if needed (like initial Order)
+        // LoadMockData(); 
+        
+        RebuildFilter();
 
         Order.CollectionChanged += (s, e) =>
         {
@@ -137,12 +164,72 @@ public partial class PosViewModel : ObservableObject
     partial void OnActiveCategoryChanged(string value) => RebuildFilter();
 
     [RelayCommand]
+    public async Task LoadCategories()
+    {
+        try
+        {
+            var result = await _categoryService.GetAll();
+            if (result != null && result.Any())
+            {
+                Categories.Clear();
+                foreach (var cat in result)
+                {
+                    Categories.Add(new CategoryItem
+                    {
+                        Name = cat.Name,
+                        IconKey = cat.IconGlyph ?? "IconCoffee",
+                        IsActive = false
+                    });
+                }
+
+                // Set first as active if none is active
+                if (Categories.Any())
+                {
+                    SetCategory(Categories.First());
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading categories: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
     private void SetCategory(CategoryItem category)
     {
         foreach (var c in Categories)
             c.IsActive = (c == category);
 
         ActiveCategory = category.Name;
+    }
+
+    [RelayCommand]
+    public async Task LoadProductsForSale()
+    {
+        IsLoading = true;
+        try
+        {
+            var result = await _productService.GetAll();
+            if (result != null)
+            {
+                Products.Clear();
+                foreach (var product in result.Items)
+                {
+                    Products.Add(product);
+                }
+                RebuildFilter();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Logging or error handling could go here
+            System.Diagnostics.Debug.WriteLine($"Error loading products: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     [RelayCommand]

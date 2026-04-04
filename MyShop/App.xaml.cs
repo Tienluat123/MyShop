@@ -294,6 +294,7 @@ public partial class App : Application
             services.AddSingleton<IProductService, ProductService>();
             services.AddSingleton<ICustomerService, CustomerService>();
             services.AddSingleton<IOrderService, OrderService>();
+            services.AddSingleton<ICategoryService, CategoryService>();
 
             // ===== Register ViewModels =====
             services.AddTransient<OrderManagementViewModel>();
