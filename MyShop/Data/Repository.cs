@@ -19,9 +19,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     }
 
     /// <summary>
-    /// Lấy tất cả entities với phân trang
+    /// Lấy tất cả entities với phân trang (Bất đồng bộ)
     /// </summary>
-    public PagedResult<TEntity> GetAll(PagingRequest? paging = null)
+    public async Task<PagedResult<TEntity>> GetAll(PagingRequest? paging = null)
     {
         try
         {
@@ -30,7 +30,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             // Nếu không có phân trang, lấy tất cả
             if (paging == null)
             {
-                result.Items = _dbSet.ToList();
+                result.Items = await _dbSet.ToListAsync();
                 result.Pagination = new PagingMetadata
                 {
                     PageNumber = 1,
@@ -44,14 +44,13 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             paging.Validate();
 
             // Tính toán tổng mục
-            var totalItems = _dbSet.Count();
-            var totalPages = (int)Math.Ceiling((decimal)totalItems / paging.PageSize);
+            var totalItems = await _dbSet.CountAsync();
 
             // Lấy dữ liệu với phân trang
-            var items = _dbSet
+            var items = await _dbSet
                 .Skip(paging.GetSkip())
                 .Take(paging.PageSize)
-                .ToList();
+                .ToListAsync();
 
             result.Items = items;
             result.Pagination = new PagingMetadata
@@ -70,16 +69,16 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     }
 
     /// <summary>
-    /// Lấy entity theo ID
+    /// Lấy entity theo ID (Bất đồng bộ)
     /// </summary>
-    public TEntity? GetById(int id)
+    public async Task<TEntity?> GetById(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
 
         try
         {
-            return _dbSet.Find(id);
+            return await _dbSet.FindAsync(id);
         }
         catch (Exception ex)
         {
@@ -88,17 +87,17 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     }
 
     /// <summary>
-    /// Thêm entity mới
+    /// Thêm entity mới (Bất đồng bộ)
     /// </summary>
-    public TEntity Add(TEntity entity)
+    public async Task<TEntity> Add(TEntity entity)
     {
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
 
         try
         {
-            _dbSet.Add(entity);
-            _context.SaveChanges();
+            await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
             return entity;
         }
         catch (Exception ex)
@@ -108,9 +107,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     }
 
     /// <summary>
-    /// Cập nhật entity
+    /// Cập nhật entity (Bất đồng bộ)
     /// </summary>
-    public void Update(TEntity entity)
+    public async Task Update(TEntity entity)
     {
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
@@ -118,7 +117,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         try
         {
             _dbSet.Update(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
         catch (Exception ex)
         {
@@ -127,21 +126,21 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     }
 
     /// <summary>
-    /// Xóa entity theo ID
+    /// Xóa entity theo ID (Bất đồng bộ)
     /// </summary>
-    public void Delete(int id)
+    public async Task Delete(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
 
         try
         {
-            var entity = GetById(id);
+            var entity = await GetById(id);
             if (entity == null)
                 throw new KeyNotFoundException($"{typeof(TEntity).Name} với ID {id} không tìm thấy");
 
             _dbSet.Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
         catch (Exception ex)
         {
@@ -158,21 +157,21 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     }
 
     /// <summary>
-    /// Tìm kiếm entities theo điều kiện
+    /// Tìm kiếm entities theo điều kiện (Bất đồng bộ)
     /// </summary>
-    public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+    public async Task<IEnumerable<TEntity>> Find(Expression<Func<TEntity, bool>> predicate)
     {
-        return _dbSet.Where(predicate).ToList();
+        return await _dbSet.Where(predicate).ToListAsync();
     }
 
     /// <summary>
-    /// Lưu tất cả thay đổi vào database
+    /// Lưu tất cả thay đổi vào database (Bất đồng bộ)
     /// </summary>
-    public void SaveChanges()
+    public async Task SaveChanges()
     {
         try
         {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
         catch (Exception ex)
         {

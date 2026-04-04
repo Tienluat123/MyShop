@@ -76,7 +76,7 @@ public partial class OrderManagementViewModel : ObservableObject
         
         _currentPageHistory = 1;
         InitializeFilterOptions();
-        LoadOrders();
+        _ = LoadOrders();
     }
 
     private void InitializeFilterOptions()
@@ -101,10 +101,7 @@ public partial class OrderManagementViewModel : ObservableObject
         _currentPage = 1;
         CurrentPageHistory = 1;
         
-        if (!IsLoadingMore)
-        {
-            LoadOrders();
-        }
+        _ = LoadOrders();
         
         if (Filter == "Active")
         {
@@ -113,7 +110,7 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void LoadOrders()
+    public async Task LoadOrders()
     {
         if (IsLoadingMore) return;
         
@@ -131,16 +128,16 @@ public partial class OrderManagementViewModel : ObservableObject
                 HasMoreData = true;
 
                 var paging = new PagingRequest { PageNumber = _currentPage, PageSize = PageSize };
-                var pagedResult = _orderService.GetPagedOrdersByStatuses(
+                var pagedResult = await _orderService.GetPagedOrdersByStatuses(
                     paging, 
                     false, 
                     SearchStartDate?.DateTime, 
                     SearchEndDate?.DateTime, 
                     null, 
                     fulfillmentStatuses);
-                
-                var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
-                
+
+                var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
+
                 DisplayOrders.Clear();
                 foreach (var o in mappedOrders) DisplayOrders.Add(o);
 
@@ -156,20 +153,20 @@ public partial class OrderManagementViewModel : ObservableObject
                     : new[] { SelectedStatusFilter }.ToList();
                     
                 var paging = new PagingRequest { PageNumber = CurrentPageHistory, PageSize = PageSizeHistory };
-                var pagedResult = _orderService.GetPagedOrdersByStatuses(
+                var pagedResult = await _orderService.GetPagedOrdersByStatuses(
                     paging, 
                     true, 
                     SearchStartDate?.DateTime, 
                     SearchEndDate?.DateTime, 
                     paymentStatuses,
                     null);
-                
-                var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
-                
+
+                var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
+
                 DisplayOrders.Clear();
                 foreach (var o in mappedOrders) DisplayOrders.Add(o);
 
-                int historyCountFromDb = _orderService.GetCountByStatus(
+                int historyCountFromDb = await _orderService.GetCountByStatus(
                     SearchStartDate?.DateTime, 
                     SearchEndDate?.DateTime, 
                     paymentStatuses,
@@ -187,11 +184,12 @@ public partial class OrderManagementViewModel : ObservableObject
                 PagingSummary = $"Showing {start}-{end} in {historyCountFromDb} items";
             }
 
-            LoadCounts();
+            await LoadCounts();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Log or handle error
+            System.Diagnostics.Debug.WriteLine($"❌ Error loading orders: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine(ex.StackTrace);
         }
         finally
         {
@@ -200,7 +198,7 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void LoadMoreOrders()
+    public async Task LoadMoreOrders()
     {
         if (Filter != "Active") return; // Only used for Active tab
         if (IsLoadingMore || !HasMoreData) return;
@@ -214,24 +212,24 @@ public partial class OrderManagementViewModel : ObservableObject
                 ? new[] { "None", "Preparing", "Ready" }.ToList()
                 : new[] { SelectedStatusFilter }.ToList();
                 
-            var pagedResult = _orderService.GetPagedOrdersByStatuses(
+            var pagedResult = await _orderService.GetPagedOrdersByStatuses(
                 new PagingRequest { PageNumber = _currentPage, PageSize = PageSize }, 
                 false, 
                 null, 
                 null, 
                 null,
                 fulfillmentStatuses);
-            
-            var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
-            
+
+            var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
+
             foreach (var o in mappedOrders)
                 DisplayOrders.Add(o);
 
             HasMoreData = _currentPage < pagedResult.Pagination.TotalPages;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Log or handle error
+            System.Diagnostics.Debug.WriteLine($"❌ Error loading more orders: {ex.Message}");
         }
         finally
         {
@@ -240,10 +238,10 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SearchByDateRange()
+    private async Task SearchByDateRange()
     {
         CurrentPageHistory = 1;
-        LoadOrders();
+        await LoadOrders();
     }
 
     [RelayCommand]
@@ -264,35 +262,34 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void GoToPage(int page)
+    private async Task GoToPage(int page)
     {
         if (page < 1 || page > TotalPagesHistory) return;
         CurrentPageHistory = page;
-        LoadOrders();
+        await LoadOrders();
     }
 
     [RelayCommand]
-    private void NextPage()
+    private async Task NextPage()
     {
         if (CurrentPageHistory < TotalPagesHistory)
         {
             CurrentPageHistory++;
-            LoadOrders();
+            await LoadOrders();
         }
     }
 
     [RelayCommand]
-    private void PreviousPage()
+    private async Task PreviousPage()
     {
         if (CurrentPageHistory > 1)
         {
             CurrentPageHistory--;
-            LoadOrders();
+            await LoadOrders();
         }
     }
 
-
-    private PosOrder MapToPosOrder(Order order)
+    private async Task<PosOrder> MapToPosOrder(Order order)
     {
         var posOrder = new PosOrder
         {
@@ -305,22 +302,24 @@ public partial class OrderManagementViewModel : ObservableObject
         if (order.OrderDetails != null)
         {
             double computedSubtotal = 0;
+
             foreach (var detail in order.OrderDetails)
             {
-                var product = detail.Product ?? _productService.GetById(detail.ProductId) ?? new Product { Name = $"Product {detail.ProductId}" };
-                
+                var product = detail.Product
+                    ?? await _productService.GetById(detail.ProductId)
+                    ?? new Product { Name = $"Product {detail.ProductId}" };
+
                 posOrder.Items.Add(new OrderItem
                 {
                     Product = product,
                     Quantity = detail.Quantity,
                     BasePrice = (double)detail.UnitPrice
                 });
-                
+
                 computedSubtotal += (double)detail.UnitPrice * detail.Quantity;
             }
-            
+
             posOrder.Subtotal = computedSubtotal;
-            // Additional taxes or discounts could be handled here
             posOrder.Total = computedSubtotal;
         }
 
@@ -359,7 +358,7 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void UpdateOrderStatus(PosOrder order)
+    private async Task UpdateOrderStatus(PosOrder order)
     {
         var currentStatus = order.FulfillmentStatus;
         FulfillmentStatus nextStatus = currentStatus;
@@ -373,33 +372,33 @@ public partial class OrderManagementViewModel : ObservableObject
             try
             {
                 int numericId = ExtractId(order.OrderId);
-                _orderService.UpdateFulfillmentStatus(numericId, nextStatus.ToString());
-                LoadOrders(); // Refresh from service
+                await _orderService.UpdateFulfillmentStatus(numericId, nextStatus.ToString());
+                await LoadOrders(); // Refresh from service
             }
             catch (Exception) { /* Handle error */ }
         }
     }
 
     [RelayCommand]
-    private void CancelOrder(PosOrder order)
+    private async Task CancelOrder(PosOrder order)
     {
         try
         {
             int numericId = ExtractId(order.OrderId);
-            _orderService.UpdatePaymentStatus(numericId, "Cancelled");
-            LoadOrders();
+            await _orderService.UpdatePaymentStatus(numericId, "Cancelled");
+            await LoadOrders();
         }
         catch (Exception) { /* Handle error */ }
     }
 
     [RelayCommand]
-    private void RefundOrder(PosOrder order)
+    private async Task RefundOrder(PosOrder order)
     {
         try
         {
             int numericId = ExtractId(order.OrderId);
-            _orderService.UpdatePaymentStatus(numericId, "Refunded"); 
-            LoadOrders();
+            await _orderService.UpdatePaymentStatus(numericId, "Refunded"); 
+            await LoadOrders();
         }
         catch (Exception) { /* Handle error */ }
     }
@@ -415,11 +414,11 @@ public partial class OrderManagementViewModel : ObservableObject
     partial void OnFilterChanged(string value)
     {
         InitializeFilterOptions();
-        LoadOrders();
+        _ = LoadOrders();
     }
 
 
-    private void UpdateDisplayOrders() => LoadOrders();
+    private void UpdateDisplayOrders() => _ = LoadOrders();
 
     private int ExtractId(string orderId)
     {
@@ -432,20 +431,23 @@ public partial class OrderManagementViewModel : ObservableObject
 
     // Helper converter maps are eliminated to use direct Enum ToString serialization inside UpdateOrderStatus.
 
-    private void LoadCounts()
+    private async Task LoadCounts()
     {
         try
         {
             var activeStatuses = new[] { "None", "Preparing", "Ready" }.ToList();
-            ActiveCount = _orderService.GetCountByStatus(null, null, null, activeStatuses);
+            ActiveCount = await _orderService.GetCountByStatus(null, null, null, activeStatuses);
             
             var historyStatuses = new[] { "Paid", "Cancelled", "Refunded" }.ToList();
-            HistoryCount = _orderService.GetCountByStatus(
+            HistoryCount = await _orderService.GetCountByStatus(
                 SearchStartDate?.DateTime, 
                 SearchEndDate?.DateTime, 
                 historyStatuses, 
                 null);
         }
-        catch { /* ignored */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Error loading counts: {ex.Message}");
+        }
     }
 }

@@ -13,7 +13,7 @@ public class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
     private static readonly List<TEntity> _data = new();
     private static int _nextId = 1;
 
-    public PagedResult<TEntity> GetAll(PagingRequest? paging = null)
+    public Task<PagedResult<TEntity>> GetAll(PagingRequest? paging = null)
     {
         var result = new PagedResult<TEntity>();
 
@@ -26,7 +26,7 @@ public class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
                 PageSize = _data.Count,
                 TotalItems = _data.Count
             };
-            return result;
+            return Task.FromResult(result);
         }
 
         paging.Validate();
@@ -44,15 +44,16 @@ public class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
             TotalItems = totalItems
         };
 
-        return result;
+        return Task.FromResult(result);
     }
 
-    public TEntity? GetById(int id)
+    public Task<TEntity?> GetById(int id)
     {
-        return _data.FirstOrDefault(e => GetIdValue(e) == id);
+        var entity = _data.FirstOrDefault(e => GetIdValue(e) == id);
+        return Task.FromResult(entity);
     }
 
-    public TEntity Add(TEntity entity)
+    public Task<TEntity> Add(TEntity entity)
     {
         if (entity == null) throw new ArgumentNullException(nameof(entity));
 
@@ -64,15 +65,15 @@ public class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
         }
 
         _data.Add(entity);
-        return entity;
+        return Task.FromResult(entity);
     }
 
-    public void Update(TEntity entity)
+    public async Task Update(TEntity entity)
     {
         if (entity == null) throw new ArgumentNullException(nameof(entity));
 
         var id = GetIdValue(entity);
-        var existing = GetById(id);
+        var existing = await GetById(id);
         if (existing == null)
             throw new KeyNotFoundException($"{typeof(TEntity).Name} với ID {id} không tìm thấy");
 
@@ -85,9 +86,9 @@ public class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
         }
     }
 
-    public void Delete(int id)
+    public async Task Delete(int id)
     {
-        var entity = GetById(id);
+        var entity = await GetById(id);
         if (entity == null)
             throw new KeyNotFoundException($"{typeof(TEntity).Name} với ID {id} không tìm thấy");
 
@@ -99,14 +100,16 @@ public class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : 
         return _data.AsQueryable();
     }
 
-    public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+    public Task<IEnumerable<TEntity>> Find(Expression<Func<TEntity, bool>> predicate)
     {
-        return _data.AsQueryable().Where(predicate).ToList();
+        IEnumerable<TEntity> results = _data.AsQueryable().Where(predicate).ToList();
+        return Task.FromResult(results);
     }
 
-    public void SaveChanges()
+    public Task SaveChanges()
     {
         // No-op for InMemory
+        return Task.CompletedTask;
     }
 
     #region Helpers

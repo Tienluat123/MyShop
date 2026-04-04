@@ -127,19 +127,39 @@ public partial class App : Application
                     var json = File.ReadAllText(foundPath);
                     using (var doc = JsonDocument.Parse(json))
                     {
-                        var dbElement = doc.RootElement.GetProperty("Database");
-                        dbConfig = new DatabaseConfig
+                        var root = doc.RootElement;
+                        
+                        // Try ConnectionStrings:DefaultConnection first (standard EF Core)
+                        if (root.TryGetProperty("ConnectionStrings", out var connStrings) && 
+                            connStrings.TryGetProperty("DefaultConnection", out var defaultConn))
                         {
-                            Host = dbElement.GetProperty("Host").GetString() ?? "localhost",
-                            Database = dbElement.GetProperty("Database").GetString() ?? "postgres",
-                            Username = dbElement.GetProperty("Username").GetString() ?? "postgres",
-                            Password = dbElement.GetProperty("Password").GetString() ?? "password",
-                            Port = dbElement.GetProperty("Port").GetInt32(),
-                            SslMode = dbElement.GetProperty("SslMode").GetString() ?? "Require"
-                        };
+                            var connStr = defaultConn.GetString();
+                            LogMessage($"✅ Found connection string in ConnectionStrings:DefaultConnection");
+                            dbConfig = ParseConnectionString(connStr);
+                        }
+                        // Fallback to custom Database section
+                        else if (root.TryGetProperty("Database", out var dbElement))
+                        {
+                            dbConfig = new DatabaseConfig
+                            {
+                                Host = dbElement.TryGetProperty("Host", out var h) ? h.GetString() : "localhost",
+                                Database = dbElement.TryGetProperty("Database", out var d) ? d.GetString() : "postgres",
+                                Username = dbElement.TryGetProperty("Username", out var u) ? u.GetString() : "postgres",
+                                Password = dbElement.TryGetProperty("Password", out var p) ? p.GetString() : "password",
+                                Port = dbElement.TryGetProperty("Port", out var po) ? po.GetInt32() : 5432,
+                                SslMode = dbElement.TryGetProperty("SslMode", out var s) ? s.GetString() : "Disable"
+                            };
+                            LogMessage($"✅ Loaded config from Database section");
+                        }
                     }
-                    LogMessage($"✅ Loaded config from: {foundPath}");
-                    LogMessage($"   Host: {dbConfig.Host}:{dbConfig.Port}, DB: {dbConfig.Database}, User: {dbConfig.Username}");
+                    
+                    if (dbConfig != null) {
+                        LogMessage($"✅ Config successful from: {foundPath}");
+                        LogMessage($"   Host: {dbConfig.Host}:{dbConfig.Port}, DB: {dbConfig.Database}, User: {dbConfig.Username}");
+                    } else {
+                        LogMessage($"⚠️ Could not find supported config sections in {foundPath}. Using defaults.");
+                        dbConfig = CreateDefaultConfig();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -296,10 +316,35 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            LogMessage($"❌ ERROR registering services: {ex.Message}");
-            LogMessage($"StackTrace: {ex.StackTrace}");
-            throw;
+            LogMessage($"❌ Critical error during service registration: {ex.Message}");
+            LogMessage($"   Inner exception: {ex.InnerException?.Message}");
+            // App will continue - ensure to handle null services gracefully
         }
+    }
+
+    private DatabaseConfig ParseConnectionString(string connStr)
+    {
+        var config = new DatabaseConfig();
+        var parts = connStr.Split(';');
+        foreach (var part in parts)
+        {
+            var kv = part.Split('=');
+            if (kv.Length != 2) continue;
+            var key = kv[0].Trim().ToLower();
+            var val = kv[1].Trim();
+
+            switch (key)
+            {
+                case "host": config.Host = val; break;
+                case "port": config.Port = int.TryParse(val, out int p) ? p : 5432; break;
+                case "database": config.Database = val; break;
+                case "username": 
+                case "user id": config.Username = val; break;
+                case "password": config.Password = val; break;
+                case "ssl mode": config.SslMode = val; break;
+            }
+        }
+        return config;
     }
 
     /// <summary>
