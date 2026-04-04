@@ -1,6 +1,7 @@
 using MyShop.Data;
 using MyShop.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace MyShop.Services;
 
@@ -73,6 +74,26 @@ public interface IOrderService
     /// Đếm số lượng đơn hàng theo danh sách trạng thái
     /// </summary>
     Task<int> GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null);
+
+    /// <summary>
+    /// Lấy danh sách đơn hàng Active (chưa hoàn tất và chưa hủy)
+    /// </summary>
+    Task<PagedResult<Order>> GetPagedActiveOrders(PagingRequest paging, string? statusFilter = null);
+
+    /// <summary>
+    /// Đếm số lượng đơn hàng Active
+    /// </summary>
+    Task<int> GetActiveCount();
+
+    /// <summary>
+    /// Lấy danh sách đơn hàng History (đã hoàn tất/thanh toán, hoặc đã hủy/hoàn tiền)
+    /// </summary>
+    Task<PagedResult<Order>> GetPagedHistoryOrders(PagingRequest paging, DateTime? startDate = null, DateTime? endDate = null, string? statusFilter = null);
+
+    /// <summary>
+    /// Đếm số lượng đơn hàng History
+    /// </summary>
+    Task<int> GetHistoryCount(DateTime? startDate = null, DateTime? endDate = null);
 }
 
 /// <summary>
@@ -426,5 +447,138 @@ public class OrderService : IOrderService
         {
             throw new InvalidOperationException("Lỗi khi lấy danh sách đơn hàng phân trang", ex);
         }
+    }
+
+    /// <summary>
+    /// Lấy danh sách đơn hàng Active (Bất đồng bộ)
+    /// </summary>
+    public async Task<PagedResult<Order>> GetPagedActiveOrders(PagingRequest paging, string? statusFilter = null)
+    {
+        System.Diagnostics.Debug.WriteLine($"📡 Service: GetPagedActiveOrders, filter={statusFilter}");
+        if (paging == null) throw new ArgumentNullException(nameof(paging));
+        paging.Validate();
+
+        try
+        {
+            IQueryable<Order> query = _orderRepository.Query()
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.Customer);
+
+            // Active logic: NOT Cancelled, NOT Refunded, AND NOT Completed
+            query = query.Where(o => o.PaymentStatus != "Cancelled" && o.PaymentStatus != "Refunded" && o.FulfillmentStatus != "Completed");
+
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All Active")
+            {
+                query = query.Where(o => o.FulfillmentStatus == statusFilter);
+            }
+
+            query = query.OrderByDescending(o => o.OrderDate);
+
+            var totalItems = await query.CountAsync();
+            var items = await query.Skip(paging.GetSkip()).Take(paging.PageSize).ToListAsync();
+
+            return new PagedResult<Order>
+            {
+                Items = items,
+                Pagination = new PagingMetadata { PageNumber = paging.PageNumber, PageSize = paging.PageSize, TotalItems = totalItems }
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Lỗi khi lấy danh sách đơn hàng active", ex);
+        }
+    }
+
+    /// <summary>
+    /// Đếm số lượng đơn hàng Active (Bất đồng bộ)
+    /// </summary>
+    public async Task<int> GetActiveCount()
+    {
+        return await _orderRepository.Query()
+            .Where(o => o.PaymentStatus != "Cancelled" && o.PaymentStatus != "Refunded" && o.FulfillmentStatus != "Completed")
+            .CountAsync();
+    }
+
+    /// <summary>
+    /// Lấy danh sách đơn hàng History (Bất đồng bộ)
+    /// </summary>
+    public async Task<PagedResult<Order>> GetPagedHistoryOrders(PagingRequest paging, DateTime? startDate = null, DateTime? endDate = null, string? statusFilter = null)
+    {
+        System.Diagnostics.Debug.WriteLine($"📡 Service: GetPagedHistoryOrders, filter={statusFilter}");
+        if (paging == null) throw new ArgumentNullException(nameof(paging));
+        paging.Validate();
+
+        try
+        {
+            IQueryable<Order> query = _orderRepository.Query()
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.Customer);
+
+            // History logic: (Paid AND Completed) OR Cancelled OR Refunded
+            if (string.IsNullOrEmpty(statusFilter) || statusFilter == "All History")
+            {
+                query = query.Where(o => 
+                    (o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed") ||
+                    o.PaymentStatus == "Cancelled" ||
+                    o.PaymentStatus == "Refunded");
+            }
+            else if (statusFilter == "Paid")
+            {
+                query = query.Where(o => o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed");
+            }
+            else
+            {
+                query = query.Where(o => o.PaymentStatus == statusFilter);
+            }
+
+            if (startDate.HasValue)
+                query = query.Where(o => o.OrderDate >= startDate.Value);
+
+            if (endDate.HasValue)
+            {
+                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(o => o.OrderDate <= endOfDay);
+            }
+
+            query = query.OrderByDescending(o => o.OrderDate);
+
+            var totalItems = await query.CountAsync();
+            var items = await query.Skip(paging.GetSkip()).Take(paging.PageSize).ToListAsync();
+
+            return new PagedResult<Order>
+            {
+                Items = items,
+                Pagination = new PagingMetadata { PageNumber = paging.PageNumber, PageSize = paging.PageSize, TotalItems = totalItems }
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Lỗi khi lấy danh sách đơn hàng lịch sử", ex);
+        }
+    }
+
+    /// <summary>
+    /// Đếm số lượng đơn hàng History (Bất đồng bộ)
+    /// </summary>
+    public async Task<int> GetHistoryCount(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var query = _orderRepository.Query()
+            .Where(o => 
+                (o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed") ||
+                o.PaymentStatus == "Cancelled" ||
+                o.PaymentStatus == "Refunded");
+
+        if (startDate.HasValue)
+            query = query.Where(o => o.OrderDate >= startDate.Value);
+
+        if (endDate.HasValue)
+        {
+            var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(o => o.OrderDate <= endOfDay);
+        }
+
+        return await query.CountAsync();
     }
 }

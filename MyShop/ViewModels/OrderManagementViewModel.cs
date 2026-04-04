@@ -120,21 +120,8 @@ public partial class OrderManagementViewModel : ObservableObject
 
             if (Filter == "Active")
             {
-                var fulfillmentStatuses = SelectedStatusFilter == "All Active" || string.IsNullOrEmpty(SelectedStatusFilter)
-                    ? new[] { "None", "Preparing", "Ready" }.ToList()
-                    : new[] { SelectedStatusFilter }.ToList();
-
-                _currentPage = 1;
-                HasMoreData = true;
-
                 var paging = new PagingRequest { PageNumber = _currentPage, PageSize = PageSize };
-                var pagedResult = await _orderService.GetPagedOrdersByStatuses(
-                    paging, 
-                    false, 
-                    SearchStartDate?.DateTime, 
-                    SearchEndDate?.DateTime, 
-                    null, 
-                    fulfillmentStatuses);
+                var pagedResult = await _orderService.GetPagedActiveOrders(paging, SelectedStatusFilter);
 
                 var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
 
@@ -148,29 +135,21 @@ public partial class OrderManagementViewModel : ObservableObject
             else
             {
                 // History Paging
-                var paymentStatuses = SelectedStatusFilter == "All History" || string.IsNullOrEmpty(SelectedStatusFilter)
-                    ? new[] { "Paid", "Cancelled", "Refunded" }.ToList()
-                    : new[] { SelectedStatusFilter }.ToList();
-                    
                 var paging = new PagingRequest { PageNumber = CurrentPageHistory, PageSize = PageSizeHistory };
-                var pagedResult = await _orderService.GetPagedOrdersByStatuses(
+                var pagedResult = await _orderService.GetPagedHistoryOrders(
                     paging, 
-                    true, 
                     SearchStartDate?.DateTime, 
                     SearchEndDate?.DateTime, 
-                    paymentStatuses,
-                    null);
+                    SelectedStatusFilter);
 
                 var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
 
                 DisplayOrders.Clear();
                 foreach (var o in mappedOrders) DisplayOrders.Add(o);
 
-                int historyCountFromDb = await _orderService.GetCountByStatus(
+                int historyCountFromDb = await _orderService.GetHistoryCount(
                     SearchStartDate?.DateTime, 
-                    SearchEndDate?.DateTime, 
-                    paymentStatuses,
-                    null);
+                    SearchEndDate?.DateTime);
 
                 TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
                 if (TotalPagesHistory < 1) TotalPagesHistory = 1;
@@ -208,17 +187,9 @@ public partial class OrderManagementViewModel : ObservableObject
             IsLoadingMore = true;
             _currentPage++;
 
-            var fulfillmentStatuses = SelectedStatusFilter == "All Active" || string.IsNullOrEmpty(SelectedStatusFilter)
-                ? new[] { "None", "Preparing", "Ready" }.ToList()
-                : new[] { SelectedStatusFilter }.ToList();
-                
-            var pagedResult = await _orderService.GetPagedOrdersByStatuses(
+            var pagedResult = await _orderService.GetPagedActiveOrders(
                 new PagingRequest { PageNumber = _currentPage, PageSize = PageSize }, 
-                false, 
-                null, 
-                null, 
-                null,
-                fulfillmentStatuses);
+                SelectedStatusFilter);
 
             var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
 
@@ -435,15 +406,11 @@ public partial class OrderManagementViewModel : ObservableObject
     {
         try
         {
-            var activeStatuses = new[] { "None", "Preparing", "Ready" }.ToList();
-            ActiveCount = await _orderService.GetCountByStatus(null, null, null, activeStatuses);
+            ActiveCount = await _orderService.GetActiveCount();
             
-            var historyStatuses = new[] { "Paid", "Cancelled", "Refunded" }.ToList();
-            HistoryCount = await _orderService.GetCountByStatus(
+            HistoryCount = await _orderService.GetHistoryCount(
                 SearchStartDate?.DateTime, 
-                SearchEndDate?.DateTime, 
-                historyStatuses, 
-                null);
+                SearchEndDate?.DateTime);
         }
         catch (Exception ex)
         {
