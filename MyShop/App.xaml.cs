@@ -74,7 +74,7 @@ public partial class App : Application
     /// </summary>
     private void RegisterServices()
     {
-         var container = ServiceContainer.Instance;
+        var container = ServiceContainer.Instance;
         var services = new ServiceCollection();
 
         // Create log file to track database initialization
@@ -221,7 +221,7 @@ public partial class App : Application
             }
 
             // ===== Register Data Access Layer (Repositories) =====
-             container.Register<IRepository<Product>>(new Repository<Product>(dbContext));
+            container.Register<IRepository<Product>>(new Repository<Product>(dbContext));
             container.Register<IRepository<Category>>(new Repository<Category>(dbContext));
             container.Register<IRepository<Customer>>(new Repository<Customer>(dbContext));
             container.Register<IRepository<Order>>(new Repository<Order>(dbContext));
@@ -232,17 +232,28 @@ public partial class App : Application
             container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
 
-            // Use InMemoryRepository for demo, or switch to Repository<T> for DB
-            services.AddSingleton<IRepository<Product>>(new InMemoryRepository<Product>());
-            services.AddSingleton<IRepository<Category>>(new InMemoryRepository<Category>());
-            services.AddSingleton<IRepository<Customer>>(new InMemoryRepository<Customer>());
-            services.AddSingleton<IRepository<Order>>(new InMemoryRepository<Order>());
-            services.AddSingleton<IRepository<OrderDetail>>(new InMemoryRepository<OrderDetail>());
-            services.AddSingleton<IRepository<User>>(new InMemoryRepository<User>());
-            services.AddSingleton<IRepository<Promotion>>(new InMemoryRepository<Promotion>());
-            services.AddSingleton<IRepository<AppConfig>>(new InMemoryRepository<AppConfig>());
-            services.AddSingleton<IRepository<UserSetting>>(new InMemoryRepository<UserSetting>());
-            services.AddSingleton<IRepository<WorkSchedule>>(new InMemoryRepository<WorkSchedule>());
+            services.AddSingleton<IRepository<Product>>(new Repository<Product>(dbContext));
+            services.AddSingleton<IRepository<Category>>(new Repository<Category>(dbContext));
+            services.AddSingleton<IRepository<Customer>>(new Repository<Customer>(dbContext));
+            services.AddSingleton<IRepository<Order>>(new Repository<Order>(dbContext));
+            services.AddSingleton<IRepository<OrderDetail>>(new Repository<OrderDetail>(dbContext));
+            services.AddSingleton<IRepository<User>>(new Repository<User>(dbContext));
+            services.AddSingleton<IRepository<Promotion>>(new Repository<Promotion>(dbContext));
+            services.AddSingleton<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
+            services.AddSingleton<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
+            services.AddSingleton<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
+
+            ////Use InMemoryRepository for demo, or switch to Repository<T> for DB
+            //services.AddSingleton<IRepository<Product>>(new InMemoryRepository<Product>());
+            //services.AddSingleton<IRepository<Category>>(new InMemoryRepository<Category>());
+            //services.AddSingleton<IRepository<Customer>>(new InMemoryRepository<Customer>());
+            //services.AddSingleton<IRepository<Order>>(new InMemoryRepository<Order>());
+            //services.AddSingleton<IRepository<OrderDetail>>(new InMemoryRepository<OrderDetail>());
+            //services.AddSingleton<IRepository<User>>(new InMemoryRepository<User>());
+            //services.AddSingleton<IRepository<Promotion>>(new InMemoryRepository<Promotion>());
+            //services.AddSingleton<IRepository<AppConfig>>(new InMemoryRepository<AppConfig>());
+            //services.AddSingleton<IRepository<UserSetting>>(new InMemoryRepository<UserSetting>());
+            //services.AddSingleton<IRepository<WorkSchedule>>(new InMemoryRepository<WorkSchedule>());
 
             // ===== Register Business Logic Layer (Services) =====
             container.Register<IProductService>(new ProductService(
@@ -271,14 +282,14 @@ public partial class App : Application
             // Build Provider
             Services = services.BuildServiceProvider();
 
-            // Seed Mock Data
-            SampleDataSeeder.Seed(
-                Services.GetRequiredService<IRepository<Product>>(),
-                Services.GetRequiredService<IRepository<Category>>(),
-                Services.GetRequiredService<IRepository<Order>>(),
-                Services.GetRequiredService<IRepository<Customer>>(),
-                Services.GetRequiredService<IRepository<User>>()
-            );
+            //// Seed Mock Data
+            //SampleDataSeeder.Seed(
+            //    Services.GetRequiredService<IRepository<Product>>(),
+            //    Services.GetRequiredService<IRepository<Category>>(),
+            //    Services.GetRequiredService<IRepository<Order>>(),
+            //    Services.GetRequiredService<IRepository<Customer>>(),
+            //    Services.GetRequiredService<IRepository<User>>()
+            //);
 
             LogMessage("✅ All services registered successfully with Microsoft DI");
             LogMessage("====== DATABASE INITIALIZATION END ======");
