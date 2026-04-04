@@ -28,7 +28,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="x:String">
-                                        <Button Command="{Binding DataContext.SelectCategoryCommand, ElementName=PageRoot}"
+                                        <Button Command="{Binding DataContext.FilterByCategoryCommand, ElementName=PageRoot}"
                                                 CommandParameter="{Binding}"
                                                 Padding="16,8"
                                                 CornerRadius="16"
@@ -92,7 +92,8 @@
                                              BorderBrush="#E5E7EB"
                                              CornerRadius="12"
                                              PlaceholderText="Search menu..."
-                                             Text="{Binding SearchText, Mode=TwoWay}"/>
+                                             Text="{Binding SearchText, Mode=TwoWay}"
+                                             KeyDown="SearchTextBox_KeyDown"/>
                                     <FontIcon Glyph="&#xE721;"
                                               Foreground="#94A3B8"
                                               Margin="14,0,0,0"
@@ -199,7 +200,9 @@
                                                 </Button>
                                                 <Button Background="Transparent"
                                                         BorderThickness="0"
-                                                        Padding="8">
+                                                        Padding="8"
+                                                        Command="{Binding DataContext.DeleteProductCommand, ElementName=PageRoot}"
+                                                        CommandParameter="{Binding}">
                                                     <FontIcon Glyph="&#xE74D;"
                                                               FontSize="16"
                                                               Foreground="#EF4444"/>
@@ -246,7 +249,7 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="x:Int32">
-                                            <Button Command="{Binding DataContext.GoToPageCommand, ElementName=PageRoot}"
+                                            <Button Command="{Binding DataContext.LoadPageCommand, ElementName=PageRoot}"
                                                     CommandParameter="{Binding}"
                                                     Width="32"
                                                     Height="32"

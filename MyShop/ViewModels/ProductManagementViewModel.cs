@@ -9,6 +9,8 @@ namespace MyShop.ViewModels;
 
 public partial class ProductManagementViewModel : ObservableObject
 {
+    private readonly IProductService _productService;
+
     private const string CategoryAll = "All";
     private const string CategoryCoffee = "Coffee";
     private const string CategoryTea = "Tea";
@@ -41,75 +43,173 @@ public partial class ProductManagementViewModel : ObservableObject
     [ObservableProperty]
     private string pagingSummary = "Showing 0-0 in 0 items";
 
-    public ProductManagementViewModel(Action onAddProduct, Action<ProductListEntry> onEditProduct)
+    [ObservableProperty]
+    private double? minPrice;
+
+    [ObservableProperty]
+    private double? maxPrice;
+
+    [ObservableProperty]
+    private string sortOption = "Name"; // Name | PriceAsc | PriceDesc
+
+    public ProductManagementViewModel(
+        IProductService productService, 
+        Action onAddProduct,
+        Action<ProductListEntry> onEditProduct)
     {
+        
+        _productService = productService;
+
         this.onAddProduct = onAddProduct;
         this.onEditProduct = onEditProduct;
 
-        Categories.Add(CategoryAll);
-        Categories.Add(CategoryCoffee);
-        Categories.Add(CategoryTea);
-        Categories.Add(CategorySmoothies);
-        Categories.Add(CategoryPastries);
-
-        allProducts = BuildSeedProducts();
-        RebuildList();
+        GetAllCategories();
+        _ = LoadProducts();
     }
 
     [RelayCommand]
-    private void SelectCategory(string category)
+    private async Task LoadProducts()
     {
-        if (string.IsNullOrWhiteSpace(category))
+        await Task.CompletedTask;
+
+        const int pageSize = 3;
+
+        var paging = new PagingRequest
         {
-            return;
+            PageNumber = CurrentPage,
+            PageSize = pageSize
+        };
+
+        var result = _productService.GetAll(paging);
+
+        IEnumerable<Product> query = result.Items;
+
+        // FILTER CATEGORY
+        if (SelectedCategory != CategoryAll)
+        {
+            query = query.Where(p => p.Category?.Name == SelectedCategory);
         }
+
+        // SEARCH
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            query = query.Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // PRICE
+        if (MinPrice.HasValue)
+            query = query.Where(p => p.Price >= (decimal)MinPrice);
+
+        if (MaxPrice.HasValue)
+            query = query.Where(p => p.Price <= (decimal)MaxPrice);
+
+        // SORT
+        query = sortOption switch
+        {
+            "PriceAsc" => query.OrderBy(p => p.Price),
+            "PriceDesc" => query.OrderByDescending(p => p.Price),
+            _ => query.OrderBy(p => p.Name)
+        };
+
+        var list = query.ToList();
+
+        TotalItems = list.Count;
+        TotalPages = Math.Max(1, (int)Math.Ceiling(list.Count / (double)pageSize));
+
+        var pageItems = list
+            .Skip((CurrentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var pageStart = TotalItems == 0 ? 0 : (CurrentPage - 1) * pageSize + 1;
+        var pageEnd = pageStart + pageItems.Count - 1;
+        pagingSummary = $"Showing {pageStart}-{pageEnd} in {TotalItems} items";
+        PageNumbers.Clear();
+        for (int i = 1; i <= TotalPages; i++)
+            PageNumbers.Add(i);
+            
+        DisplayProducts.Clear();
+        foreach (var p in pageItems)
+        {
+            DisplayProducts.Add(new ProductListEntry
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Category = p.Category?.Name ?? "",
+                SellingPrice = (double)p.Price
+            });
+        }
+    }
+    
+    [RelayCommand]
+    private async Task SearchByName(string keyword)
+    {
+        await Task.CompletedTask;
+
+        SearchText = keyword;
+        CurrentPage = 1;
+        await LoadProducts();
+    }
+
+    [RelayCommand]
+    private async Task FilterByCategory(string category)
+    {
+        await Task.CompletedTask;
 
         SelectedCategory = category;
         CurrentPage = 1;
-        RebuildList();
+        await LoadProducts();
     }
 
     [RelayCommand]
-    private void Search()
+    private async Task FilterByPriceRange(decimal min, decimal max)
     {
+        await Task.CompletedTask;
+
+        MinPrice = (double)min;
+        MaxPrice = (double)max;
+
         CurrentPage = 1;
-        RebuildList();
+        await LoadProducts();
     }
 
     [RelayCommand]
-    private void GoToPage(int page)
+    private async Task SortProducts(string sortBy)
     {
-        if (page < 1 || page > TotalPages)
-        {
-            return;
-        }
+        await Task.CompletedTask;
 
-        CurrentPage = page;
-        RebuildList();
+        sortOption = sortBy;
+        await LoadProducts();
     }
 
     [RelayCommand]
-    private void PreviousPage()
+    private async Task LoadPage(int pageNumber)
     {
-        if (CurrentPage <= 1)
-        {
+        await Task.CompletedTask;
+
+        if (pageNumber < 1 || pageNumber > TotalPages)
             return;
-        }
+
+        CurrentPage = pageNumber;
+        await LoadProducts();
+    }
+
+    [RelayCommand]
+    private async Task PreviousPage()
+    {
+        if (CurrentPage <= 1) return;
 
         CurrentPage--;
-        RebuildList();
+        await LoadProducts();
     }
 
     [RelayCommand]
-    private void NextPage()
+    private async Task NextPage()
     {
-        if (CurrentPage >= TotalPages)
-        {
-            return;
-        }
+        if (CurrentPage >= TotalPages) return;
 
         CurrentPage++;
-        RebuildList();
+        await LoadProducts();
     }
 
     [RelayCommand]
@@ -124,39 +224,42 @@ public partial class ProductManagementViewModel : ObservableObject
         onEditProduct(product);
     }
 
-    private void RebuildList()
+    [RelayCommand]
+    private async Task DeleteProduct(int productId)
     {
-        const int pageSize = 3;
+        await Task.CompletedTask;
 
-        var filtered = allProducts.Where(p =>
-            (SelectedCategory == CategoryAll || p.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrWhiteSpace(SearchText) || p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))).ToList();
+        _productService.Delete(productId);
+        await LoadProducts();
+    }
 
-        TotalItems = filtered.Count;
-        TotalPages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)pageSize));
+   [RelayCommand]
+    private async Task GoToProductDetail(Product product)
+    {
+        await Task.CompletedTask;
 
-        if (CurrentPage > TotalPages)
+        if (product == null) return;
+
+        var entry = new ProductListEntry
         {
-            CurrentPage = TotalPages;
-        }
+            Id = product.Id,
+            Name = product.Name,
+            Category = product.Category?.Name ?? "",
+            SellingPrice = (double)product.Price
+        };
 
-        var pageItems = filtered.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
+        onEditProduct(entry);
+    }
 
-        DisplayProducts.Clear();
-        foreach (var product in pageItems)
-        {
-            DisplayProducts.Add(product);
-        }
-
-        PageNumbers.Clear();
-        for (int i = 1; i <= TotalPages; i++)
-        {
-            PageNumbers.Add(i);
-        }
-
-        var start = filtered.Count == 0 ? 0 : ((CurrentPage - 1) * pageSize) + 1;
-        var end = filtered.Count == 0 ? 0 : start + pageItems.Count - 1;
-        PagingSummary = $"Showing {start}-{end} in {TotalItems} items";
+    [RelayCommand]
+    private void GetAllCategories()
+    {
+        Categories.Clear();
+        Categories.Add(CategoryAll);
+        Categories.Add(CategoryCoffee);
+        Categories.Add(CategoryTea);
+        Categories.Add(CategorySmoothies);
+        Categories.Add(CategoryPastries);
     }
 
     private static List<ProductListEntry> BuildSeedProducts()
