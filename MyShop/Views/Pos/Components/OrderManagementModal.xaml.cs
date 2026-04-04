@@ -29,6 +29,14 @@ public sealed partial class OrderManagementModal : ContentDialog
         this.Hide();
     }
 
+    private async void ContentDialog_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null)
+        {
+            await ViewModel.LoadOrders();
+        }
+    }
+
     private void OrderGridView_Loaded(object sender, RoutedEventArgs e)
     {
         var scrollViewer = GetScrollViewer(OrderGridView);

@@ -10,7 +10,8 @@
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     BorderThickness="0"
-    CornerRadius="{StaticResource RadiusXLarge}">
+    CornerRadius="{StaticResource RadiusXLarge}"
+    Loaded="ContentDialog_Loaded">
 
     <ContentDialog.Resources>
         <x:Double x:Key="ContentDialogMaxWidth">1200</x:Double>
@@ -387,6 +388,7 @@
                                         BorderThickness="1"
                                         Command="{Binding DataContext.UpdateOrderStatusCommand, ElementName=ModalRoot}"
                                         CommandParameter="{Binding}"
+                                        IsEnabled="{Binding IsFulfillmentActionEnabled}"
                                         CornerRadius="10"
                                         Style="{StaticResource AppOutlineButtonStyle}"
                                         Visibility="{Binding FulfillmentStatus, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Active'}">

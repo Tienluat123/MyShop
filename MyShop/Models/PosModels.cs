@@ -115,6 +115,12 @@ public partial class PosOrder : ObservableObject
 
     [ObservableProperty]
     private string? _customerName;
+
+    public bool IsFulfillmentActionEnabled => 
+        !(FulfillmentStatus == FulfillmentStatus.Ready && PaymentStatus != PaymentStatus.Paid);
+
+    partial void OnPaymentStatusChanged(PaymentStatus value) => OnPropertyChanged(nameof(IsFulfillmentActionEnabled));
+    partial void OnFulfillmentStatusChanged(FulfillmentStatus value) => OnPropertyChanged(nameof(IsFulfillmentActionEnabled));
 }
 
 

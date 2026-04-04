@@ -339,7 +339,15 @@ public partial class OrderManagementViewModel : ObservableObject
 
         if (currentStatus == FulfillmentStatus.None) nextStatus = FulfillmentStatus.Preparing;
         else if (currentStatus == FulfillmentStatus.Preparing) nextStatus = FulfillmentStatus.Ready;
-        else if (currentStatus == FulfillmentStatus.Ready) nextStatus = FulfillmentStatus.Completed;
+        else if (currentStatus == FulfillmentStatus.Ready) 
+        {
+            if (order.PaymentStatus != PaymentStatus.Paid)
+            {
+                // Safety guard: Prevents Ready -> Completed if not paid
+                return;
+            }
+            nextStatus = FulfillmentStatus.Completed;
+        }
 
         if (nextStatus != currentStatus)
         {
