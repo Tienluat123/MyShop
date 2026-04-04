@@ -262,7 +262,8 @@ public partial class PosViewModel : ObservableObject
             Type = OrderType,
             Table = TableNumber,
             CreatedAt = DateTime.Now,
-            Status = OrderStatus.Pending,
+            PaymentStatus = PaymentStatus.Paid,
+            FulfillmentStatus = FulfillmentStatus.None,
             Method = method,
             CustomerId = customer?.Id.ToString(),
             CustomerName = customer?.Name

@@ -8,16 +8,16 @@ public class StatusToIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is not OrderStatus status) return "&#xE819;"; // Default Clipboard
+        string statusStr = value?.ToString() ?? "";
 
-        return status switch
+        return statusStr switch
         {
-            OrderStatus.Pending => "&#xE819;",   // Clipboard
-            OrderStatus.Preparing => "&#xE916;", // Timer/Recent
-            OrderStatus.Ready => "&#xE73E;",     // CheckMark
-            OrderStatus.Completed => "&#xE7BA;", // Home/Check
-            OrderStatus.Cancelled => "&#xE711;",    // Cancel
-            OrderStatus.Refunded => "&#xE777;",  // Refresh/Rotate
+            "None" or "Draft" or "Pending" => "&#xE819;",   // Clipboard
+            "Preparing" or "PendingPayment" => "&#xE916;", // Timer/Recent
+            "Ready" => "&#xE73E;",     // CheckMark
+            "Completed" or "Paid" => "&#xE7BA;", // Home/Check
+            "Cancelled" => "&#xE711;",    // Cancel
+            "Refunded" => "&#xE777;",  // Refresh/Rotate
             _ => "&#xE819;"
         };
     }

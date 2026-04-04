@@ -83,11 +83,11 @@ public partial class OrderManagementViewModel : ObservableObject
     {
         if (Filter == "Active")
         {
-            StatusFilterOptions = new ObservableCollection<string> { "All Active", "Pending", "Preparing", "Ready" };
+            StatusFilterOptions = new ObservableCollection<string> { "All Active", "None", "Preparing", "Ready" };
         }
         else
         {
-            StatusFilterOptions = new ObservableCollection<string> { "All History", "Paid", "Cancelled" };
+            StatusFilterOptions = new ObservableCollection<string> { "All History", "Paid", "Cancelled", "Refunded" };
         }
         
         _selectedStatusFilter = StatusFilterOptions.First();
@@ -123,15 +123,21 @@ public partial class OrderManagementViewModel : ObservableObject
 
             if (Filter == "Active")
             {
-                var activeStatuses = SelectedStatusFilter == "All Active" || string.IsNullOrEmpty(SelectedStatusFilter)
-                    ? new[] { "Pending", "Preparing", "Ready" }
-                    : new[] { SelectedStatusFilter };
+                var fulfillmentStatuses = SelectedStatusFilter == "All Active" || string.IsNullOrEmpty(SelectedStatusFilter)
+                    ? new[] { "None", "Preparing", "Ready" }.ToList()
+                    : new[] { SelectedStatusFilter }.ToList();
 
                 _currentPage = 1;
                 HasMoreData = true;
 
                 var paging = new PagingRequest { PageNumber = _currentPage, PageSize = PageSize };
-                var pagedResult = _orderService.GetPagedOrdersByStatuses(paging, false, SearchStartDate?.DateTime, SearchEndDate?.DateTime, activeStatuses);
+                var pagedResult = _orderService.GetPagedOrdersByStatuses(
+                    paging, 
+                    false, 
+                    SearchStartDate?.DateTime, 
+                    SearchEndDate?.DateTime, 
+                    null, 
+                    fulfillmentStatuses);
                 
                 var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
                 
@@ -145,9 +151,9 @@ public partial class OrderManagementViewModel : ObservableObject
             else
             {
                 // History Paging
-                var historyStatuses = SelectedStatusFilter == "All History" || string.IsNullOrEmpty(SelectedStatusFilter)
-                    ? new[] { "Paid", "Cancelled" }
-                    : new[] { SelectedStatusFilter };
+                var paymentStatuses = SelectedStatusFilter == "All History" || string.IsNullOrEmpty(SelectedStatusFilter)
+                    ? new[] { "Paid", "Cancelled", "Refunded" }.ToList()
+                    : new[] { SelectedStatusFilter }.ToList();
                     
                 var paging = new PagingRequest { PageNumber = CurrentPageHistory, PageSize = PageSizeHistory };
                 var pagedResult = _orderService.GetPagedOrdersByStatuses(
@@ -155,7 +161,8 @@ public partial class OrderManagementViewModel : ObservableObject
                     true, 
                     SearchStartDate?.DateTime, 
                     SearchEndDate?.DateTime, 
-                    historyStatuses);
+                    paymentStatuses,
+                    null);
                 
                 var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
                 
@@ -165,7 +172,8 @@ public partial class OrderManagementViewModel : ObservableObject
                 int historyCountFromDb = _orderService.GetCountByStatus(
                     SearchStartDate?.DateTime, 
                     SearchEndDate?.DateTime, 
-                    historyStatuses);
+                    paymentStatuses,
+                    null);
 
                 TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
                 if (TotalPagesHistory < 1) TotalPagesHistory = 1;
@@ -202,16 +210,17 @@ public partial class OrderManagementViewModel : ObservableObject
             IsLoadingMore = true;
             _currentPage++;
 
-            var activeStatuses = SelectedStatusFilter == "All Active" || string.IsNullOrEmpty(SelectedStatusFilter)
-                ? new[] { "Pending", "Preparing", "Ready" }
-                : new[] { SelectedStatusFilter };
+            var fulfillmentStatuses = SelectedStatusFilter == "All Active" || string.IsNullOrEmpty(SelectedStatusFilter)
+                ? new[] { "None", "Preparing", "Ready" }.ToList()
+                : new[] { SelectedStatusFilter }.ToList();
                 
             var pagedResult = _orderService.GetPagedOrdersByStatuses(
                 new PagingRequest { PageNumber = _currentPage, PageSize = PageSize }, 
                 false, 
                 null, 
                 null, 
-                activeStatuses);
+                null,
+                fulfillmentStatuses);
             
             var mappedOrders = pagedResult.Items.Select(MapToPosOrder).ToList();
             
@@ -288,7 +297,8 @@ public partial class OrderManagementViewModel : ObservableObject
         var posOrder = new PosOrder
         {
             OrderId = $"ORD-{order.Id}",
-            Status = MapToStatus(order.Status),
+            PaymentStatus = MapToPaymentStatus(order.PaymentStatus),
+            FulfillmentStatus = MapToFulfillmentStatus(order.FulfillmentStatus),
             CreatedAt = order.OrderDate,
         };
 
@@ -317,16 +327,28 @@ public partial class OrderManagementViewModel : ObservableObject
         return posOrder;
     }
 
-    private OrderStatus MapToStatus(string status)
+    private PaymentStatus MapToPaymentStatus(string status)
     {
         return status switch
         {
-            "Pending" => OrderStatus.Pending,
-            "Preparing" => OrderStatus.Preparing,
-            "Ready" => OrderStatus.Ready,
-            "Paid" => OrderStatus.Completed,
-            "Cancelled" => OrderStatus.Cancelled,
-            _ => OrderStatus.Pending
+            "Draft" => PaymentStatus.Draft,
+            "PendingPayment" => PaymentStatus.PendingPayment,
+            "Paid" => PaymentStatus.Paid,
+            "Cancelled" => PaymentStatus.Cancelled,
+            "Refunded" => PaymentStatus.Refunded,
+            _ => PaymentStatus.Draft
+        };
+    }
+
+    private FulfillmentStatus MapToFulfillmentStatus(string status)
+    {
+        return status switch
+        {
+            "None" => FulfillmentStatus.None,
+            "Preparing" => FulfillmentStatus.Preparing,
+            "Ready" => FulfillmentStatus.Ready,
+            "Completed" => FulfillmentStatus.Completed,
+            _ => FulfillmentStatus.None
         };
     }
 
@@ -339,19 +361,19 @@ public partial class OrderManagementViewModel : ObservableObject
     [RelayCommand]
     private void UpdateOrderStatus(PosOrder order)
     {
-        var currentStatus = order.Status;
-        OrderStatus nextStatus = currentStatus;
+        var currentStatus = order.FulfillmentStatus;
+        FulfillmentStatus nextStatus = currentStatus;
 
-        if (currentStatus == OrderStatus.Pending) nextStatus = OrderStatus.Preparing;
-        else if (currentStatus == OrderStatus.Preparing) nextStatus = OrderStatus.Ready;
-        else if (currentStatus == OrderStatus.Ready) nextStatus = OrderStatus.Completed;
+        if (currentStatus == FulfillmentStatus.None) nextStatus = FulfillmentStatus.Preparing;
+        else if (currentStatus == FulfillmentStatus.Preparing) nextStatus = FulfillmentStatus.Ready;
+        else if (currentStatus == FulfillmentStatus.Ready) nextStatus = FulfillmentStatus.Completed;
 
         if (nextStatus != currentStatus)
         {
             try
             {
                 int numericId = ExtractId(order.OrderId);
-                _orderService.UpdateOrderStatus(numericId, MapFromStatus(nextStatus));
+                _orderService.UpdateFulfillmentStatus(numericId, nextStatus.ToString());
                 LoadOrders(); // Refresh from service
             }
             catch (Exception) { /* Handle error */ }
@@ -364,7 +386,7 @@ public partial class OrderManagementViewModel : ObservableObject
         try
         {
             int numericId = ExtractId(order.OrderId);
-            _orderService.UpdateOrderStatus(numericId, "Cancelled");
+            _orderService.UpdatePaymentStatus(numericId, "Cancelled");
             LoadOrders();
         }
         catch (Exception) { /* Handle error */ }
@@ -373,12 +395,10 @@ public partial class OrderManagementViewModel : ObservableObject
     [RelayCommand]
     private void RefundOrder(PosOrder order)
     {
-        // For demo, we just update status to something representing refund if available in service
-        // or just local update if service doesn't support it yet
         try
         {
             int numericId = ExtractId(order.OrderId);
-            _orderService.UpdateOrderStatus(numericId, "Cancelled"); // Or "Refunded" if supported
+            _orderService.UpdatePaymentStatus(numericId, "Refunded"); 
             LoadOrders();
         }
         catch (Exception) { /* Handle error */ }
@@ -410,30 +430,21 @@ public partial class OrderManagementViewModel : ObservableObject
         return 0;
     }
 
-    private string MapFromStatus(OrderStatus status)
-    {
-        return status switch
-        {
-            OrderStatus.Pending => "Pending",
-            OrderStatus.Preparing => "Preparing",
-            OrderStatus.Ready => "Ready",
-            OrderStatus.Completed => "Paid",
-            OrderStatus.Cancelled => "Cancelled",
-            _ => "Pending"
-        };
-    }
+    // Helper converter maps are eliminated to use direct Enum ToString serialization inside UpdateOrderStatus.
 
     private void LoadCounts()
     {
         try
         {
-            ActiveCount = _orderService.GetCountByStatus(null, null, "Pending", "Preparing", "Ready");
+            var activeStatuses = new[] { "None", "Preparing", "Ready" }.ToList();
+            ActiveCount = _orderService.GetCountByStatus(null, null, null, activeStatuses);
             
-            // History count uses the date range bounds
+            var historyStatuses = new[] { "Paid", "Cancelled", "Refunded" }.ToList();
             HistoryCount = _orderService.GetCountByStatus(
                 SearchStartDate?.DateTime, 
                 SearchEndDate?.DateTime, 
-                "Paid", "Cancelled");
+                historyStatuses, 
+                null);
         }
         catch { /* ignored */ }
     }

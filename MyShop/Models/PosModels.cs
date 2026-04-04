@@ -23,14 +23,21 @@ public partial class PaymentMethodItem : ObservableObject
     private bool _isSelected;
 }
 
-public enum OrderStatus
+public enum PaymentStatus
 {
-    Pending,
-    Preparing,
-    Ready,
-    Completed,
+    Draft,
+    PendingPayment,
+    Paid,
     Cancelled,
     Refunded
+}
+
+public enum FulfillmentStatus
+{
+    None,
+    Preparing,
+    Ready,
+    Completed
 }
 
 public partial class DrinkOptions : ObservableObject
@@ -95,7 +102,10 @@ public partial class PosOrder : ObservableObject
     private PaymentMethod _method;
 
     [ObservableProperty]
-    private OrderStatus _status = OrderStatus.Pending;
+    private PaymentStatus _paymentStatus = PaymentStatus.Draft;
+
+    [ObservableProperty]
+    private FulfillmentStatus _fulfillmentStatus = FulfillmentStatus.None;
 
     [ObservableProperty]
     private DateTime _createdAt = DateTime.Now;

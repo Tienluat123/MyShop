@@ -11,15 +11,14 @@ public class StatusToVisibilityConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is not OrderStatus status) return Visibility.Collapsed;
-
+        string statusStr = value?.ToString() ?? "";
         string target = (parameter as string) ?? Target;
         
         bool isVisible = target switch
         {
-            "Active" => status == OrderStatus.Pending || status == OrderStatus.Preparing || status == OrderStatus.Ready,
-            "Cancel" => status == OrderStatus.Pending || status == OrderStatus.Preparing || status == OrderStatus.Ready,
-            "Refund" => status == OrderStatus.Completed,
+            "Active" => statusStr is "None" or "Preparing" or "Ready",
+            "Cancel" => statusStr is "Draft" or "PendingPayment" or "Paid", 
+            "Refund" => statusStr is "Paid",
             _ => false
         };
 

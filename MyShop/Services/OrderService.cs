@@ -25,9 +25,9 @@ public interface IOrderService
     List<Order> GetByCustomerId(int customerId);
 
     /// <summary>
-    /// Lấy đơn hàng theo trạng thái
+    /// Lấy đơn hàng theo thuộc tính
     /// </summary>
-    List<Order> GetByStatus(string status);
+    List<Order> GetByPaymentStatus(string status);
 
     /// <summary>
     /// Lấy đơn hàng chưa thanh toán
@@ -55,19 +55,24 @@ public interface IOrderService
     void Delete(int id);
 
     /// <summary>
-    /// Cập nhật trạng thái đơn hàng
+    /// Cập nhật trạng thái thanh toán
     /// </summary>
-    void UpdateOrderStatus(int orderId, string newStatus);
+    void UpdatePaymentStatus(int orderId, string newStatus);
 
     /// <summary>
-    /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang
+    /// Cập nhật trạng thái giao/nhận hàng
     /// </summary>
-    PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, params string[] statuses);
+    void UpdateFulfillmentStatus(int orderId, string newStatus);
 
     /// <summary>
-    /// Đếm số lượng đơn hàng theo danh sách trạng thái
+    /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang kép
     /// </summary>
-    int GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, params string[] statuses);
+    PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null);
+
+    /// <summary>
+    /// Đếm số lượng đơn hàng theo danh sách trạng thái két
+    /// </summary>
+    int GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null);
 }
 
 
@@ -142,20 +147,20 @@ public class OrderService : IOrderService
     }
 
     /// <summary>
-    /// Lấy đơn hàng theo trạng thái
+    /// Lấy đơn hàng theo PaymentStatus
     /// </summary>
-    public List<Order> GetByStatus(string status)
+    public List<Order> GetByPaymentStatus(string status)
     {
         if (string.IsNullOrWhiteSpace(status))
             throw new ArgumentException("Trạng thái không được để trống", nameof(status));
 
         try
         {
-            return _orderRepository.Find(o => o.Status == status).ToList();
+            return _orderRepository.Find(o => o.PaymentStatus == status).ToList();
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi lấy đơn hàng theo trạng thái '{status}'", ex);
+            throw new InvalidOperationException($"Lỗi khi lấy đơn hàng theo thanh toán '{status}'", ex);
         }
     }
 
@@ -166,7 +171,7 @@ public class OrderService : IOrderService
     {
         try
         {
-            return GetByStatus("New");
+            return GetByPaymentStatus("PendingPayment");
         }
         catch (Exception ex)
         {
@@ -185,7 +190,7 @@ public class OrderService : IOrderService
                 .Where(o =>
                     o.OrderDate >= startDate &&
                     o.OrderDate <= endDate &&
-                    o.Status == "Paid"
+                    o.PaymentStatus == "Paid"
                 )
                 .Sum(o => (decimal?)o.TotalAmount) ?? 0;
         }
@@ -282,15 +287,15 @@ public class OrderService : IOrderService
     }
 
     /// <summary>
-    /// Cập nhật trạng thái đơn hàng
+    /// Cập nhật trạng thái thanh toán
     /// </summary>
-    public void UpdateOrderStatus(int orderId, string newStatus)
+    public void UpdatePaymentStatus(int orderId, string newStatus)
     {
         if (orderId <= 0)
             throw new ArgumentException("Order ID không hợp lệ", nameof(orderId));
 
         if (string.IsNullOrWhiteSpace(newStatus))
-            throw new ArgumentException("Trạng thái mới không được để trống", nameof(newStatus));
+            throw new ArgumentException("Trạng thái thanh toán mới không được để trống", nameof(newStatus));
 
         try
         {
@@ -298,31 +303,64 @@ public class OrderService : IOrderService
             if (order == null)
                 throw new KeyNotFoundException($"Đơn hàng với ID {orderId} không tìm thấy");
 
-            // Ngăn chặn thay đổi nếu đơn hàng đã thanh toán hoặc đã hủy (trừ Admin có thể cần can thiệp)
-            if (order.Status == "Paid" && newStatus != "Paid")
+            if (order.PaymentStatus == "Paid" && newStatus != "Paid" && newStatus != "Refunded")
                 throw new InvalidOperationException("Không thể thay đổi trạng thái của đơn hàng đã thanh toán");
             
-            if (order.Status == "Cancelled")
+            if (order.PaymentStatus == "Cancelled")
                 throw new InvalidOperationException("Không thể thay đổi trạng thái của đơn hàng đã hủy");
 
-            order.Status = newStatus;
+            order.PaymentStatus = newStatus;
             Update(order);
         }
         catch (Exception ex) when (ex is not InvalidOperationException && ex is not KeyNotFoundException)
         {
-            throw new InvalidOperationException($"Lỗi hệ thống khi cập nhật trạng thái đơn hàng", ex);
+            throw new InvalidOperationException($"Lỗi hệ thống khi cập nhật trạng thái thanh toán", ex);
+        }
+    }
+
+    /// <summary>
+    /// Cập nhật trạng thái Fulfillment
+    /// </summary>
+    public void UpdateFulfillmentStatus(int orderId, string newStatus)
+    {
+        if (orderId <= 0)
+            throw new ArgumentException("Order ID không hợp lệ", nameof(orderId));
+
+        if (string.IsNullOrWhiteSpace(newStatus))
+            throw new ArgumentException("Trạng thái giao/nhận không được để trống", nameof(newStatus));
+
+        try
+        {
+            var order = GetById(orderId);
+            if (order == null)
+                throw new KeyNotFoundException($"Đơn hàng với ID {orderId} không tìm thấy");
+
+            order.FulfillmentStatus = newStatus;
+            Update(order);
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException && ex is not KeyNotFoundException)
+        {
+            throw new InvalidOperationException($"Lỗi hệ thống khi cập nhật trạng thái fulfillment", ex);
         }
     }
 
     /// <summary>
     /// Đếm số lượng đơn hàng theo danh sách trạng thái
     /// </summary>
-    public int GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, params string[] statuses)
+    public int GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null)
     {
-        if (statuses == null || statuses.Length == 0) return 0;
         try
         {
-            var query = _orderRepository.Query().Where(o => statuses.Contains(o.Status));
+            var query = _orderRepository.Query();
+            
+            if (paymentStatuses != null && paymentStatuses.Count > 0)
+            {
+                query = query.Where(o => paymentStatuses.Contains(o.PaymentStatus));
+            }
+            if (fulfillmentStatuses != null && fulfillmentStatuses.Count > 0)
+            {
+                query = query.Where(o => fulfillmentStatuses.Contains(o.FulfillmentStatus));
+            }
             
             if (startDate.HasValue)
             {
@@ -344,9 +382,9 @@ public class OrderService : IOrderService
     }
 
     /// <summary>
-    /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang
+    /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang kép
     /// </summary>
-    public PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, params string[] statuses)
+    public PagedResult<Order> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null)
     {
         if (paging == null) throw new ArgumentNullException(nameof(paging));
         paging.Validate();
@@ -355,9 +393,13 @@ public class OrderService : IOrderService
         {
             var query = _orderRepository.Query();
             
-            if (statuses != null && statuses.Length > 0)
+            if (paymentStatuses != null && paymentStatuses.Count > 0)
             {
-                query = query.Where(o => statuses.Contains(o.Status));
+                query = query.Where(o => paymentStatuses.Contains(o.PaymentStatus));
+            }
+            if (fulfillmentStatuses != null && fulfillmentStatuses.Count > 0)
+            {
+                query = query.Where(o => fulfillmentStatuses.Contains(o.FulfillmentStatus));
             }
 
             if (startDate.HasValue)

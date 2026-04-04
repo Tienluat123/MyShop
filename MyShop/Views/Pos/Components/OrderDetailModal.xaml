@@ -38,8 +38,11 @@
                                 <Border Padding="8,2" Background="{StaticResource WarningSurfaceSoft}" CornerRadius="6">
                                     <TextBlock Text="{Binding SelectedOrderDetails.OrderId}" Foreground="{StaticResource BrandPrimary}" FontWeight="Bold" FontSize="14" />
                                 </Border>
-                                <Border Padding="8,2" Background="{Binding SelectedOrderDetails.Status, Converter={StaticResource StatusBgConverter}}" CornerRadius="6">
-                                    <TextBlock Text="{Binding SelectedOrderDetails.Status}" Foreground="{Binding SelectedOrderDetails.Status, Converter={StaticResource StatusFgConverter}}" FontWeight="Bold" FontSize="14" />
+                                <Border Padding="8,2" Background="{Binding SelectedOrderDetails.PaymentStatus, Converter={StaticResource StatusBgConverter}}" CornerRadius="6">
+                                    <TextBlock Text="{Binding SelectedOrderDetails.PaymentStatus}" Foreground="{Binding SelectedOrderDetails.PaymentStatus, Converter={StaticResource StatusFgConverter}}" FontWeight="Bold" FontSize="14" />
+                                </Border>
+                                <Border Padding="8,2" Background="{Binding SelectedOrderDetails.FulfillmentStatus, Converter={StaticResource StatusBgConverter}}" CornerRadius="6">
+                                    <TextBlock Text="{Binding SelectedOrderDetails.FulfillmentStatus}" Foreground="{Binding SelectedOrderDetails.FulfillmentStatus, Converter={StaticResource StatusFgConverter}}" FontWeight="Bold" FontSize="14" />
                                 </Border>
                                 <TextBlock Text="{Binding SelectedOrderDetails.CreatedAt}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="8,0,0,0"/>
                             </StackPanel>
