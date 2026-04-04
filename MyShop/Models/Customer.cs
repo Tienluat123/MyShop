@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-
+using System.ComponentModel.DataAnnotations.Schema;
 namespace MyShop.Models;
-
+[Table("Customers")]
 public partial class Customer : ObservableObject
 {
     public int Id { get; set; }

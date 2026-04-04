@@ -2,7 +2,8 @@ using Microsoft.UI.Xaml.Controls;
 using MyShop.ViewModels;
 using MyShop.Views.CustomerManagement.Components;
 using System.Diagnostics.CodeAnalysis;
-
+using MyShop.Services; // Cần để lấy ICustomerService từ Container
+using MyShop.Di;
 namespace MyShop.Views.CustomerManagement;
 
 public sealed partial class CustomerPage : Page
@@ -22,15 +23,22 @@ public sealed partial class CustomerPage : Page
     }
 
     private void NavigateToManagement()
-    {
-        var viewModel = new CustomerManagementViewModel(
-            onAdd: () => ShowFormDialog(isEditMode: false),
-            onRules: NavigateToRules,
-            onProfile: NavigateToProfile,
-            onEdit: customer => ShowFormDialog(isEditMode: true, customer));
+{
+    
+    var customerService = ServiceContainer.Instance.Get<ICustomerService>();
 
-        CustomerContentFrame.Navigate(typeof(CustomerManagementView), viewModel);
-    }
+  
+    var viewModel = new CustomerManagementViewModel(
+        customerService, // Quan trọng nhất là dòng này!
+        onAdd: () => ShowFormDialog(isEditMode: false),
+        onRules: NavigateToRules,
+        onProfile: NavigateToProfile,
+        onEdit: customer => ShowFormDialog(isEditMode: true, customer)
+    );
+
+    // 3. Navigate
+    CustomerContentFrame.Navigate(typeof(CustomerManagementView), viewModel);
+}
 
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
     private void LoyaltyRules_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

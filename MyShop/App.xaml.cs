@@ -257,12 +257,12 @@ public partial class App : Application
     {
         return new DatabaseConfig
         {
-            Host = "db.YOUR_PROJECT_ID.supabase.co",
-            Database = "postgres",
+            Host = "localhost",
+            Database = "myshop",
             Username = "postgres",
-            Password = "your_password",
+            Password = "mpa113dn",
             Port = 5432,
-            SslMode = "Require"
+            SslMode = "Disable"
         };
     }
 
