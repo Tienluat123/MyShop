@@ -319,69 +319,86 @@
 
                             <!--  Footer / Actions  -->
                             <Grid Grid.Row="2" Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Left Actions (Icons) -->
                                 <StackPanel
+                                    Grid.Column="0"
+                                    Margin="0,0,12,0"
                                     Orientation="Horizontal"
                                     Spacing="8">
                                     <Button
-                                        Width="44"
-                                        Height="44"
+                                        Width="40"
+                                        Height="40"
                                         Padding="0"
                                         Background="Transparent"
                                         BorderBrush="{StaticResource ErrorSurface}"
                                         BorderThickness="1"
                                         Command="{Binding DataContext.CancelOrderCommand, ElementName=ModalRoot}"
                                         CommandParameter="{Binding}"
-                                        CornerRadius="12"
+                                        CornerRadius="10"
                                         Style="{StaticResource AppIconButtonStyle}"
                                         Visibility="{Binding PaymentStatus, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Cancel'}">
                                         <FontIcon
                                             Foreground="{StaticResource Error}"
                                             Glyph="&#xE74D;"
-                                            Style="{StaticResource IconSubtitleStyle}" />
+                                            Style="{StaticResource IconCaptionStyle}" />
                                     </Button>
+                                </StackPanel>
+
+                                <!-- Right Actions (Primary Buttons) -->
+                                <StackPanel 
+                                    Grid.Column="1"
+                                    Orientation="Horizontal" 
+                                    Spacing="6"
+                                    HorizontalAlignment="Right">
+                                    
+                                    <!-- Refund Action -->
                                     <Button
-                                        Width="300"
-                                        Padding="0,12"
-                                        HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Center"
+                                        Padding="12,8"
+                                        MinWidth="100"
+                                        Background="{StaticResource AccentPurpleSurface}"
+                                        BorderBrush="{StaticResource AccentPurpleBorder}"
+                                        BorderThickness="1"
+                                        Command="{Binding DataContext.RefundOrderCommand, ElementName=ModalRoot}"
+                                        CommandParameter="{Binding}"
+                                        CornerRadius="10"
+                                        Style="{StaticResource AppOutlineButtonStyle}"
+                                        Visibility="{Binding PaymentStatus, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Refund'}">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <FontIcon Glyph="&#xE777;" FontSize="14" Foreground="{StaticResource AccentPurple}" />
+                                            <TextBlock
+                                                FontSize="{StaticResource FontCaption}"
+                                                FontWeight="Bold"
+                                                Foreground="{StaticResource AccentPurple}"
+                                                Text="REFUND" />
+                                        </StackPanel>
+                                    </Button>
+
+                                    <!-- Next Fulfillment Stage Action -->
+                                    <Button
+                                        Padding="12,8"
+                                        MinWidth="140"
                                         Background="{StaticResource SurfaceAlt}"
                                         BorderBrush="{StaticResource Gray100}"
                                         BorderThickness="1"
                                         Command="{Binding DataContext.UpdateOrderStatusCommand, ElementName=ModalRoot}"
                                         CommandParameter="{Binding}"
-                                        CornerRadius="12"
+                                        CornerRadius="10"
                                         Style="{StaticResource AppOutlineButtonStyle}"
                                         Visibility="{Binding FulfillmentStatus, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Active'}">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
                                             <TextBlock
                                                 FontSize="{StaticResource FontCaption}"
                                                 FontWeight="Bold"
                                                 Text="{Binding FulfillmentStatus, Converter={StaticResource StatusToNextStatusTextConverter}}" />
-                                            <FontIcon Glyph="&#xE76C;" Style="{StaticResource IconCaptionStyle}" />
+                                            <FontIcon Glyph="&#xE76C;" FontSize="14" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-
-                                <Button
-                                    Padding="0,12"
-                                    HorizontalAlignment="Stretch"
-                                    Background="{StaticResource AccentPurpleSurface}"
-                                    BorderBrush="{StaticResource AccentPurpleBorder}"
-                                    BorderThickness="1"
-                                    Command="{Binding DataContext.RefundOrderCommand, ElementName=ModalRoot}"
-                                    CommandParameter="{Binding}"
-                                    CornerRadius="12"
-                                    Style="{StaticResource AppOutlineButtonStyle}"
-                                    Visibility="{Binding PaymentStatus, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Refund'}">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <FontIcon Glyph="&#xE777;" Style="{StaticResource IconBodyStyle}" />
-                                        <TextBlock
-                                            FontSize="{StaticResource FontCaption}"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource AccentPurple}"
-                                            Text="REFUND ORDER" />
-                                    </StackPanel>
-                                </Button>
                             </Grid>
                         </Grid>
                     </Border>
