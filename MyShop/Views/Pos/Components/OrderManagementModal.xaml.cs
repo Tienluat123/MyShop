@@ -16,6 +16,12 @@ public sealed partial class OrderManagementModal : ContentDialog
         this.InitializeComponent();
         ViewModel = App.Services.GetRequiredService<OrderManagementViewModel>();
         DataContext = ViewModel;
+
+        ViewModel.ScrollToTopAction = () =>
+        {
+            var scrollViewer = GetScrollViewer(OrderGridView);
+            scrollViewer?.ChangeView(null, 0, null);
+        };
     }
 
     private void CloseBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

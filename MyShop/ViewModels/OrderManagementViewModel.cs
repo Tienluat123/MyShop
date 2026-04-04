@@ -64,6 +64,8 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedStatusFilter;
 
+    public Action ScrollToTopAction { get; set; }
+
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
 
@@ -102,6 +104,11 @@ public partial class OrderManagementViewModel : ObservableObject
         if (!IsLoadingMore)
         {
             LoadOrders();
+        }
+        
+        if (Filter == "Active")
+        {
+            ScrollToTopAction?.Invoke();
         }
     }
 
@@ -158,7 +165,7 @@ public partial class OrderManagementViewModel : ObservableObject
                 int historyCountFromDb = _orderService.GetCountByStatus(
                     SearchStartDate?.DateTime, 
                     SearchEndDate?.DateTime, 
-                    "Paid", "Cancelled");
+                    historyStatuses);
 
                 TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
                 if (TotalPagesHistory < 1) TotalPagesHistory = 1;
