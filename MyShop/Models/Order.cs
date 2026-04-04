@@ -29,7 +29,10 @@ public partial class Order : ObservableObject
     private decimal totalAmount; // Tổng tiền phải thu
 
     [ObservableProperty]
-    private string status = "New"; // New / Paid / Cancelled
+    private string paymentStatus = "Draft"; // Draft / PendingPayment / Paid / Cancelled / Refunded
+
+    [ObservableProperty]
+    private string fulfillmentStatus = "None"; // None / Preparing / Ready / Completed
 
     // Navigation properties
     public Customer? Customer { get; set; }

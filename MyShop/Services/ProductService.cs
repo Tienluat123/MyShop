@@ -11,37 +11,37 @@ public interface IProductService
     /// <summary>
     /// Lấy tất cả sản phẩm với phân trang
     /// </summary>
-    PagedResult<Product> GetAll(PagingRequest? paging = null);
+    Task<PagedResult<Product>> GetAll(PagingRequest? paging = null);
 
     /// <summary>
     /// Lấy sản phẩm theo ID
     /// </summary>
-    Product? GetById(int id);
+    Task<Product?> GetById(int id);
 
     /// <summary>
     /// Lấy sản phẩm theo category ID
     /// </summary>
-    List<Product> GetByCategory(int categoryId);
+    Task<List<Product>> GetByCategory(int categoryId);
 
     /// <summary>
     /// Tìm kiếm sản phẩm theo tên
     /// </summary>
-    List<Product> Search(string keyword);
+    Task<List<Product>> Search(string keyword);
 
     /// <summary>
     /// Thêm sản phẩm mới
     /// </summary>
-    Product Add(Product product);
+    Task<Product> Add(Product product);
 
     /// <summary>
     /// Cập nhật sản phẩm
     /// </summary>
-    void Update(Product product);
+    Task Update(Product product);
 
     /// <summary>
     /// Xóa sản phẩm
     /// </summary>
-    void Delete(int id);
+    Task Delete(int id);
 }
 
 /// <summary>
@@ -61,13 +61,13 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Lấy tất cả sản phẩm
+    /// Lấy tất cả sản phẩm (Bất đồng bộ)
     /// </summary>
-    public PagedResult<Product> GetAll(PagingRequest? paging = null)
+    public async Task<PagedResult<Product>> GetAll(PagingRequest? paging = null)
     {
         try
         {
-            return _productRepository.GetAll(paging);
+            return await _productRepository.GetAll(paging);
         }
         catch (Exception ex)
         {
@@ -76,16 +76,16 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Lấy sản phẩm theo ID
+    /// Lấy sản phẩm theo ID (Bất đồng bộ)
     /// </summary>
-    public Product? GetById(int id)
+    public async Task<Product?> GetById(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
 
         try
         {
-            return _productRepository.GetById(id);
+            return await _productRepository.GetById(id);
         }
         catch (Exception ex)
         {
@@ -94,18 +94,17 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Lấy sản phẩm theo category
+    /// Lấy sản phẩm theo category (Bất đồng bộ)
     /// </summary>
-    public List<Product> GetByCategory(int categoryId)
+    public async Task<List<Product>> GetByCategory(int categoryId)
     {
         if (categoryId <= 0)
             throw new ArgumentException("Category ID phải lớn hơn 0", nameof(categoryId));
 
         try
         {
-            // ✅ Thực tế sẽ dùng LINQ to Entities, nhưng hiện tại dùng simple filter
-            var allProducts = _productRepository.GetAll().Items;
-            return allProducts
+            var pagedResult = await _productRepository.GetAll();
+            return pagedResult.Items
                 .Where(p => p.CategoryId == categoryId)
                 .ToList();
         }
@@ -116,17 +115,17 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Tìm kiếm sản phẩm
+    /// Tìm kiếm sản phẩm (Bất đồng bộ)
     /// </summary>
-    public List<Product> Search(string keyword)
+    public async Task<List<Product>> Search(string keyword)
     {
         if (string.IsNullOrWhiteSpace(keyword))
             return new List<Product>();
 
         try
         {
-            var allProducts = _productRepository.GetAll().Items;
-            return allProducts
+            var pagedResult = await _productRepository.GetAll();
+            return pagedResult.Items
                 .Where(p => p.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
@@ -137,14 +136,13 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Thêm sản phẩm mới
+    /// Thêm sản phẩm mới (Bất đồng bộ)
     /// </summary>
-    public Product Add(Product product)
+    public async Task<Product> Add(Product product)
     {
         if (product == null)
             throw new ArgumentNullException(nameof(product));
 
-        // ✅ Business logic validation
         if (string.IsNullOrWhiteSpace(product.Name))
             throw new ArgumentException("Tên sản phẩm không được để trống", nameof(product.Name));
 
@@ -154,14 +152,13 @@ public class ProductService : IProductService
         if (product.CategoryId <= 0)
             throw new ArgumentException("Phải chọn category hợp lệ", nameof(product.CategoryId));
 
-        // Kiểm tra category tồn tại
-        var category = _categoryRepository.GetById(product.CategoryId);
+        var category = await _categoryRepository.GetById(product.CategoryId);
         if (category == null)
             throw new InvalidOperationException($"Category với ID {product.CategoryId} không tồn tại");
 
         try
         {
-            return _productRepository.Add(product);
+            return await _productRepository.Add(product);
         }
         catch (Exception ex)
         {
@@ -170,9 +167,9 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Cập nhật sản phẩm
+    /// Cập nhật sản phẩm (Bất đồng bộ)
     /// </summary>
-    public void Update(Product product)
+    public async Task Update(Product product)
     {
         if (product == null)
             throw new ArgumentNullException(nameof(product));
@@ -180,7 +177,6 @@ public class ProductService : IProductService
         if (product.Id <= 0)
             throw new ArgumentException("ID sản phẩm không hợp lệ", nameof(product.Id));
 
-        // ✅ Business logic validation
         if (string.IsNullOrWhiteSpace(product.Name))
             throw new ArgumentException("Tên sản phẩm không được để trống", nameof(product.Name));
 
@@ -189,7 +185,7 @@ public class ProductService : IProductService
 
         try
         {
-            _productRepository.Update(product);
+            await _productRepository.Update(product);
         }
         catch (Exception ex)
         {
@@ -198,16 +194,16 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Xóa sản phẩm
+    /// Xóa sản phẩm (Bất đồng bộ)
     /// </summary>
-    public void Delete(int id)
+    public async Task Delete(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID sản phẩm không hợp lệ", nameof(id));
 
         try
         {
-            _productRepository.Delete(id);
+            await _productRepository.Delete(id);
         }
         catch (Exception ex)
         {

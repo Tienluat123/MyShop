@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 namespace MyShop.Data;
 
 /// <summary>
@@ -12,36 +13,46 @@ public interface IRepository<TEntity> where TEntity : class
     /// </summary>
     /// <param name="paging">Phân trang (nếu không cung cấp lấy hết)</param>
     /// <returns>PagedResult chứa danh sách entities + metadata</returns>
-    PagedResult<TEntity> GetAll(PagingRequest? paging = null);
+    Task<PagedResult<TEntity>> GetAll(PagingRequest? paging = null);
 
     /// <summary>
     /// Lấy entity theo ID
     /// </summary>
     /// <param name="id">ID của entity</param>
     /// <returns>Entity hoặc null nếu không tìm thấy</returns>
-    TEntity? GetById(int id);
+    Task<TEntity?> GetById(int id);
 
     /// <summary>
     /// Thêm entity mới
     /// </summary>
     /// <param name="entity">Entity cần thêm</param>
     /// <returns>Entity sau khi được thêm (có ID đã gán)</returns>
-    TEntity Add(TEntity entity);
+    Task<TEntity> Add(TEntity entity);
 
     /// <summary>
     /// Cập nhật entity
     /// </summary>
     /// <param name="entity">Entity cần cập nhật</param>
-    void Update(TEntity entity);
+    Task Update(TEntity entity);
 
     /// <summary>
     /// Xóa entity theo ID
     /// </summary>
     /// <param name="id">ID của entity cần xóa</param>
-    void Delete(int id);
+    Task Delete(int id);
+
+    /// <summary>
+    /// Lấy IQueryable để thực hiện LINQ queries phức tạp
+    /// </summary>
+    IQueryable<TEntity> Query();
+
+    /// <summary>
+    /// Tìm kiếm entities theo điều kiện
+    /// </summary>
+    Task<IEnumerable<TEntity>> Find(Expression<Func<TEntity, bool>> predicate);
 
     /// <summary>
     /// Lưu tất cả thay đổi vào database
     /// </summary>
-    void SaveChanges();
+    Task SaveChanges();
 }
