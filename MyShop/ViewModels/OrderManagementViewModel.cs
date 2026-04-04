@@ -41,7 +41,7 @@ public partial class OrderManagementViewModel : ObservableObject
     private const int PageSize = 20;
 
     // Standard paging for history tab
-    private const int PageSizeHistory = 4;
+    private const int PageSizeHistory = 10;
     
     [ObservableProperty]
     private int _currentPageHistory = 1;
@@ -237,6 +237,7 @@ public partial class OrderManagementViewModel : ObservableObject
     {
         if (page < 1 || page > TotalPagesHistory) return;
         CurrentPageHistory = page;
+        ScrollToTopAction?.Invoke();
         await LoadOrders();
     }
 
@@ -246,6 +247,7 @@ public partial class OrderManagementViewModel : ObservableObject
         if (CurrentPageHistory < TotalPagesHistory)
         {
             CurrentPageHistory++;
+            ScrollToTopAction?.Invoke();
             await LoadOrders();
         }
     }
@@ -256,6 +258,7 @@ public partial class OrderManagementViewModel : ObservableObject
         if (CurrentPageHistory > 1)
         {
             CurrentPageHistory--;
+            ScrollToTopAction?.Invoke();
             await LoadOrders();
         }
     }
