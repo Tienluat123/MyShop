@@ -26,7 +26,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
         var result = new PagedResult<TEntity>();
         // 1. Tạo query ban đầu từ DbSet
-        var query = _dbSet.AsQueryable();
+        var query = _dbSet.AsNoTracking().AsQueryable();
 
         if (paging == null)
         {

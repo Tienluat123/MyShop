@@ -166,31 +166,42 @@ public class CustomerService : ICustomerService
     /// <summary>
     /// Cập nhật khách hàng
     /// </summary>
-    public void Update(Customer customer)
+   public void Update(Customer customer)
+{
+    if (customer == null) throw new ArgumentNullException(nameof(customer));
+
+    try
     {
-        if (customer == null)
-            throw new ArgumentNullException(nameof(customer));
-
-        if (customer.Id <= 0)
-            throw new ArgumentException("ID khách hàng không hợp lệ", nameof(customer.Id));
-
-        // ✅ Business logic validation
-        if (string.IsNullOrWhiteSpace(customer.Name))
-            throw new ArgumentException("Tên khách hàng không được để trống", nameof(customer.Name));
-
-        if (string.IsNullOrWhiteSpace(customer.Phone))
-            throw new ArgumentException("Số điện thoại không được để trống", nameof(customer.Phone));
-
-        try
+        // 1. Tìm ông khách hàng "xịn" đang nằm trong Database (đang được EF track)
+        var existing = _customerRepository.GetById(customer.Id);
+        
+        if (existing != null)
         {
-            _customerRepository.Update(customer);
+            // 2. Cập nhật từng món thông tin từ Form vào Database
+            existing.Name = customer.Name;
+            existing.Phone = customer.Phone;
+            existing.Email = customer.Email;
+            existing.Address = customer.Address;
+            existing.Notes = customer.Notes;
+            existing.Birthday = customer.Birthday;
+
+            // 3. Ra lệnh lưu (Hàm này trong Repository của bạn đã gọi SaveChanges)
+            _customerRepository.Update(existing);
         }
-        catch (Exception ex)
+        else 
         {
-            throw new InvalidOperationException("Lỗi khi cập nhật khách hàng", ex);
+            throw new Exception("Không tìm thấy khách hàng để cập nhật");
         }
     }
-
+    catch (Exception ex)
+    {
+        // In chi tiết lỗi ra Console để xem lỗi thực sự là gì (ví dụ: lỗi SQL)
+        Console.WriteLine($"[INTERNAL ERROR] {ex.Message}");
+        if (ex.InnerException != null) Console.WriteLine($"[INNER] {ex.InnerException.Message}");
+        
+        throw new InvalidOperationException("Lỗi khi cập nhật khách hàng", ex);
+    }
+}
     /// <summary>
     /// Xóa khách hàng
     /// </summary>

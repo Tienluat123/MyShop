@@ -33,16 +33,25 @@ public partial class CustomerFormViewModel : ObservableObject
         IsEditMode = isEditMode;
 
         if (isEditMode && customer is not null)
+    {
+        _editingCustomerId = customer.Id;
+        FormTitle = $"Edit: {customer.Name}";
+        SubmitButtonText = "Save Changes";
+        
+        // PHẢI NẠP ĐỦ THÔNG TIN Ở ĐÂY ĐỂ UI CÓ DỮ LIỆU CŨ
+        // Lấy thông tin chi tiết từ Service vì CustomerListItem thường thiếu Address, Email
+        var fullInfo = _customerService.GetById(customer.Id);
+        
+        CustomerData = new CustomerInputModel
         {
-            _editingCustomerId = customer.Id;
-            FormTitle = $"Edit: {customer.Name}";
-            SubmitButtonText = "Save Changes";
-            CustomerData = new CustomerInputModel
-            {
-                FullName = customer.Name,
-                Phone = customer.Phone,
-            };
-        }
+            FullName = fullInfo?.Name ?? customer.Name,
+            Phone = fullInfo?.Phone ?? customer.Phone,
+            Email = fullInfo?.Email ?? "",
+            Address = fullInfo?.Address ?? "",
+            Notes = fullInfo?.Notes ?? "",
+            Birthday = fullInfo?.Birthday.HasValue == true ? new DateTimeOffset(fullInfo.Birthday.Value) : null
+        };
+    }
         else
         {
             FormTitle = "Create New Customer";
@@ -50,37 +59,50 @@ public partial class CustomerFormViewModel : ObservableObject
             //CustomerData = new CustomerInputModel();
         }
     }
-
-    [RelayCommand]
-    private async Task Submit()
-    {
-        if (!ValidateForm()) return;
-
-        // Map từ Input Model sang Database Model
-        var customer = new Customer {
-            Id = _editingCustomerId ?? 0,
-            Name = CustomerData.FullName,
-            Phone = CustomerData.Phone,
-            Email = CustomerData.Email,
-            Address = CustomerData.Address,
-            Notes = CustomerData.Notes,
-            Birthday = CustomerData.Birthday?.DateTime,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        try {
-            if (IsEditMode)
-                await Task.Run(() => _customerService.Update(customer));
-            else
-                await Task.Run(() => _customerService.Add(customer));
-
-            _onSuccess?.Invoke(); // Đóng dialog và refresh danh sách
-        }
-        catch (Exception ex) {
-            System.Diagnostics.Debug.WriteLine($"Lỗi lưu DB: {ex.Message}");
-        }
-    }
 [RelayCommand]
+private async Task Submit()
+{
+    Console.WriteLine("[DEBUG] Đang nhấn nút Submit...");
+    
+    if (!ValidateForm()) 
+    {
+        Console.WriteLine($"[DEBUG] Validate THẤT BẠI: NameErr={NameError}, PhoneErr={PhoneError}");
+        return; 
+    }
+
+    Console.WriteLine("[DEBUG] Validate THÀNH CÔNG. Đang chuẩn bị lưu...");
+
+    var customer = new Customer {
+        Id = _editingCustomerId ?? 0,
+        Name = CustomerData.FullName,
+        Phone = CustomerData.Phone,
+        Email = CustomerData.Email,
+        Address = CustomerData.Address,
+        Notes = CustomerData.Notes,
+        Birthday = CustomerData.Birthday?.DateTime,
+        CreatedAt = DateTime.UtcNow
+    };
+
+    try {
+        if (IsEditMode) {
+            Console.WriteLine($"[DEBUG] Đang gọi UPDATE cho ID: {customer.Id}");
+            await Task.Run(() => _customerService.Update(customer));
+        }
+        else {
+            Console.WriteLine("[DEBUG] Đang gọi ADD khách hàng mới");
+            await Task.Run(() => _customerService.Add(customer));
+        }
+
+        Console.WriteLine("[DEBUG] Lưu Database THÀNH CÔNG!");
+        _onSuccess?.Invoke(); 
+    }
+    catch (Exception ex) {
+    // In lỗi chi tiết nhất có thể
+    var errorMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+    Console.WriteLine($"[DEBUG] LỖI DATABASE THỰC SỰ: {errorMsg}");
+}
+}
+    [RelayCommand]
     private void Cancel() => _onSuccess?.Invoke();
     private bool ValidateForm()
     {

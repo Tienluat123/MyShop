@@ -169,12 +169,17 @@ private async Task LoadCustomers()
     [RelayCommand] private void MapsToAdd() => onAdd();
     [RelayCommand] private void MapsToRules() => onRules();
     [RelayCommand] 
-    private void MapsToProfile() 
+   
+    private void MapsToProfile(CustomerListItem customer) // Nhận tham số trực tiếp
     {
-        if (SelectedCustomer != null) onProfile(SelectedCustomer);
+        if (customer != null) onProfile(customer);
     }
-    [RelayCommand] private void EditCustomer(CustomerListItem customer) => onEdit(customer);
 
+    [RelayCommand] 
+    private void EditCustomer(CustomerListItem customer) // Nhận tham số trực tiếp
+    {
+        if (customer != null) onEdit(customer);
+    }
     
 }
 
