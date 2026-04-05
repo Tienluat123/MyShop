@@ -14,26 +14,20 @@ public sealed partial class CustomerFormView : ContentDialog
     }
 
     private void ModalFooter_CancelClicked(object sender, RoutedEventArgs e)
+{
+    if (this.DataContext is CustomerFormViewModel vm)
     {
-        // Nếu ViewModel có logic gì cần chạy khi Hủy thì gọi ở đây
-        if (this.DataContext is CustomerFormViewModel vm && vm.CancelCommand.CanExecute(null))
-        {
-            vm.CancelCommand.Execute(null);
-        }
-
-        // Lệnh quan trọng nhất: ĐÓNG CÁI DIALOG LẠI
-        this.Hide();
+        if (vm.CancelCommand.CanExecute(null)) vm.CancelCommand.Execute(null);
     }
-
-    private void ModalFooter_SubmitClicked(object sender, RoutedEventArgs e)
-    {
-        // Gọi lệnh Lưu (Submit) bên trong ViewModel
-        if (this.DataContext is CustomerFormViewModel vm && vm.SubmitCommand.CanExecute(null))
-        {
-            vm.SubmitCommand.Execute(null);
-        }
-
-        // Tùy logic của sếp: Lưu xong thì đóng Dialog lại
-        this.Hide();
-    }
+    this.Hide();
 }
+
+private void ModalFooter_SubmitClicked(object sender, RoutedEventArgs e)
+{
+    if (this.DataContext is CustomerFormViewModel vm)
+    {
+        if (vm.SubmitCommand.CanExecute(null)) vm.SubmitCommand.Execute(null);
+    }
+    // Lưu ý: Đừng Hide ở đây nếu bạn muốn đợi Validate xong. 
+    // Tốt nhất là để ViewModel gọi Hide thông qua onSuccess.
+}}

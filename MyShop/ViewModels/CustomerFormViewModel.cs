@@ -52,7 +52,7 @@ public partial class CustomerFormViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task SaveCustomer()
+    private async Task Submit()
     {
         if (!ValidateForm()) return;
 
@@ -80,31 +80,39 @@ public partial class CustomerFormViewModel : ObservableObject
             System.Diagnostics.Debug.WriteLine($"Lỗi lưu DB: {ex.Message}");
         }
     }
-
+[RelayCommand]
+    private void Cancel() => _onSuccess?.Invoke();
     private bool ValidateForm()
     {
         ValidateName();
         ValidatePhone();
         ValidateEmail();
-        return string.IsNullOrEmpty(nameError) && string.IsNullOrEmpty(PhoneError) && string.IsNullOrEmpty(EmailError);
+        return string.IsNullOrEmpty(NameError) && string.IsNullOrEmpty(PhoneError) && string.IsNullOrEmpty(EmailError);
     }
 
     [RelayCommand]
-    private void ValidateName() => nameError = string.IsNullOrWhiteSpace(CustomerData.FullName) ? "Name is required" : null;
+public void ValidateName() 
+    // Sửa nameError -> NameError
+    => NameError = string.IsNullOrWhiteSpace(CustomerData.FullName) ? "Name is required" : null;
 
-    [RelayCommand]
-    private void ValidatePhone()
-    {
-        if (string.IsNullOrWhiteSpace(CustomerData.Phone)) phoneError = "Phone is required";
-        else if (!Regex.IsMatch(CustomerData.Phone, @"^[0-9]{10,11}$")) phoneError = "10-11 digits required";
-        else phoneError = null;
-    }
+[RelayCommand]
+public void ValidatePhone()
+{
+    if (string.IsNullOrWhiteSpace(CustomerData.Phone)) 
+        PhoneError = "Phone is required"; // Sửa phoneError -> PhoneError
+    else if (!Regex.IsMatch(CustomerData.Phone, @"^[0-9]{10,11}$")) 
+        PhoneError = "10-11 digits required";
+    else 
+        PhoneError = null;
+}
 
-    [RelayCommand]
-    private void ValidateEmail()
-    {
-        if (string.IsNullOrEmpty(CustomerData.Email)) { emailError = null; return; }
-        if (!Regex.IsMatch(CustomerData.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$")) emailError = "Invalid email format";
-        else emailError = null;
-    }
+[RelayCommand]
+public void ValidateEmail()
+{
+    if (string.IsNullOrEmpty(CustomerData.Email)) { EmailError = null; return; }
+    if (!Regex.IsMatch(CustomerData.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$")) 
+        EmailError = "Invalid email format"; // Sửa emailError -> EmailError
+    else 
+        EmailError = null;
+}
     }

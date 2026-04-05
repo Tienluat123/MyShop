@@ -54,20 +54,40 @@ public sealed partial class CustomerPage : Page
     }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    private void NavigateToProfile(CustomerListItem customer)
-    {
-        var viewModel = new CustomerProfileViewModel(customer, onBack: NavigateToManagement);
-        CustomerContentFrame.Navigate(typeof(CustomerProfileView), viewModel);
-    }
+    private void NavigateToProfile(CustomerListItem selectedCustomer)
+{
+    // 1. Lấy Service ra từ Container
+    var customerService = ServiceContainer.Instance.Get<ICustomerService>();
+    var orderService = ServiceContainer.Instance.Get<IOrderService>();
+
+    // 2. Nạp đủ 4 món vào hàm khởi tạo
+    var viewModel = new CustomerProfileViewModel(
+        selectedCustomer, 
+        customerService, 
+        orderService, 
+        onBack: () => NavigateToManagement() // Quay lại trang danh sách
+    );
+
+    // 3. Chuyển trang
+    CustomerContentFrame.Navigate(typeof(CustomerProfileView), viewModel);
+}
 
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
     private async void ShowFormDialog(bool isEditMode, CustomerListItem? customer = null)
     {
-        var viewModel = new CustomerFormViewModel(isEditMode, customer, onCancel: () => { });
-        var dialog = new CustomerFormView(viewModel)
-        {
-            XamlRoot = this.XamlRoot
-        };
+        var customerService = ServiceContainer.Instance.Get<ICustomerService>();
+        
+        // Tiêm Service và truyền Action để Refresh danh sách khi lưu thành công
+        var viewModel = new CustomerFormViewModel(
+            customerService, 
+            isEditMode, 
+            customer, 
+            onSuccess: () => {
+                // Tải lại danh sách khách hàng ở trang chính
+                NavigateToManagement(); 
+            });
+
+        var dialog = new CustomerFormView(viewModel) { XamlRoot = this.XamlRoot };
         await dialog.ShowAsync();
     }
 }
