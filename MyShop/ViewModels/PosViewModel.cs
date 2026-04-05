@@ -327,6 +327,8 @@ public partial class PosViewModel : ObservableObject
             CustomerId = 1, // Default Guest
             UserId = 1,     // Default Staff
             PaymentStatus = "Draft",
+            Type = OrderType,
+            TableNumber = TableNumber ?? "Table 1",
             OrderDate = DateTime.UtcNow,
             OrderDetails = new List<OrderDetail>()
         };
@@ -390,6 +392,9 @@ public partial class PosViewModel : ObservableObject
     private void SyncCartFromDraft()
     {
         if (_currentDraftOrder == null) return;
+
+        OrderType = _currentDraftOrder.Type;
+        TableNumber = string.IsNullOrEmpty(_currentDraftOrder.TableNumber) ? null : _currentDraftOrder.TableNumber;
 
         Order.Clear();
         foreach (var detail in _currentDraftOrder.OrderDetails)
@@ -485,17 +490,30 @@ public partial class PosViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SetOrderType(string type)
+    private async Task SetOrderType(string type)
     {
         OrderType = type;
         if (type != "Dine-in")
             TableNumber = null;
+
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.Type = type;
+            if (type != "Dine-in")
+                _currentDraftOrder.TableNumber = "";
+            await SaveDraftOrder();
+        }
     }
 
     [RelayCommand]
-    private void SetTableNumber(string table)
+    private async Task SetTableNumber(string table)
     {
         TableNumber = table;
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.TableNumber = table ?? "";
+            await SaveDraftOrder();
+        }
     }
 
     private void CalculateTotals()
