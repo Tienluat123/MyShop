@@ -17,13 +17,22 @@ public partial class Order : ObservableObject
     private int? promotionId; // Mã KM áp dụng (Nếu có)
 
     [ObservableProperty]
+    private decimal discountAmount; // Tiền được giảm từ mã KM
+
+    [ObservableProperty]
     private DateTime orderDate = DateTime.UtcNow;
 
     [ObservableProperty]
     private decimal subTotal; // Tổng tiền hàng
 
     [ObservableProperty]
-    private decimal discountAmount; // Tiền được giảm
+    private decimal taxAmount; // Thuế (nếu có)
+
+    [ObservableProperty]
+    private decimal manualAdjustment; // Điều chỉnh thủ công (VD: giảm thêm 10k)
+
+    [ObservableProperty]
+    private string manualAdjustmentReason = ""; // Lý do điều chỉnh thủ công
 
     [ObservableProperty]
     private decimal totalAmount; // Tổng tiền phải thu

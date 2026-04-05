@@ -146,6 +146,13 @@ namespace MyShop.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal>("ManualAdjustment")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ManualAdjustmentReason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("OrderDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -161,6 +168,9 @@ namespace MyShop.Migrations
                     b.Property<decimal>("SubTotal")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(18, 2)
