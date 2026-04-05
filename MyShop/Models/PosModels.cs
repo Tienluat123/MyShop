@@ -44,7 +44,8 @@ public partial class DrinkOptions : ObservableObject
     [ObservableProperty]
     private string _ice = "Regular";
 
-    public ObservableCollection<string> AddOns { get; } = new();
+    [ObservableProperty]
+    private ObservableCollection<string> _addOns = new();
 
     [ObservableProperty]
     private string _notes = "";
@@ -59,7 +60,8 @@ public partial class OrderItem : ObservableObject
     [ObservableProperty]
     private int _quantity;
 
-    public DrinkOptions? DrinkOptions { get; set; }
+    [ObservableProperty]
+    private DrinkOptions? _drinkOptions;
 
     public double TotalPrice => BasePrice * Quantity;
 
