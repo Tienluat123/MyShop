@@ -23,8 +23,9 @@ public partial class PosViewModel : ObservableObject
     public ObservableCollection<CategoryItem> Categories { get; } = new();
     public ObservableCollection<OrderItem> Order { get; } = new();
     public ObservableCollection<PosOrder> ActiveOrders { get; } = new();
-
     public ObservableCollection<Product> FilteredProducts { get; } = new();
+
+    public Order? CurrentDraftOrder => _currentDraftOrder;
 
     [ObservableProperty]
     private bool isLoading;
@@ -52,7 +53,8 @@ public partial class PosViewModel : ObservableObject
 
     public string TotalFormatted => $"Total: {Total:F2}";
 
-    public event EventHandler? PlaceOrderRequested;
+    public event EventHandler? CheckoutRequested;
+    public event EventHandler<Order>? OrderFinalized;
 
     public PosViewModel() : this(
         App.Services.GetRequiredService<IProductService>(),
@@ -73,12 +75,6 @@ public partial class PosViewModel : ObservableObject
 
     private async void InitializeAsync()
     {
-        await LoadCategories();
-        await LoadProductsForSale();
-        await LoadCurrentDraftOrder();
-        
-        RebuildFilter();
-
         Order.CollectionChanged += (s, e) =>
         {
             if (e.NewItems != null)
@@ -91,6 +87,16 @@ public partial class PosViewModel : ObservableObject
             CalculateTotals();
             PlaceOrderCommand.NotifyCanExecuteChanged();
         };
+
+        await LoadCategories();
+        await LoadProductsForSale();
+        await LoadCurrentDraftOrder();
+        
+        RebuildFilter();
+        
+        // Final explicit check for command enablement
+        CalculateTotals();
+        PlaceOrderCommand.NotifyCanExecuteChanged();
     }
 
     //private void LoadMockData()
@@ -470,9 +476,24 @@ public partial class PosViewModel : ObservableObject
     private bool CanPlaceOrder() => Order.Any();
 
     [RelayCommand(CanExecute = nameof(CanPlaceOrder))]
-    private void PlaceOrder()
+    private async Task PlaceOrder()
     {
-        PlaceOrderRequested?.Invoke(this, EventArgs.Empty);
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.PaymentStatus = "PendingPayment";
+            await SaveDraftOrder();
+        }
+        CheckoutRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public async Task RevertOrderToDraft()
+    {
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.PaymentStatus = "Draft";
+            await SaveDraftOrder();
+            PlaceOrderCommand.NotifyCanExecuteChanged();
+        }
     }
 
     public PosOrder? FinalizeOrder(PaymentMethod method, Customer? customer = null)
@@ -506,7 +527,16 @@ public partial class PosViewModel : ObservableObject
         }
 
         ActiveOrders.Add(newOrder);
+        var completedOrder = _currentDraftOrder;
+        _currentDraftOrder = null;
         Order.Clear();
+        CalculateTotals();
+        
+        if (completedOrder != null)
+        {
+            OrderFinalized?.Invoke(this, completedOrder);
+        }
+        
         return newOrder;
     }
 }

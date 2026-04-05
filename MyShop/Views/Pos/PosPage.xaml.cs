@@ -2,6 +2,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MyShop.Models;
+using MyShop.Services;
 using MyShop.ViewModels;
 using MyShop.Views.Pos.Components;
 
@@ -18,10 +19,11 @@ public sealed partial class PosPage : Page
 
         InitializeComponent();
 
-        ViewModel.PlaceOrderRequested += async (s, e) =>
+        ViewModel.CheckoutRequested += async (s, e) =>
         {
-            var orderId = $"ID-{DateTime.Now:Hmmss}";
-            var paymentModal = new PaymentModal(ViewModel.Total, orderId);
+            if (ViewModel.CurrentDraftOrder == null) return;
+
+            var paymentModal = new PaymentModal(ViewModel.CurrentDraftOrder, App.Services.GetRequiredService<IOrderService>());
             paymentModal.XamlRoot = this.XamlRoot;
 
             bool isPaid = false;
@@ -35,7 +37,11 @@ public sealed partial class PosPage : Page
 
             await paymentModal.ShowAsync();
 
-            if (isPaid)
+            if (!isPaid)
+            {
+                await ViewModel.RevertOrderToDraft();
+            }
+            else
             {
                 // After payment, prompt for membership/loyalty
                 var memberModal = new MembershipSelectionModal();
