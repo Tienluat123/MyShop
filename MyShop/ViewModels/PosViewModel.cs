@@ -1,21 +1,35 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using MyShop.Models;
+using MyShop.Services;
+using MyShop.Data;
 
 namespace MyShop.ViewModels;
 
 public partial class PosViewModel : ObservableObject
 {
-    private const double TAX_RATE = 0.0875;
+    private const decimal TAX_RATE = 0.0875m;
+    private readonly IProductService _productService;
+    private readonly ICategoryService _categoryService;
+    private readonly IOrderService _orderService;
+    private readonly IPromotionService _promoService;
+
+    private Order? _currentDraftOrder;
 
     public ObservableCollection<Product> Products { get; } = new();
     public ObservableCollection<CategoryItem> Categories { get; } = new();
     public ObservableCollection<OrderItem> Order { get; } = new();
     public ObservableCollection<PosOrder> ActiveOrders { get; } = new();
-
     public ObservableCollection<Product> FilteredProducts { get; } = new();
+
+    public Order? CurrentDraftOrder => _currentDraftOrder;
+
+    [ObservableProperty]
+    private bool isLoading;
 
     [ObservableProperty]
     private string activeCategory = "Coffee";
@@ -24,13 +38,16 @@ public partial class PosViewModel : ObservableObject
     private string searchQuery = "";
 
     [ObservableProperty]
-    private double subtotal;
+    private decimal subtotal;
 
     [ObservableProperty]
-    private double tax;
+    private decimal discountAmount;
 
     [ObservableProperty]
-    private double total;
+    private decimal tax;
+
+    [ObservableProperty]
+    private decimal total;
 
     [ObservableProperty]
     private string orderType = "Dine-in";
@@ -40,47 +57,34 @@ public partial class PosViewModel : ObservableObject
 
     public string TotalFormatted => $"Total: {Total:F2}";
 
-    public event EventHandler? PlaceOrderRequested;
+    public event EventHandler? CheckoutRequested;
+    public event EventHandler<Order>? OrderFinalized;
 
-    public PosViewModel()
+    public PosViewModel() : this(
+        App.Services.GetRequiredService<IProductService>(),
+        App.Services.GetRequiredService<ICategoryService>(),
+        App.Services.GetRequiredService<IOrderService>(),
+        App.Services.GetRequiredService<IPromotionService>())
     {
-        LoadMockData();
-        RebuildFilter();
+    }
 
-        // Add some customized items for verification
-        var product = Products.FirstOrDefault();
-        if (product != null)
-        {
-            var options = new DrinkOptions
-            {
-                Size = "L",
-                Sugar = "50%",
-                Ice = "Less Ice",
-                Notes = "No foam please"
-            };
-            options.AddOns.Add("Extra Shot");
-            options.AddOns.Add("Oat Milk");
+    public PosViewModel(
+        IProductService productService,
+        ICategoryService categoryService,
+        IOrderService orderService,
+        IPromotionService promoService)
+    {
+        _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+        _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
+        _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+        _promoService = promoService ?? throw new ArgumentNullException(nameof(promoService));
+        
+        // Initial data loading
+        InitializeAsync();
+    }
 
-            Order.Add(new OrderItem
-            {
-                Product = product,
-                BasePrice = (double)product.Price + 1.5,
-                Quantity = 1,
-                DrinkOptions = options
-            });
-        }
-
-        var secondProduct = Products.FirstOrDefault(p => p.Id == 2);
-        if (secondProduct != null)
-        {
-            Order.Add(new OrderItem
-            {
-                Product = secondProduct,
-                BasePrice = (double)secondProduct.Price,
-                Quantity = 2
-            });
-        }
-
+    private async void InitializeAsync()
+    {
         Order.CollectionChanged += (s, e) =>
         {
             if (e.NewItems != null)
@@ -93,33 +97,43 @@ public partial class PosViewModel : ObservableObject
             CalculateTotals();
             PlaceOrderCommand.NotifyCanExecuteChanged();
         };
+
+        await LoadCategories();
+        await LoadProductsForSale();
+        await LoadCurrentDraftOrder();
+        
+        RebuildFilter();
+        
+        // Final explicit check for command enablement
+        CalculateTotals();
+        PlaceOrderCommand.NotifyCanExecuteChanged();
     }
 
-    private void LoadMockData()
-    {
-        Categories.Add(new CategoryItem { Name = "Coffee", IconKey = "IconCoffee", IsActive = true });
-        Categories.Add(new CategoryItem { Name = "Tea", IconKey = "IconTea" });
-        Categories.Add(new CategoryItem { Name = "Smoothies", IconKey = "IconSmoothies" });
-        Categories.Add(new CategoryItem { Name = "Pastries", IconKey = "IconPastries" });
+    //private void LoadMockData()
+    //{
+    //    Categories.Add(new CategoryItem { Name = "Coffee", IconKey = "IconCoffee", IsActive = true });
+    //    Categories.Add(new CategoryItem { Name = "Tea", IconKey = "IconTea" });
+    //    Categories.Add(new CategoryItem { Name = "Smoothies", IconKey = "IconSmoothies" });
+    //    Categories.Add(new CategoryItem { Name = "Pastries", IconKey = "IconPastries" });
 
-        // Mock product data (temporary - will be replaced with database)
-        // For UI development purposes only
-        var coffeeCategory = new Category { Id = 1, Name = "Coffee", IconGlyph = "☕" };
-        var teaCategory = new Category { Id = 2, Name = "Tea", IconGlyph = "🍵" };
-        var pastriesCategory = new Category { Id = 3, Name = "Pastries", IconGlyph = "🥐" };
+    //    // Mock product data (temporary - will be replaced with database)
+    //    // For UI development purposes only
+    //    var coffeeCategory = new Category { Id = 1, Name = "Coffee", IconGlyph = "☕" };
+    //    var teaCategory = new Category { Id = 2, Name = "Tea", IconGlyph = "🍵" };
+    //    var pastriesCategory = new Category { Id = 3, Name = "Pastries", IconGlyph = "🥐" };
 
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 2, Name = "Matcha Latte", Price = 5.00m, CategoryId = 2, Category = teaCategory, ImagePath = "ms-appx:///Assets/matcha-latte.jpg" });
-        Products.Add(new Product { Id = 3, Name = "Blueberry Muffin", Price = 3.25m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/muffin.jpg" });
-        Products.Add(new Product { Id = 4, Name = "Croissant", Price = 2.75m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/croissant.jpg" });
-    }
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 2, Name = "Matcha Latte", Price = 5.00m, CategoryId = 2, Category = teaCategory, ImagePath = "ms-appx:///Assets/matcha-latte.jpg" });
+    //    Products.Add(new Product { Id = 3, Name = "Blueberry Muffin", Price = 3.25m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/muffin.jpg" });
+    //    Products.Add(new Product { Id = 4, Name = "Croissant", Price = 2.75m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/croissant.jpg" });
+    //}
 
     private void RebuildFilter()
     {
@@ -137,6 +151,38 @@ public partial class PosViewModel : ObservableObject
     partial void OnActiveCategoryChanged(string value) => RebuildFilter();
 
     [RelayCommand]
+    public async Task LoadCategories()
+    {
+        try
+        {
+            var result = await _categoryService.GetAll();
+            if (result != null && result.Any())
+            {
+                Categories.Clear();
+                foreach (var cat in result)
+                {
+                    Categories.Add(new CategoryItem
+                    {
+                        Name = cat.Name,
+                        IconKey = cat.IconGlyph ?? "IconCoffee",
+                        IsActive = false
+                    });
+                }
+
+                // Set first as active if none is active
+                if (Categories.Any())
+                {
+                    SetCategory(Categories.First());
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading categories: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
     private void SetCategory(CategoryItem category)
     {
         foreach (var c in Categories)
@@ -146,47 +192,270 @@ public partial class PosViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void AddToCart(Product product)
+    public async Task LoadProductsForSale()
     {
-        var existing = Order.FirstOrDefault(i => i.Product.Id == product.Id && i.DrinkOptions == null);
-
-        if (existing != null)
+        IsLoading = true;
+        try
         {
-            existing.Quantity++;
-        }
-        else
-        {
-            Order.Add(new OrderItem
+            var result = await _productService.GetAll();
+            if (result != null)
             {
-                Product = product,
-                BasePrice = (double)product.Price,
-                Quantity = 1
-            });
+                Products.Clear();
+                foreach (var product in result.Items)
+                {
+                    Products.Add(product);
+                }
+                RebuildFilter();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Logging or error handling could go here
+            System.Diagnostics.Debug.WriteLine($"Error loading products: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 
     [RelayCommand]
-    public void AddCustomizedToCart(AddCustomizedParams param)
+    public async Task AddToCart(Product product)
     {
-        // For customized items, we might want to check if the exact same customization exists
-        // but for now let's just add it as a new item to be safe, or match exactly.
-        var existing = Order.FirstOrDefault(i =>
-            i.Product.Id == param.Product.Id &&
-            AreOptionsEqual(i.DrinkOptions, param.Options));
+        await EnsureDraftOrder();
 
-        if (existing != null)
+        var detail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od => od.ProductId == product.Id);
+        if (detail != null)
         {
-            existing.Quantity += param.Quantity;
+            detail.Quantity++;
         }
         else
         {
+            detail = new OrderDetail
+            {
+                ProductId = product.Id,
+                Quantity = 1,
+                UnitPrice = product.Price,
+                Product = product
+            };
+            _currentDraftOrder.OrderDetails.Add(detail);
+        }
+
+        await SaveDraftOrder();
+        SyncCartFromDraft();
+    }
+
+    [RelayCommand]
+    public async Task AddCustomizedToCart(AddCustomizedParams param)
+    {
+        await EnsureDraftOrder();
+
+        // For simplicity, treating customized items as new entries or matching by notes
+        var notes = param.Options != null ? SerializeOptions(param.Options) : null;
+        
+        var detail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od => 
+            od.ProductId == param.Product.Id && od.Notes == notes);
+        
+        var existingDetail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od => 
+            od.ProductId == param.Product.Id && od.Notes == notes);
+            
+        if (existingDetail != null && param.Options == null)
+        {
+            existingDetail.Quantity += param.Quantity;
+        }
+        else
+        {
+            _currentDraftOrder.OrderDetails.Add(new OrderDetail
+            {
+                ProductId = param.Product.Id,
+                Quantity = param.Quantity,
+                UnitPrice = param.Product.Price,
+                Product = param.Product,
+                Notes = notes
+            });
+        }
+
+        await SaveDraftOrder();
+        SyncCartFromDraft();
+    }
+
+    private string? SerializeOptions(DrinkOptions? options)
+    {
+        if (options == null) return null;
+        try
+        {
+            return JsonSerializer.Serialize(options);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private DrinkOptions? ParseOptions(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes)) return null;
+        try
+        {
+            return JsonSerializer.Deserialize<DrinkOptions>(notes);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async Task EnsureDraftOrder()
+    {
+        if (_currentDraftOrder != null) return;
+
+        var result = await _orderService.GetPagedOrdersByStatuses(
+            new PagingRequest { PageNumber = 1, PageSize = 1 }, 
+            true, 
+            paymentStatuses: new List<string> { "Draft" });
+            
+        _currentDraftOrder = result.Items.FirstOrDefault();
+
+        if (_currentDraftOrder != null)
+        {
+            SyncCartFromDraft();
+            return;
+        }
+
+        _currentDraftOrder = new Order
+        {
+            CustomerId = 1, // Default Guest
+            UserId = 1,     // Default Staff
+            PaymentStatus = "Draft",
+            Type = OrderType,
+            TableNumber = TableNumber ?? "Table 1",
+            OrderDate = DateTime.UtcNow,
+            OrderDetails = new List<OrderDetail>()
+        };
+
+        _currentDraftOrder = await _orderService.Add(_currentDraftOrder);
+    }
+
+    private async Task LoadCurrentDraftOrder()
+    {
+        try
+        {
+            var result = await _orderService.GetPagedOrdersByStatuses(
+                new PagingRequest { PageNumber = 1, PageSize = 1 }, 
+                true, 
+                paymentStatuses: new List<string> { "Draft" });
+                
+            _currentDraftOrder = result.Items.FirstOrDefault();
+            if (_currentDraftOrder != null)
+            {
+                SyncCartFromDraft();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading draft order: {ex.Message}");
+        }
+    }
+
+    private async Task SaveDraftOrder()
+    {
+        if (_currentDraftOrder == null) return;
+        
+        // 1. Recalculate SubTotal from OrderDetails
+        _currentDraftOrder.SubTotal = _currentDraftOrder.OrderDetails.Sum(od => od.Quantity * od.UnitPrice);
+        
+        // 2. Calculate Discount Amount
+        decimal discount = 0;
+        if (_currentDraftOrder.Promotion != null)
+        {
+            var promo = _currentDraftOrder.Promotion;
+            if (promo.PromoType == "Percent")
+            {
+                discount = _currentDraftOrder.SubTotal * (promo.DiscountValue / 100m);
+            }
+            else
+            {
+                discount = promo.DiscountValue;
+            }
+            discount = Math.Min(discount, _currentDraftOrder.SubTotal);
+        }
+        _currentDraftOrder.DiscountAmount = discount;
+
+        // 3. Calculate Tax and Total (Post-discount)
+        var postDiscountBase = _currentDraftOrder.SubTotal - discount;
+        _currentDraftOrder.TaxAmount = postDiscountBase * TAX_RATE;
+        _currentDraftOrder.TotalAmount = postDiscountBase + _currentDraftOrder.TaxAmount;
+        
+        await _orderService.Update(_currentDraftOrder);
+    }
+
+    private void SyncCartFromDraft()
+    {
+        if (_currentDraftOrder == null) return;
+
+        OrderType = _currentDraftOrder.Type;
+        TableNumber = string.IsNullOrEmpty(_currentDraftOrder.TableNumber) ? null : _currentDraftOrder.TableNumber;
+
+        Order.Clear();
+        foreach (var detail in _currentDraftOrder.OrderDetails)
+        {
             Order.Add(new OrderItem
             {
-                Product = param.Product,
-                BasePrice = (double)param.Product.Price, // In a real app, calculate based on options
-                Quantity = param.Quantity,
-                DrinkOptions = param.Options
+                Product = detail.Product!,
+                BasePrice = detail.UnitPrice,
+                Quantity = detail.Quantity,
+                DrinkOptions = ParseOptions(detail.Notes)
             });
+        }
+        CalculateTotals();
+    }
+
+    [RelayCommand]
+    public async Task RemoveFromCart(OrderItem item)
+    {
+        if (_currentDraftOrder == null) return;
+
+        var notes = SerializeOptions(item.DrinkOptions);
+        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == item.Product.Id && od.Notes == notes);
+        
+        if (detail != null)
+        {
+            _currentDraftOrder.OrderDetails.Remove(detail);
+            await SaveDraftOrder();
+            SyncCartFromDraft();
+        }
+    }
+
+    [RelayCommand]
+    public async Task IncreaseQuantity(OrderItem item)
+    {
+        await UpdateCartQuantity(new UpdateQtyParams { Item = item, Delta = 1 });
+    }
+
+    [RelayCommand]
+    public async Task DecreaseQuantity(OrderItem item)
+    {
+        await UpdateCartQuantity(new UpdateQtyParams { Item = item, Delta = -1 });
+    }
+
+    [RelayCommand]
+    public async Task UpdateCartQuantity(UpdateQtyParams param)
+    {
+        if (_currentDraftOrder == null || param.Item == null) return;
+
+        var notes = SerializeOptions(param.Item.DrinkOptions);
+        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == param.Item.Product.Id && od.Notes == notes);
+        
+        if (detail != null)
+        {
+            detail.Quantity += param.Delta;
+            if (detail.Quantity <= 0)
+            {
+                _currentDraftOrder.OrderDetails.Remove(detail);
+            }
+            
+            await SaveDraftOrder();
+            SyncCartFromDraft();
         }
     }
 
@@ -198,67 +467,150 @@ public partial class PosViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void RemoveItem(OrderItem item)
-    {
-        Order.Remove(item);
-    }
+    private async Task RemoveItem(OrderItem item) => await RemoveFromCart(item);
 
     [RelayCommand]
-    private void ClearCart()
+    private async Task ClearCart()
     {
+        if (_currentDraftOrder != null)
+        {
+            try
+            {
+                await _orderService.Delete(_currentDraftOrder.Id);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error clearing cart from DB: {ex.Message}");
+            }
+            _currentDraftOrder = null;
+        }
+        
         Order.Clear();
+        CalculateTotals();
     }
 
     [RelayCommand]
-    private void UpdateQuantity(UpdateQtyParams param)
-    {
-        if (param.Item == null) return;
-        param.Item.Quantity += param.Delta;
-        if (param.Item.Quantity <= 0)
-            Order.Remove(param.Item);
-
-        PlaceOrderCommand.NotifyCanExecuteChanged();
-    }
-
-    [RelayCommand]
-    private void SetOrderType(string type)
+    private async Task SetOrderType(string type)
     {
         OrderType = type;
         if (type != "Dine-in")
             TableNumber = null;
+
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.Type = type;
+            if (type != "Dine-in")
+                _currentDraftOrder.TableNumber = "";
+            await SaveDraftOrder();
+        }
     }
 
     [RelayCommand]
-    private void SetTableNumber(string table)
+    private async Task SetTableNumber(string table)
     {
         TableNumber = table;
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.TableNumber = table ?? "";
+            await SaveDraftOrder();
+        }
     }
 
     private void CalculateTotals()
     {
         Subtotal = Order.Sum(i => i.TotalPrice);
+        
+        decimal discount = 0;
+        if (_currentDraftOrder?.Promotion != null)
+        {
+            var promo = _currentDraftOrder.Promotion;
+            if (promo.PromoType == "Percent")
+            {
+                discount = Subtotal * (promo.DiscountValue / 100m);
+            }
+            else
+            {
+                discount = promo.DiscountValue;
+            }
+            
+            // Cap discount at subtotal
+            discount = Math.Min(discount, Subtotal);
+        }
+        
+        // Cart values (Pre-discount)
         Tax = Subtotal * TAX_RATE;
         Total = Subtotal + Tax;
+
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.DiscountAmount = discount;
+            _currentDraftOrder.SubTotal = Subtotal;
+            
+            // Payment values (Post-discount)
+            var postDiscountBase = Subtotal - discount;
+            var paymentTax = postDiscountBase * TAX_RATE;
+            var paymentTotal = postDiscountBase + paymentTax;
+            
+            _currentDraftOrder.TaxAmount = paymentTax;
+            _currentDraftOrder.TotalAmount = paymentTotal;
+        }
+    }
+
+    public async Task ApplyPromotion(Promotion? promo)
+    {
+        if (_currentDraftOrder == null) return;
+        
+        _currentDraftOrder.PromotionId = promo?.Id;
+        _currentDraftOrder.Promotion = promo;
+        
+        CalculateTotals();
+        await SaveDraftOrder();
     }
 
     private bool CanPlaceOrder() => Order.Any();
 
     [RelayCommand(CanExecute = nameof(CanPlaceOrder))]
-    private void PlaceOrder()
+    private async Task PlaceOrder()
     {
-        PlaceOrderRequested?.Invoke(this, EventArgs.Empty);
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.PaymentStatus = "PendingPayment";
+            await SaveDraftOrder();
+        }
+        CheckoutRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public async Task RevertOrderToDraft()
+    {
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.PaymentStatus = "Draft";
+            await SaveDraftOrder();
+            PlaceOrderCommand.NotifyCanExecuteChanged();
+        }
     }
 
     public PosOrder? FinalizeOrder(PaymentMethod method, Customer? customer = null)
     {
         if (!Order.Any()) return null;
 
+        var subtotal = Subtotal;
+        var tax = Tax;
+        var total = Total;
+
+        if (_currentDraftOrder != null)
+        {
+            subtotal = _currentDraftOrder.SubTotal;
+            tax = _currentDraftOrder.TaxAmount;
+            total = _currentDraftOrder.TotalAmount;
+        }
+
         var newOrder = new PosOrder
         {
-            OrderId = $"ID-{DateTime.Now:Hmmss}",
-            Subtotal = Subtotal,
-            Tax = Tax,
-            Total = Total,
+            OrderId = _currentDraftOrder?.Id.ToString() ?? $"ID-{DateTime.Now:Hmmss}",
+            Subtotal = subtotal,
+            Tax = tax,
+            Total = total,
             Type = OrderType,
             Table = TableNumber,
             CreatedAt = DateTime.Now,
@@ -281,7 +633,16 @@ public partial class PosViewModel : ObservableObject
         }
 
         ActiveOrders.Add(newOrder);
+        var completedOrder = _currentDraftOrder;
+        _currentDraftOrder = null;
         Order.Clear();
+        CalculateTotals();
+        
+        if (completedOrder != null)
+        {
+            OrderFinalized?.Invoke(this, completedOrder);
+        }
+        
         return newOrder;
     }
 }

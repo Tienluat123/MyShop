@@ -275,7 +275,7 @@ public partial class OrderManagementViewModel : ObservableObject
 
         if (order.OrderDetails != null)
         {
-            double computedSubtotal = 0;
+            decimal computedSubtotal = 0;
 
             foreach (var detail in order.OrderDetails)
             {
@@ -287,10 +287,10 @@ public partial class OrderManagementViewModel : ObservableObject
                 {
                     Product = product,
                     Quantity = detail.Quantity,
-                    BasePrice = (double)detail.UnitPrice
+                    BasePrice = detail.UnitPrice
                 });
 
-                computedSubtotal += (double)detail.UnitPrice * detail.Quantity;
+                computedSubtotal += detail.UnitPrice * detail.Quantity;
             }
 
             posOrder.Subtotal = computedSubtotal;

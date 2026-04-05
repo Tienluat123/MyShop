@@ -291,11 +291,22 @@ public partial class App : Application
                 container.Get<IRepository<User>>()
             ));
 
+            container.Register<ICategoryService>(new CategoryService(
+                container.Get<IRepository<Category>>()
+            ));
+
+            container.Register<IPromotionService>(new PromotionService(
+                container.Get<IRepository<Promotion>>()
+            ));
+
             services.AddSingleton<IProductService, ProductService>();
             services.AddSingleton<ICustomerService, CustomerService>();
             services.AddSingleton<IOrderService, OrderService>();
+            services.AddSingleton<ICategoryService, CategoryService>();
+            services.AddSingleton<IPromotionService, PromotionService>();
 
             // ===== Register ViewModels =====
+            services.AddTransient<PosViewModel>();
             services.AddTransient<OrderManagementViewModel>();
             // Add other viewmodels as needed...
 

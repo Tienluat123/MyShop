@@ -1,5 +1,6 @@
 using MyShop.Data;
 using MyShop.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyShop.Services;
 
@@ -67,7 +68,34 @@ public class ProductService : IProductService
     {
         try
         {
-            return await _productRepository.GetAll(paging);
+            var query = _productRepository.Query().Include(p => p.Category);
+            var result = new PagedResult<Product>();
+
+            if (paging == null)
+            {
+                result.Items = await query.ToListAsync();
+                result.Pagination = new PagingMetadata
+                {
+                    PageNumber = 1,
+                    PageSize = result.Items.Count,
+                    TotalItems = result.Items.Count,
+                };
+            }
+            else
+            {
+                paging.Validate();
+                var totalItems = await query.CountAsync();
+                var items = await query.Skip(paging.GetSkip()).Take(paging.PageSize).ToListAsync();
+
+                result.Items = items;
+                result.Pagination = new PagingMetadata
+                {
+                    PageNumber = paging.PageNumber,
+                    PageSize = paging.PageSize,
+                    TotalItems = totalItems,
+                };
+            }
+            return result;
         }
         catch (Exception ex)
         {
@@ -103,10 +131,10 @@ public class ProductService : IProductService
 
         try
         {
-            var pagedResult = await _productRepository.GetAll();
-            return pagedResult.Items
+            return await _productRepository.Query()
+                .Include(p => p.Category)
                 .Where(p => p.CategoryId == categoryId)
-                .ToList();
+                .ToListAsync();
         }
         catch (Exception ex)
         {
@@ -124,10 +152,10 @@ public class ProductService : IProductService
 
         try
         {
-            var pagedResult = await _productRepository.GetAll();
-            return pagedResult.Items
+            return await _productRepository.Query()
+                .Include(p => p.Category)
                 .Where(p => p.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+                .ToListAsync();
         }
         catch (Exception ex)
         {

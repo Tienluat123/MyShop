@@ -51,7 +51,8 @@ public partial class DrinkOptions : ObservableObject
     [ObservableProperty]
     private string _ice = "Regular";
 
-    public ObservableCollection<string> AddOns { get; } = new();
+    [ObservableProperty]
+    private ObservableCollection<string> _addOns = new();
 
     [ObservableProperty]
     private string _notes = "";
@@ -61,14 +62,15 @@ public partial class OrderItem : ObservableObject
 {
     public Product Product { get; set; } = null!;
 
-    public double BasePrice { get; set; }
+    public decimal BasePrice { get; set; }
 
     [ObservableProperty]
     private int _quantity;
 
-    public DrinkOptions? DrinkOptions { get; set; }
+    [ObservableProperty]
+    private DrinkOptions? _drinkOptions;
 
-    public double TotalPrice => BasePrice * Quantity;
+    public decimal TotalPrice => BasePrice * Quantity;
 
     partial void OnQuantityChanged(int value)
     {
@@ -84,13 +86,13 @@ public partial class PosOrder : ObservableObject
     public ObservableCollection<OrderItem> Items { get; } = new();
 
     [ObservableProperty]
-    private double _subtotal;
+    private decimal _subtotal;
 
     [ObservableProperty]
-    private double _tax;
+    private decimal _tax;
 
     [ObservableProperty]
-    private double _total;
+    private decimal _total;
 
     [ObservableProperty]
     private string _type = "Dine-in";
