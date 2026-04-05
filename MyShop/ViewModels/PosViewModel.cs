@@ -427,10 +427,23 @@ public partial class PosViewModel : ObservableObject
     private async Task RemoveItem(OrderItem item) => await RemoveFromCart(item);
 
     [RelayCommand]
-    private void ClearCart()
+    private async Task ClearCart()
     {
+        if (_currentDraftOrder != null)
+        {
+            try
+            {
+                await _orderService.Delete(_currentDraftOrder.Id);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error clearing cart from DB: {ex.Message}");
+            }
+            _currentDraftOrder = null;
+        }
+        
         Order.Clear();
-        _currentDraftOrder = null; // In a real app, maybe delete from DB or keep as cancelled
+        CalculateTotals();
     }
 
     [RelayCommand]
