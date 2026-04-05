@@ -14,6 +14,15 @@ public partial class Order : ObservableObject
     private int userId; // Nhân viên xử lý
 
     [ObservableProperty]
+    private string type = "Dine-in"; // Dine-in / Takeaway / Delivery
+
+    [ObservableProperty]
+    private string tableNumber = ""; // Số bàn (nếu Dine-in)
+
+    [ObservableProperty]
+    private string notes = ""; // Ghi chú đơn hàng
+
+    [ObservableProperty]
     private int? promotionId; // Mã KM áp dụng (Nếu có)
 
     [ObservableProperty]
