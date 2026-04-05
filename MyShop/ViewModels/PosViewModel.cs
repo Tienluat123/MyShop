@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using MyShop.Models;
 using MyShop.Services;
+using MyShop.Data;
 
 namespace MyShop.ViewModels;
 
@@ -68,49 +69,13 @@ public partial class PosViewModel : ObservableObject
         
         // Initial data loading
         InitializeAsync();
-
-        // Add some customized items for verification
-        var product = Products.FirstOrDefault();
-        if (product != null)
-        {
-            var options = new DrinkOptions
-            {
-                Size = "L",
-                Sugar = "50%",
-                Ice = "Less Ice",
-                Notes = "No foam please"
-            };
-            options.AddOns.Add("Extra Shot");
-            options.AddOns.Add("Oat Milk");
-
-            Order.Add(new OrderItem
-            {
-                Product = product,
-                BasePrice = (double)product.Price + 1.5,
-                Quantity = 1,
-                DrinkOptions = options
-            });
-        }
-
-        var secondProduct = Products.FirstOrDefault(p => p.Id == 2);
-        if (secondProduct != null)
-        {
-            Order.Add(new OrderItem
-            {
-                Product = secondProduct,
-                BasePrice = (double)secondProduct.Price,
-                Quantity = 2
-            });
-        }
     }
 
     private async void InitializeAsync()
     {
         await LoadCategories();
         await LoadProductsForSale();
-        
-        // Load mock data for things not yet in DB if needed (like initial Order)
-        // LoadMockData(); 
+        await LoadCurrentDraftOrder();
         
         RebuildFilter();
 
@@ -128,31 +93,31 @@ public partial class PosViewModel : ObservableObject
         };
     }
 
-    private void LoadMockData()
-    {
-        Categories.Add(new CategoryItem { Name = "Coffee", IconKey = "IconCoffee", IsActive = true });
-        Categories.Add(new CategoryItem { Name = "Tea", IconKey = "IconTea" });
-        Categories.Add(new CategoryItem { Name = "Smoothies", IconKey = "IconSmoothies" });
-        Categories.Add(new CategoryItem { Name = "Pastries", IconKey = "IconPastries" });
+    //private void LoadMockData()
+    //{
+    //    Categories.Add(new CategoryItem { Name = "Coffee", IconKey = "IconCoffee", IsActive = true });
+    //    Categories.Add(new CategoryItem { Name = "Tea", IconKey = "IconTea" });
+    //    Categories.Add(new CategoryItem { Name = "Smoothies", IconKey = "IconSmoothies" });
+    //    Categories.Add(new CategoryItem { Name = "Pastries", IconKey = "IconPastries" });
 
-        // Mock product data (temporary - will be replaced with database)
-        // For UI development purposes only
-        var coffeeCategory = new Category { Id = 1, Name = "Coffee", IconGlyph = "☕" };
-        var teaCategory = new Category { Id = 2, Name = "Tea", IconGlyph = "🍵" };
-        var pastriesCategory = new Category { Id = 3, Name = "Pastries", IconGlyph = "🥐" };
+    //    // Mock product data (temporary - will be replaced with database)
+    //    // For UI development purposes only
+    //    var coffeeCategory = new Category { Id = 1, Name = "Coffee", IconGlyph = "☕" };
+    //    var teaCategory = new Category { Id = 2, Name = "Tea", IconGlyph = "🍵" };
+    //    var pastriesCategory = new Category { Id = 3, Name = "Pastries", IconGlyph = "🥐" };
 
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
-        Products.Add(new Product { Id = 2, Name = "Matcha Latte", Price = 5.00m, CategoryId = 2, Category = teaCategory, ImagePath = "ms-appx:///Assets/matcha-latte.jpg" });
-        Products.Add(new Product { Id = 3, Name = "Blueberry Muffin", Price = 3.25m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/muffin.jpg" });
-        Products.Add(new Product { Id = 4, Name = "Croissant", Price = 2.75m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/croissant.jpg" });
-    }
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 1, Name = "Caramel Latte", Price = 4.50m, CategoryId = 1, Category = coffeeCategory, ImagePath = "ms-appx:///Assets/caramel-latte.jpg" });
+    //    Products.Add(new Product { Id = 2, Name = "Matcha Latte", Price = 5.00m, CategoryId = 2, Category = teaCategory, ImagePath = "ms-appx:///Assets/matcha-latte.jpg" });
+    //    Products.Add(new Product { Id = 3, Name = "Blueberry Muffin", Price = 3.25m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/muffin.jpg" });
+    //    Products.Add(new Product { Id = 4, Name = "Croissant", Price = 2.75m, CategoryId = 3, Category = pastriesCategory, ImagePath = "ms-appx:///Assets/croissant.jpg" });
+    //}
 
     private void RebuildFilter()
     {
@@ -273,11 +238,7 @@ public partial class PosViewModel : ObservableObject
         var notes = param.Options != null ? SerializeOptions(param.Options) : null;
         
         var detail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od => 
-            od.ProductId == param.Product.Id && od.Notes == notes); // Using Description as temp storage if Notes not available or similar
-
-        // Wait, looking at OrderDetail.cs again, it doesn't have Notes. 
-        // I will just add as new for now or ignore options for DB persistence if no field exists.
-        // Actually, I'll just match by ProductId for now to keep it simple as per plan.
+            od.ProductId == param.Product.Id && od.Notes == notes);
         
         var existingDetail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od => 
             od.ProductId == param.Product.Id && od.Notes == notes);
@@ -302,8 +263,9 @@ public partial class PosViewModel : ObservableObject
         SyncCartFromDraft();
     }
 
-    private string? SerializeOptions(DrinkOptions options)
+    private string? SerializeOptions(DrinkOptions? options)
     {
+        if (options == null) return null;
         try
         {
             return JsonSerializer.Serialize(options);
@@ -331,15 +293,50 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder != null) return;
 
+        var result = await _orderService.GetPagedOrdersByStatuses(
+            new PagingRequest { PageNumber = 1, PageSize = 1 }, 
+            true, 
+            paymentStatuses: new List<string> { "Draft" });
+            
+        _currentDraftOrder = result.Items.FirstOrDefault();
+
+        if (_currentDraftOrder != null)
+        {
+            SyncCartFromDraft();
+            return;
+        }
+
         _currentDraftOrder = new Order
         {
             CustomerId = 1, // Default Guest
             UserId = 1,     // Default Staff
             PaymentStatus = "Draft",
-            OrderDate = DateTime.UtcNow
+            OrderDate = DateTime.UtcNow,
+            OrderDetails = new List<OrderDetail>()
         };
 
         _currentDraftOrder = await _orderService.Add(_currentDraftOrder);
+    }
+
+    private async Task LoadCurrentDraftOrder()
+    {
+        try
+        {
+            var result = await _orderService.GetPagedOrdersByStatuses(
+                new PagingRequest { PageNumber = 1, PageSize = 1 }, 
+                true, 
+                paymentStatuses: new List<string> { "Draft" });
+                
+            _currentDraftOrder = result.Items.FirstOrDefault();
+            if (_currentDraftOrder != null)
+            {
+                SyncCartFromDraft();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading draft order: {ex.Message}");
+        }
     }
 
     private async Task SaveDraftOrder()
@@ -375,7 +372,9 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder == null) return;
 
-        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == item.Product.Id);
+        var notes = SerializeOptions(item.DrinkOptions);
+        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == item.Product.Id && od.Notes == notes);
+        
         if (detail != null)
         {
             _currentDraftOrder.OrderDetails.Remove(detail);
@@ -385,11 +384,25 @@ public partial class PosViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public async Task IncreaseQuantity(OrderItem item)
+    {
+        await UpdateCartQuantity(new UpdateQtyParams { Item = item, Delta = 1 });
+    }
+
+    [RelayCommand]
+    public async Task DecreaseQuantity(OrderItem item)
+    {
+        await UpdateCartQuantity(new UpdateQtyParams { Item = item, Delta = -1 });
+    }
+
+    [RelayCommand]
     public async Task UpdateCartQuantity(UpdateQtyParams param)
     {
         if (_currentDraftOrder == null || param.Item == null) return;
 
-        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == param.Item.Product.Id);
+        var notes = SerializeOptions(param.Item.DrinkOptions);
+        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == param.Item.Product.Id && od.Notes == notes);
+        
         if (detail != null)
         {
             detail.Quantity += param.Delta;
@@ -412,9 +425,6 @@ public partial class PosViewModel : ObservableObject
 
     [RelayCommand]
     private async Task RemoveItem(OrderItem item) => await RemoveFromCart(item);
-
-    [RelayCommand]
-    private async Task UpdateQuantity(UpdateQtyParams param) => await UpdateCartQuantity(param);
 
     [RelayCommand]
     private void ClearCart()

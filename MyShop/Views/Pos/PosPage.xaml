@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="MyShop.Views.Pos.PosPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -497,11 +497,9 @@
                                                 Padding="0"
                                                 Background="Transparent"
                                                 BorderThickness="0"
-                                                Command="{Binding DataContext.UpdateQuantityCommand, ElementName=PageRoot}"
+                                                Command="{Binding DataContext.DecreaseQuantityCommand, ElementName=PageRoot}"
+                                                CommandParameter="{Binding}"
                                                 Style="{StaticResource AppIconButtonStyle}">
-                                                <Button.CommandParameter>
-                                                    <models:UpdateQtyParams Delta="-1" Item="{Binding}" />
-                                                </Button.CommandParameter>
                                                 <FontIcon Glyph="&#xE738;" Style="{StaticResource IconCaptionStyle}" />
                                             </Button>
                                             <TextBlock
@@ -517,11 +515,9 @@
                                                 Padding="0"
                                                 Background="Transparent"
                                                 BorderThickness="0"
-                                                Command="{Binding DataContext.UpdateQuantityCommand, ElementName=PageRoot}"
+                                                Command="{Binding DataContext.IncreaseQuantityCommand, ElementName=PageRoot}"
+                                                CommandParameter="{Binding}"
                                                 Style="{StaticResource AppIconButtonStyle}">
-                                                <Button.CommandParameter>
-                                                    <models:UpdateQtyParams Delta="1" Item="{Binding}" />
-                                                </Button.CommandParameter>
                                                 <FontIcon Glyph="&#xE710;" Style="{StaticResource IconCaptionStyle}" />
                                             </Button>
                                         </StackPanel>
