@@ -55,7 +55,9 @@ public partial class CustomerManagementViewModel : ObservableObject
         this.onEdit = onEdit;
 
         // Gọi lệnh load lần đầu
-        LoadCustomersCommand.Execute(null);
+        //LoadCustomersCommand.Execute(null);
+
+        _customerService = customerService;
     }
 
     // --- LOGIC CỐT LÕI ---
@@ -67,7 +69,7 @@ private async Task LoadCustomers()
     { 
         PageNumber = CurrentPage, 
         PageSize = PageSize,
-        SearchKeyword = SearchText?.Trim() 
+        SearchText = SearchText?.Trim() 
     };
 
     //var result = await Task.Run(() => _customerService.GetAll(request));
@@ -120,8 +122,12 @@ private async Task LoadCustomers()
         LoadCustomersCommand.Execute(null);
     }
 
-    partial void OnSearchTextChanged(string value) => Search();
-
+    partial void OnSearchTextChanged(string? value)
+    {
+        // Mỗi khi gõ 1 chữ, nó sẽ tự động gọi lại hàm Load (với Page 1)
+        CurrentPage = 1;
+        LoadCustomersCommand.Execute(null);
+    }
     [RelayCommand]
     private void GoToPage(int page)
     {
