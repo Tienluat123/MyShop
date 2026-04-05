@@ -23,6 +23,32 @@ public sealed partial class PosPage : Page
         {
             if (ViewModel.CurrentDraftOrder == null) return;
 
+            // 1. Membership Selection (Loyalty)
+            var memberModal = new MembershipSelectionModal();
+            memberModal.XamlRoot = this.XamlRoot;
+
+            Customer? selectedCustomer = null;
+            memberModal.ViewModel.MemberSelected += (member) =>
+            {
+                selectedCustomer = member;
+            };
+
+            await memberModal.ShowAsync();
+
+            // 2. Promotion Selection
+            var promoModal = new PromoSelectionModal();
+            promoModal.XamlRoot = this.XamlRoot;
+            
+            Models.Promotion? selectedPromo = null;
+            promoModal.ViewModel.PromotionSelected += (promo) =>
+            {
+                selectedPromo = (Models.Promotion?)promo;
+            };
+            
+            await promoModal.ShowAsync();
+            await ViewModel.ApplyPromotion(selectedPromo);
+
+            // 3. Payment Checkout
             var paymentModal = new PaymentModal(ViewModel.CurrentDraftOrder, App.Services.GetRequiredService<IOrderService>());
             paymentModal.XamlRoot = this.XamlRoot;
 
@@ -43,18 +69,6 @@ public sealed partial class PosPage : Page
             }
             else
             {
-                // After payment, prompt for membership/loyalty
-                var memberModal = new MembershipSelectionModal();
-                memberModal.XamlRoot = this.XamlRoot;
-
-                Customer? selectedCustomer = null;
-                memberModal.ViewModel.MemberSelected += (member) =>
-                {
-                    selectedCustomer = member;
-                };
-
-                await memberModal.ShowAsync();
-
                 // Finalize the order with payment method and member info
                 var finalizedOrder = ViewModel.FinalizeOrder(selectedMethod, selectedCustomer);
 

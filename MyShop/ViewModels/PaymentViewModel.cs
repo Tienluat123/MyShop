@@ -12,7 +12,7 @@ namespace MyShop.ViewModels;
 public partial class PaymentViewModel : ObservableObject
 {
     [ObservableProperty]
-    private double _total;
+    private decimal _total;
 
     [ObservableProperty]
     private string _orderIdentifier = "";
@@ -27,9 +27,9 @@ public partial class PaymentViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Change))]
-    private double _cashAmount;
+    private decimal _cashAmount;
 
-    public double Change => CashAmount - Total;
+    public decimal Change => CashAmount - Total;
 
     public event Action<PaymentMethod>? PaymentConfirmed;
 
@@ -41,7 +41,7 @@ public partial class PaymentViewModel : ObservableObject
         _order = order ?? throw new ArgumentNullException(nameof(order));
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         
-        Total = (double)order.TotalAmount;
+        Total = order.TotalAmount;
         OrderIdentifier = $"ORDER-{order.Id}";
         
         PaymentMethods.Add(new PaymentMethodItem { Method = PaymentMethod.Cash, Label = "Cash", IconKey = "IconBanknote", Glyph = "\uE825", IsSelected = true });
@@ -78,7 +78,7 @@ public partial class PaymentViewModel : ObservableObject
             CashInput += key;
         }
 
-        if (double.TryParse(CashInput, out var val))
+        if (decimal.TryParse(CashInput, out var val))
         {
             CashAmount = val;
         }
@@ -91,7 +91,7 @@ public partial class PaymentViewModel : ObservableObject
     [RelayCommand]
     private void AddQuickAmount(string amountStr)
     {
-        if (double.TryParse(amountStr, out var amount))
+        if (decimal.TryParse(amountStr, out var amount))
         {
             CashAmount += amount;
             CashInput = CashAmount.ToString("F2").Replace(".00", "");
@@ -101,7 +101,7 @@ public partial class PaymentViewModel : ObservableObject
     [RelayCommand]
     private async Task Confirm()
     {
-        if (Method == PaymentMethod.Cash && Change < -0.01) return;
+        if (Method == PaymentMethod.Cash && Change < -0.01m) return;
         
         _order.PaymentStatus = "Paid";
         _order.FulfillmentStatus = "None"; // Or Preparing

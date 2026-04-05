@@ -50,7 +50,7 @@ public partial class OrderManagementViewModel : ObservableObject
             Type = "Dine-in",
             Table = "5",
             CreatedAt = DateTime.Now.AddMinutes(-5),
-            Items = { new OrderItem { Product = coffee, Quantity = 2, BasePrice = 5.50 } }
+            Items = { new OrderItem { Product = coffee, Quantity = 2, BasePrice = 5.50m } }
         });
 
         _allOrders.Add(new PosOrder
@@ -60,8 +60,8 @@ public partial class OrderManagementViewModel : ObservableObject
             Type = "Takeaway",
             CreatedAt = DateTime.Now.AddMinutes(-12),
             Items = {
-                new OrderItem { Product = tea, Quantity = 1, BasePrice = 4.00 },
-                new OrderItem { Product = muffin, Quantity = 1, BasePrice = 3.25 }
+                new OrderItem { Product = tea, Quantity = 1, BasePrice = 4.00m },
+                new OrderItem { Product = muffin, Quantity = 1, BasePrice = 3.25m }
             }
         });
 
@@ -72,7 +72,7 @@ public partial class OrderManagementViewModel : ObservableObject
             Type = "Dine-in",
             Table = "12",
             CreatedAt = DateTime.Now.AddHours(-1),
-            Items = { new OrderItem { Product = coffee, Quantity = 1, BasePrice = 5.50 } }
+            Items = { new OrderItem { Product = coffee, Quantity = 1, BasePrice = 5.50m } }
         });
     }
 

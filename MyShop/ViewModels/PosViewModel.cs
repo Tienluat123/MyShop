@@ -12,10 +12,11 @@ namespace MyShop.ViewModels;
 
 public partial class PosViewModel : ObservableObject
 {
-    private const double TAX_RATE = 0.0875;
+    private const decimal TAX_RATE = 0.0875m;
     private readonly IProductService _productService;
     private readonly ICategoryService _categoryService;
     private readonly IOrderService _orderService;
+    private readonly IPromotionService _promoService;
 
     private Order? _currentDraftOrder;
 
@@ -37,13 +38,16 @@ public partial class PosViewModel : ObservableObject
     private string searchQuery = "";
 
     [ObservableProperty]
-    private double subtotal;
+    private decimal subtotal;
 
     [ObservableProperty]
-    private double tax;
+    private decimal discountAmount;
 
     [ObservableProperty]
-    private double total;
+    private decimal tax;
+
+    [ObservableProperty]
+    private decimal total;
 
     [ObservableProperty]
     private string orderType = "Dine-in";
@@ -59,15 +63,21 @@ public partial class PosViewModel : ObservableObject
     public PosViewModel() : this(
         App.Services.GetRequiredService<IProductService>(),
         App.Services.GetRequiredService<ICategoryService>(),
-        App.Services.GetRequiredService<IOrderService>())
+        App.Services.GetRequiredService<IOrderService>(),
+        App.Services.GetRequiredService<IPromotionService>())
     {
     }
 
-    public PosViewModel(IProductService productService, ICategoryService categoryService, IOrderService orderService)
+    public PosViewModel(
+        IProductService productService,
+        ICategoryService categoryService,
+        IOrderService orderService,
+        IPromotionService promoService)
     {
         _productService = productService ?? throw new ArgumentNullException(nameof(productService));
         _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+        _promoService = promoService ?? throw new ArgumentNullException(nameof(promoService));
         
         // Initial data loading
         InitializeAsync();
@@ -365,7 +375,7 @@ public partial class PosViewModel : ObservableObject
             Order.Add(new OrderItem
             {
                 Product = detail.Product!,
-                BasePrice = (double)detail.UnitPrice,
+                BasePrice = detail.UnitPrice,
                 Quantity = detail.Quantity,
                 DrinkOptions = ParseOptions(detail.Notes)
             });
@@ -469,8 +479,52 @@ public partial class PosViewModel : ObservableObject
     private void CalculateTotals()
     {
         Subtotal = Order.Sum(i => i.TotalPrice);
-        Tax = Subtotal * TAX_RATE;
-        Total = Subtotal + Tax;
+        
+        decimal discount = 0;
+        if (_currentDraftOrder?.Promotion != null)
+        {
+            var promo = _currentDraftOrder.Promotion;
+            if (promo.PromoType == "Percent")
+            {
+                discount = Subtotal * (promo.DiscountValue / 100m);
+            }
+            else
+            {
+                discount = promo.DiscountValue;
+            }
+            
+            // Cap discount at subtotal
+            discount = Math.Min(discount, Subtotal);
+        }
+        
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.DiscountAmount = discount;
+            _currentDraftOrder.SubTotal = Subtotal;
+            
+            Tax = (Subtotal - discount) * TAX_RATE;
+            Total = Subtotal - discount + Tax;
+            
+            _currentDraftOrder.TotalAmount = Total;
+            _currentDraftOrder.TaxAmount = Tax;
+        }
+        else
+        {
+             // Fallback for when currentDraftOrder is null (though it shouldn't be here)
+             Tax = Subtotal * TAX_RATE;
+             Total = Subtotal + Tax;
+        }
+    }
+
+    public async Task ApplyPromotion(Promotion? promo)
+    {
+        if (_currentDraftOrder == null) return;
+        
+        _currentDraftOrder.PromotionId = promo?.Id;
+        _currentDraftOrder.Promotion = promo;
+        
+        CalculateTotals();
+        await SaveDraftOrder();
     }
 
     private bool CanPlaceOrder() => Order.Any();
