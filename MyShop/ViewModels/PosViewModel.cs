@@ -594,16 +594,27 @@ public partial class PosViewModel : ObservableObject
     {
         if (!Order.Any()) return null;
 
+        var subtotal = Subtotal;
+        var tax = Tax;
+        var total = Total;
+
+        if (_currentDraftOrder != null)
+        {
+            subtotal = _currentDraftOrder.SubTotal;
+            tax = _currentDraftOrder.TaxAmount;
+            total = _currentDraftOrder.TotalAmount;
+        }
+
         var newOrder = new PosOrder
         {
-            OrderId = $"ID-{DateTime.Now:Hmmss}",
-            Subtotal = Subtotal,
-            Tax = Tax,
-            Total = Total,
+            OrderId = _currentDraftOrder?.Id.ToString() ?? $"ID-{DateTime.Now:Hmmss}",
+            Subtotal = subtotal,
+            Tax = tax,
+            Total = total,
             Type = OrderType,
             Table = TableNumber,
             CreatedAt = DateTime.Now,
-            Status = OrderStatus.Pending,
+            Status = OrderStatus.Completed,
             Method = method,
             CustomerId = customer?.Id.ToString(),
             CustomerName = customer?.Name

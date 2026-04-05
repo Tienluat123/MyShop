@@ -63,13 +63,8 @@ public sealed partial class PosPage : Page
 
             await paymentModal.ShowAsync();
 
-            if (!isPaid)
+            if (isPaid)
             {
-                await ViewModel.RevertOrderToDraft();
-            }
-            else
-            {
-                // Finalize the order with payment method and member info
                 var finalizedOrder = ViewModel.FinalizeOrder(selectedMethod, selectedCustomer);
 
                 if (finalizedOrder != null)
@@ -78,6 +73,10 @@ public sealed partial class PosPage : Page
                     receiptModal.XamlRoot = this.XamlRoot;
                     await receiptModal.ShowAsync();
                 }
+            }
+            else
+            {
+                await ViewModel.RevertOrderToDraft();
             }
         };
     }
