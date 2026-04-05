@@ -86,7 +86,7 @@ public sealed partial class PosPage : Page
 
     private async void ActiveOrders_Click(object sender, RoutedEventArgs e)
     {
-        var modal = new OrderManagementModal(ViewModel.ActiveOrders);
+        var modal = new OrderManagementModal();
         modal.XamlRoot = this.XamlRoot;
         await modal.ShowAsync();
     }
