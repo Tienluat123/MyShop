@@ -359,8 +359,30 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder == null) return;
         
+        // 1. Recalculate SubTotal from OrderDetails
         _currentDraftOrder.SubTotal = _currentDraftOrder.OrderDetails.Sum(od => od.Quantity * od.UnitPrice);
-        _currentDraftOrder.TotalAmount = _currentDraftOrder.SubTotal - _currentDraftOrder.DiscountAmount;
+        
+        // 2. Calculate Discount Amount
+        decimal discount = 0;
+        if (_currentDraftOrder.Promotion != null)
+        {
+            var promo = _currentDraftOrder.Promotion;
+            if (promo.PromoType == "Percent")
+            {
+                discount = _currentDraftOrder.SubTotal * (promo.DiscountValue / 100m);
+            }
+            else
+            {
+                discount = promo.DiscountValue;
+            }
+            discount = Math.Min(discount, _currentDraftOrder.SubTotal);
+        }
+        _currentDraftOrder.DiscountAmount = discount;
+
+        // 3. Calculate Tax and Total (Post-discount)
+        var postDiscountBase = _currentDraftOrder.SubTotal - discount;
+        _currentDraftOrder.TaxAmount = postDiscountBase * TAX_RATE;
+        _currentDraftOrder.TotalAmount = postDiscountBase + _currentDraftOrder.TaxAmount;
         
         await _orderService.Update(_currentDraftOrder);
     }
@@ -497,22 +519,22 @@ public partial class PosViewModel : ObservableObject
             discount = Math.Min(discount, Subtotal);
         }
         
+        // Cart values (Pre-discount)
+        Tax = Subtotal * TAX_RATE;
+        Total = Subtotal + Tax;
+
         if (_currentDraftOrder != null)
         {
             _currentDraftOrder.DiscountAmount = discount;
             _currentDraftOrder.SubTotal = Subtotal;
             
-            Tax = (Subtotal - discount) * TAX_RATE;
-            Total = Subtotal - discount + Tax;
+            // Payment values (Post-discount)
+            var postDiscountBase = Subtotal - discount;
+            var paymentTax = postDiscountBase * TAX_RATE;
+            var paymentTotal = postDiscountBase + paymentTax;
             
-            _currentDraftOrder.TotalAmount = Total;
-            _currentDraftOrder.TaxAmount = Tax;
-        }
-        else
-        {
-             // Fallback for when currentDraftOrder is null (though it shouldn't be here)
-             Tax = Subtotal * TAX_RATE;
-             Total = Subtotal + Tax;
+            _currentDraftOrder.TaxAmount = paymentTax;
+            _currentDraftOrder.TotalAmount = paymentTotal;
         }
     }
 
