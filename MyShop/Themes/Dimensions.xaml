@@ -33,6 +33,7 @@
     <Thickness x:Key="SpaceLarge_Small">16,8</Thickness>
     <Thickness x:Key="SpaceLarge_Medium">16,12</Thickness>
     <Thickness x:Key="SpaceXLarge_Large">24,16</Thickness>
+    <Thickness x:Key="Space3XLarge_Large">48,16</Thickness>
     <Thickness x:Key="SpaceXLarge_Medium">24,12</Thickness>
     <Thickness x:Key="SpaceXLarge_Small">24,8</Thickness>
     <Thickness x:Key="SpaceMedium_Small">12,8</Thickness>
