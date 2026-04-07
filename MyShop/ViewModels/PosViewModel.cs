@@ -164,7 +164,7 @@ public partial class PosViewModel : ObservableObject
                     Categories.Add(new CategoryItem
                     {
                         Name = cat.Name,
-                        IconKey = cat.IconGlyph ?? "IconCoffee",
+                        IconKey = cat.IconKey ?? "IconCoffee",
                         IsActive = false
                     });
                 }

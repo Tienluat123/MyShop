@@ -211,7 +211,9 @@
                                 Command="{Binding DataContext.SetCategoryCommand, ElementName=PageRoot}"
                                 CommandParameter="{Binding}"
                                 Style="{StaticResource CategoryButtonStyle}">
+
                                 <StackPanel Orientation="Horizontal" Spacing="8">
+
                                     <Path
                                         Width="18"
                                         Height="18"
@@ -228,6 +230,7 @@
                                         VerticalAlignment="Center"
                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                         Text="{Binding Name}" />
+
                                 </StackPanel>
                             </Button>
                         </DataTemplate>

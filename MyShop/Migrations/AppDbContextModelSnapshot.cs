@@ -57,7 +57,10 @@ namespace MyShop.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("IconGlyph")
+                    b.Property<bool>("HasCustomization")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("IconKey")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
