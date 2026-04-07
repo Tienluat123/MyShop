@@ -39,9 +39,13 @@ public partial class CustomerProfileViewModel : ObservableObject
         // Gán giá trị vào Property viết hoa để kích hoạt thông báo UI
         SelectedCustomer.Customer = selectedCustomerItem;
         
-        _ = LoadAllData();
+      
     }
-
+    [RelayCommand]
+    public async Task LoadInitialData() // Đổi tên cho rõ nghĩa
+    {
+        await LoadAllData();
+    }
     // 2. DÙNG [RelayCommand] cho nút Back để đồng bộ với bộ Toolkit
     [RelayCommand]
     private void GoBack() => _onBack?.Invoke();
@@ -87,7 +91,7 @@ public partial class CustomerProfileViewModel : ObservableObject
     private async Task LoadOrderHistory()
     {
         var orders = await Task.Run(() => _orderService.GetByCustomerId(SelectedCustomer.Customer.Id));
-        
+        Console.WriteLine($"[DEBUG] Khách hàng ID {SelectedCustomer.Customer.Id} có {orders.Count()} đơn hàng.");
         SelectedCustomer.Orders.Clear();
         foreach (var order in orders.OrderByDescending(o => o.OrderDate))
         {

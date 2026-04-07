@@ -9,9 +9,9 @@
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="16,12,16,20" Spacing="16">
-                
-                <Border Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="14" Padding="16">
+                <Border Background="#FFFFFF" CornerRadius="14" Padding="16" BorderBrush="#E5E7EB" BorderThickness="1">
                     <StackPanel Spacing="16">
+                        
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -26,15 +26,11 @@
                                 </StackPanel>
                             </Button>
 
-                            <Grid Grid.Column="2">
-                                <TextBox Padding="40,10,10,10" Background="#F8FAFC" BorderBrush="#E5E7EB" CornerRadius="12" 
-                                        PlaceholderText="Search by name or phone..."
-                                        Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Grid Grid.Column="2"> <TextBox Padding="40,10,10,10" PlaceholderText="Search..." 
+                                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CornerRadius="12"/>
                                 <FontIcon Glyph="&#xE721;" Foreground="#94A3B8" Margin="14,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                             </Grid>
-                        </Grid>
-
-                        <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
+                        </Grid> <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
 
                         <ItemsRepeater ItemsSource="{Binding DisplayCustomers}">
                             <ItemsRepeater.Layout>
@@ -43,34 +39,34 @@
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="viewModels:CustomerListItem">
                                     <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="10" Padding="16">
-                                        <Grid ColumnSpacing="16">
+                                        <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/> <ColumnDefinition Width="*"/>    <ColumnDefinition Width="Auto"/> </Grid.ColumnDefinitions>
 
-                                            <Border Width="48" Height="48" CornerRadius="24" Background="#F1F5F9">
-                                                <TextBlock Text="{x:Bind Initials}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#BB4D00" FontWeight="Bold"/>
+                                            <Border Width="40" Height="40" CornerRadius="20" Background="#F1F5F9">
+                                                <TextBlock Text="{x:Bind Initials}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
                                             </Border>
 
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                                <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" Foreground="#1E293B"/>
-                                                <TextBlock Foreground="#6B7280" FontSize="12">
-                                                    <Run Text="ID: "/><Run Text="{x:Bind Code}"/>
-                                                    <Run Text=" • "/><Run Text="{x:Bind Phone}"/>
-                                                </TextBlock>
+                                            <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{x:Bind Phone}" Foreground="#6B7280" FontSize="12"/>
                                             </StackPanel>
 
-                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                <Button Command="{Binding DataContext.MapsToProfileCommand, ElementName=PageRoot}" CommandParameter="{Binding}" Background="Transparent">
-                                                    <FontIcon Glyph="&#xE72A;" Foreground="#6B7280" FontSize="16"/>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                                <Button Command="{Binding DataContext.MapsToProfileCommand, ElementName=PageRoot}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent" BorderThickness="0">
+                                                    <FontIcon Glyph="&#xE72A;" Foreground="#6B7280"/>
                                                 </Button>
-                                                <Button Command="{Binding DataContext.EditCustomerCommand, ElementName=PageRoot}" CommandParameter="{Binding}" Background="Transparent">
-                                                    <FontIcon Glyph="&#xE70F;" Foreground="#6B7280" FontSize="16"/>
+                                                
+                                                <Button Command="{Binding DataContext.EditCustomerCommand, ElementName=PageRoot}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent" BorderThickness="0">
+                                                    <FontIcon Glyph="&#xE70F;" Foreground="#6B7280"/>
                                                 </Button>
-                                                <Button Click="DeleteButton_Click" Background="Transparent">
-                                                    <FontIcon Glyph="&#xE74D;" Foreground="#EF4444" FontSize="16"/>
+
+                                                <Button Click="DeleteButton_Click" Background="Transparent" BorderThickness="0">
+                                                    <FontIcon Glyph="&#xE74D;" Foreground="#EF4444"/>
                                                 </Button>
                                             </StackPanel>
                                         </Grid>
@@ -78,36 +74,8 @@
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>
                         </ItemsRepeater>
-
-                        <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding PagingSummary}" Foreground="#64748B" VerticalAlignment="Center"/>
-                            
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                <Button Command="{Binding PreviousPageCommand}" Content="&#xE76B;" FontFamily="Segoe MDL2 Assets" Background="White"/>
-                                
-                                <ItemsControl ItemsSource="{Binding PageNumbers}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4"/></ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Button Content="{Binding}" 
-                                                    Command="{Binding DataContext.GoToPageCommand, ElementName=PageRoot}" 
-                                                    CommandParameter="{Binding}" Width="32"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                                <Button Command="{Binding NextPageCommand}" Content="&#xE76C;" FontFamily="Segoe MDL2 Assets" Background="White"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
+                        
+                        </StackPanel>
                 </Border>
             </StackPanel>
         </ScrollViewer>
