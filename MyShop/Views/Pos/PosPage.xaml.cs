@@ -86,18 +86,12 @@ public sealed partial class PosPage : Page
         var button = (Button)sender;
         if (button.DataContext is not Product selectedProduct) return;
 
-        if (!selectedProduct.HasCustomization)
-        {
-            ViewModel.AddToCart(selectedProduct);
-            return;
-        }
-
         var modal = new ProductCustomizationModal(selectedProduct);
         modal.XamlRoot = this.XamlRoot;
 
         modal.ViewModel.DrinkConfirmed += (opts, qty) =>
         {
-            ViewModel.AddCustomizedToCart(new AddCustomizedParams
+            _ = ViewModel.AddCustomizedToCart(new AddCustomizedParams
             {
                 Product = selectedProduct,
                 Options = opts,

@@ -312,7 +312,7 @@
                                             <TextBlock
                                                 FontWeight="Bold"
                                                 Foreground="{StaticResource BrandPrimary}"
-                                                Text="{Binding DisplayPrice}" />
+                                                Text="{Binding Price, Converter={StaticResource CurrencyConverter}}" />
                                         </StackPanel>
                                     </Grid>
                                 </Border>

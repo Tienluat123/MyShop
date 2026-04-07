@@ -75,11 +75,11 @@ public partial class ProductCustomizationViewModel : ObservableObject
         double price = (double)Product.Price;
         if (Product.Category?.Name == "Coffee" || Product.Category?.Name == "Tea")
         {
-            if (Size == "M") price += 0.5;
-            else if (Size == "L") price += 1.0;
+            if (Size == "M") price += 15000;
+            else if (Size == "L") price += 25000;
 
-            // Add-ons are $0.75 each in the web version
-            price += AddOns.Count * 0.75;
+            // Add-ons are 10.000 each in the web version
+            price += AddOns.Count * 10000;
         }
         return price;
     }
@@ -112,7 +112,6 @@ public partial class ProductCustomizationViewModel : ObservableObject
         if (parameter != null && int.TryParse(parameter.ToString(), out int delta))
         {
             Quantity = Math.Max(1, Quantity + delta);
-            OnPropertyChanged(nameof(TotalPrice));
         }
     }
 
