@@ -1,3 +1,4 @@
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MyShop.Models;
@@ -21,7 +22,10 @@ public partial class Product : ObservableObject
 
     // UI/Display helpers - computed properties
     public bool HasCustomization => Category?.Name != "Pastries";
-    public string DisplayPrice => HasCustomization ? $"from {Price:C}" : $"{Price:C}";
+    public string DisplayPrice =>
+    HasCustomization
+        ? $"from {Price.ToString("C", new CultureInfo("vi-VN"))}"
+        : Price.ToString("C", new CultureInfo("vi-VN"));
 
     // Navigation properties
     public Category? Category { get; set; }
