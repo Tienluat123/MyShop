@@ -1,3 +1,6 @@
+using MyShop.Models;
+using MyShop.Services;
+using MyShop.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,8 +22,6 @@ public partial class ProductManagementViewModel : ObservableObject
 
     private readonly Action onAddProduct;
     private readonly Action<ProductListEntry> onEditProduct;
-    private readonly List<ProductListEntry> allProducts;
-
     public ObservableCollection<string> Categories { get; } = new();
     public ObservableCollection<ProductListEntry> DisplayProducts { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
@@ -74,13 +75,8 @@ public partial class ProductManagementViewModel : ObservableObject
 
         const int pageSize = 3;
 
-        var paging = new PagingRequest
-        {
-            PageNumber = CurrentPage,
-            PageSize = pageSize
-        };
-
-        var result = _productService.GetAll(paging);
+        // Load all first, then apply local filter/sort/paging to avoid double paging.
+        var result = _productService.GetAll();
 
         IEnumerable<Product> query = result.Items;
 
@@ -98,13 +94,13 @@ public partial class ProductManagementViewModel : ObservableObject
 
         // PRICE
         if (MinPrice.HasValue)
-            query = query.Where(p => p.Price >= (decimal)MinPrice);
+            query = query.Where(p => p.Price >= (decimal)MinPrice.Value);
 
         if (MaxPrice.HasValue)
-            query = query.Where(p => p.Price <= (decimal)MaxPrice);
+            query = query.Where(p => p.Price <= (decimal)MaxPrice.Value);
 
         // SORT
-        query = sortOption switch
+        query = SortOption switch
         {
             "PriceAsc" => query.OrderBy(p => p.Price),
             "PriceDesc" => query.OrderByDescending(p => p.Price),
@@ -116,18 +112,18 @@ public partial class ProductManagementViewModel : ObservableObject
         TotalItems = list.Count;
         TotalPages = Math.Max(1, (int)Math.Ceiling(list.Count / (double)pageSize));
 
+        if (CurrentPage > TotalPages)
+            CurrentPage = TotalPages;
+
         var pageItems = list
             .Skip((CurrentPage - 1) * pageSize)
             .Take(pageSize)
             .ToList();
 
-        var pageStart = TotalItems == 0 ? 0 : (CurrentPage - 1) * pageSize + 1;
-        var pageEnd = pageStart + pageItems.Count - 1;
-        pagingSummary = $"Showing {pageStart}-{pageEnd} in {TotalItems} items";
         PageNumbers.Clear();
         for (int i = 1; i <= TotalPages; i++)
             PageNumbers.Add(i);
-            
+
         DisplayProducts.Clear();
         foreach (var p in pageItems)
         {
@@ -136,9 +132,13 @@ public partial class ProductManagementViewModel : ObservableObject
                 Id = p.Id,
                 Name = p.Name,
                 Category = p.Category?.Name ?? "",
-                SellingPrice = (double)p.Price
+                SellingPrice = p.Price
             });
         }
+        
+        var pageStart = TotalItems == 0 ? 0 : (CurrentPage - 1) * pageSize + 1;
+        var pageEnd = pageStart + pageItems.Count - 1;
+        PagingSummary = $"Showing {pageStart}-{pageEnd} in {TotalItems} items";
     }
     
     [RelayCommand]
@@ -147,8 +147,6 @@ public partial class ProductManagementViewModel : ObservableObject
         await Task.CompletedTask;
 
         SearchText = keyword;
-        CurrentPage = 1;
-        await LoadProducts();
     }
 
     [RelayCommand]
@@ -157,17 +155,12 @@ public partial class ProductManagementViewModel : ObservableObject
         await Task.CompletedTask;
 
         SelectedCategory = category;
-        CurrentPage = 1;
-        await LoadProducts();
     }
 
     [RelayCommand]
-    private async Task FilterByPriceRange(decimal min, decimal max)
+    private async Task FilterByPriceRange()
     {
         await Task.CompletedTask;
-
-        MinPrice = (double)min;
-        MaxPrice = (double)max;
 
         CurrentPage = 1;
         await LoadProducts();
@@ -178,8 +171,7 @@ public partial class ProductManagementViewModel : ObservableObject
     {
         await Task.CompletedTask;
 
-        sortOption = sortBy;
-        await LoadProducts();
+        SortOption = sortBy;
     }
 
     [RelayCommand]
@@ -225,15 +217,49 @@ public partial class ProductManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task DeleteProduct(int productId)
+    private async Task DeleteProduct(ProductListEntry product)
     {
         await Task.CompletedTask;
 
-        _productService.Delete(productId);
+        if (product == null) return;
+
+        _productService.Delete(product.Id);
         await LoadProducts();
     }
 
-   [RelayCommand]
+    partial void OnSearchTextChanged(string value)
+    {
+        CurrentPage = 1;
+        _ = LoadProducts();
+    }
+
+    partial void OnSelectedCategoryChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            selectedCategory = CategoryAll;
+        }
+
+        CurrentPage = 1;
+        _ = LoadProducts();
+    }
+
+    partial void OnSortOptionChanged(string value)
+    {
+        _ = LoadProducts();
+    }
+
+    partial void OnMinPriceChanged(double? value)
+    {
+        CurrentPage = 1;
+    }
+
+    partial void OnMaxPriceChanged(double? value)
+    {
+        CurrentPage = 1;
+    }
+
+[RelayCommand]
     private async Task GoToProductDetail(Product product)
     {
         await Task.CompletedTask;
@@ -245,7 +271,7 @@ public partial class ProductManagementViewModel : ObservableObject
             Id = product.Id,
             Name = product.Name,
             Category = product.Category?.Name ?? "",
-            SellingPrice = (double)product.Price
+            SellingPrice = product.Price
         };
 
         onEditProduct(entry);

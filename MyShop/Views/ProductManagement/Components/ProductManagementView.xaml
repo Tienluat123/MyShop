@@ -92,8 +92,7 @@
                                              BorderBrush="#E5E7EB"
                                              CornerRadius="12"
                                              PlaceholderText="Search menu..."
-                                             Text="{Binding SearchText, Mode=TwoWay}"
-                                             KeyDown="SearchTextBox_KeyDown"/>
+                                             Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                     <FontIcon Glyph="&#xE721;"
                                               Foreground="#94A3B8"
                                               Margin="14,0,0,0"
@@ -101,6 +100,25 @@
                                               VerticalAlignment="Center"/>
                                 </Grid>
                             </Grid>
+
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="8">
+                                <TextBox Width="100"
+                                         PlaceholderText="Min"
+                                         Text="{Binding MinPrice, Mode=TwoWay}"/>
+                                <TextBox Width="100"
+                                         PlaceholderText="Max"
+                                         Text="{Binding MaxPrice, Mode=TwoWay}"/>
+                                <Button Content="Apply"
+                                        Command="{Binding FilterByPriceRangeCommand}"/>
+                                <ComboBox Width="160"
+                                          SelectedValue="{Binding SortOption, Mode=TwoWay}"
+                                          SelectedValuePath="Tag">
+                                    <ComboBoxItem Content="Name" Tag="Name"/>
+                                    <ComboBoxItem Content="Price ↑" Tag="PriceAsc"/>
+                                    <ComboBoxItem Content="Price ↓" Tag="PriceDesc"/>
+                                </ComboBox>
+                            </StackPanel>
                         </StackPanel>
 
                         <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
