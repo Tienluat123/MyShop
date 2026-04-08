@@ -19,6 +19,22 @@ public sealed partial class PosPage : Page
 
         InitializeComponent();
 
+        ViewModel.EditItemRequested += async (s, item) =>
+        {
+            var modal = new ProductCustomizationModal(item.Product, item);
+            modal.XamlRoot = this.XamlRoot;
+
+            var handler = new Action<OrderItem>(async editedItem =>
+            {
+                // Sync changes back to the draft order and database
+                await ViewModel.UpdateCustomizedItem(item, editedItem);
+            });
+
+            modal.ViewModel.ItemConfirmed += handler;
+            await modal.ShowAsync();
+            modal.ViewModel.ItemConfirmed -= handler;
+        };
+
         ViewModel.CheckoutRequested += async (s, e) =>
         {
             if (ViewModel.CurrentDraftOrder == null) return;
@@ -81,6 +97,7 @@ public sealed partial class PosPage : Page
         };
     }
 
+    // In PosPage.xaml.cs
     private async void ProductCard_Click(object sender, RoutedEventArgs e)
     {
         var button = (Button)sender;
@@ -89,13 +106,15 @@ public sealed partial class PosPage : Page
         var modal = new ProductCustomizationModal(selectedProduct);
         modal.XamlRoot = this.XamlRoot;
 
-        modal.ViewModel.DrinkConfirmed += (opts, qty) =>
+        // CHANGE THIS HANDLER:
+        // Instead of ViewModel.Order.Add, call the ViewModel's database-aware method
+        modal.ViewModel.ItemConfirmed += async (confirmedItem) =>
         {
-            _ = ViewModel.AddCustomizedToCart(new AddCustomizedParams
+            await ViewModel.AddCustomizedToCart(new AddCustomizedParams
             {
-                Product = selectedProduct,
-                Options = opts,
-                Quantity = qty
+                Product = confirmedItem.Product,
+                Quantity = confirmedItem.Quantity,
+                Options = confirmedItem.DrinkOptions
             });
         };
 

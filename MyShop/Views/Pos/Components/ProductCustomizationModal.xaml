@@ -5,12 +5,14 @@
     xmlns:converters="using:MyShop.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="RootDialog"
     mc:Ignorable="d">
 
     <ContentDialog.Resources>
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
         <converters:CurrencyConverter x:Key="CurrencyConverter" />
         <converters:CollectionContainsToBoolConverter x:Key="CollectionContainsToBoolConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:EqualityToBrushConverter
             x:Key="SizeSelectedBackgroundConverter"
             FalseBrush="{StaticResource SurfaceAlt}"
@@ -144,7 +146,10 @@
             MaxHeight="450"
             Padding="24">
             <StackPanel Spacing="32">
-                <StackPanel x:Name="BeverageOptions" Spacing="32">
+                <StackPanel
+                    x:Name="BeverageOptions"
+                    Spacing="32"
+                    Visibility="{Binding HasCustomization, Converter={StaticResource BoolToVisibilityConverter}}">
                     <!--  Size  -->
                     <StackPanel>
                         <StackPanel Style="{StaticResource SectionHeaderStyle}">
@@ -342,7 +347,7 @@
                                 Margin="0,16,0,12"
                                 Style="{StaticResource SectionTitleStyle}"
                                 Text="ADD-ONS (+10.000 EACH)" />
-                            <ItemsRepeater ItemsSource="{Binding AvailableAddOns}">
+                            <ItemsRepeater ItemsSource="{Binding AddOnOptions}">
                                 <ItemsRepeater.Layout>
                                     <FlowLayout
                                         MinColumnSpacing="8"
@@ -355,9 +360,8 @@
                                             MinWidth="60"
                                             Padding="16,8"
                                             HorizontalAlignment="Left"
-                                            Command="{Binding DataContext.ToggleAddOnCommand, ElementName=BeverageOptions}"
-                                            CommandParameter="{Binding}"
-                                            Content="{Binding}"
+                                            Content="{Binding Name}"
+                                            IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                             Style="{StaticResource AddOnToggleStyle}" />
                                     </DataTemplate>
                                 </ItemsRepeater.ItemTemplate>
@@ -472,7 +476,7 @@
                 Style="{StaticResource AppPrimaryButtonStyle}">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <FontIcon Glyph="&#xE7BF;" Style="{StaticResource IconBodyStyle}" />
-                    <TextBlock Text="ADD TO ORDER · " />
+                    <TextBlock Text="{Binding Title}" />
                     <TextBlock Text="{Binding TotalPrice, Converter={StaticResource CurrencyConverter}}" />
                 </StackPanel>
             </Button>

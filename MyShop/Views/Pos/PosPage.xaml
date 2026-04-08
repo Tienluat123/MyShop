@@ -19,8 +19,8 @@
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
         <converters:CategoryBrushConverter
             x:Key="CategoryBackgroundConverter"
-            ActiveBrush="{StaticResource BrandPrimary}"
-            InactiveBrush="{StaticResource Warning}" />
+            ActiveBrush="{StaticResource Warning}"
+            InactiveBrush="{StaticResource TransparentBrush}" />
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
 
         <converters:EqualityToBrushConverter
@@ -208,6 +208,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button
+                                Background="{Binding IsActive, Converter={StaticResource CategoryBackgroundConverter}}"
                                 Command="{Binding DataContext.SetCategoryCommand, ElementName=PageRoot}"
                                 CommandParameter="{Binding}"
                                 Style="{StaticResource CategoryButtonStyle}">
@@ -535,6 +536,8 @@
                                         Padding="0"
                                         Background="Transparent"
                                         BorderThickness="0"
+                                        Command="{Binding DataContext.EditItemCommand, ElementName=PageRoot}"
+                                        CommandParameter="{Binding}"
                                         Foreground="{StaticResource TextMuted}"
                                         Style="{StaticResource AppIconButtonStyle}"
                                         ToolTipService.ToolTip="Edit">

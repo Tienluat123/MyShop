@@ -12,6 +12,10 @@ public partial class ProductCustomizationViewModel : ObservableObject
     [ObservableProperty]
     private Product _product;
 
+    private OrderItem? _editingItem;
+    public bool IsEditing => _editingItem != null;
+    public string Title => IsEditing ? $"Edit {Product.Name}" : $"Customize {Product.Name}";
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TotalPrice))]
     private int _quantity = 1;
@@ -19,7 +23,7 @@ public partial class ProductCustomizationViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(UnitTotalPrice))]
     [NotifyPropertyChangedFor(nameof(TotalPrice))]
-    private string _size = "M";
+    private string _size = "S";
 
     [ObservableProperty]
     private string _sugar = "100%";
@@ -27,6 +31,9 @@ public partial class ProductCustomizationViewModel : ObservableObject
     [ObservableProperty]
     private string _ice = "Regular";
 
+    // UI-friendly addon options with selected state
+    public ObservableCollection<AddOnOption> AddOnOptions { get; } = new();
+    // Backing collection used when confirming the item
     public ObservableCollection<string> AddOns { get; } = new();
 
     public string[] AvailableAddOns { get; } = new[]
@@ -42,43 +49,126 @@ public partial class ProductCustomizationViewModel : ObservableObject
     [ObservableProperty]
     private string _notes = "";
 
+    // Simple addon option with selection state for UI binding
+    public class AddOnOption : System.ComponentModel.INotifyPropertyChanged
+    {
+        public string Name { get; }
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    OnPropertyChanged(nameof(IsSelected));
+                    IsSelectedChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        public event EventHandler? IsSelectedChanged;
+        public AddOnOption(string name, bool isSelected = false)
+        {
+            Name = name;
+            _isSelected = isSelected;
+        }
+        protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+    }
+
     public double UnitTotalPrice => CalculateBasePrice();
     public double TotalPrice => UnitTotalPrice * Quantity;
 
-    public event Action<DrinkOptions, int>? DrinkConfirmed;
+    //public event Action<DrinkOptions, int>? DrinkConfirmed;
+
+    public event Action<OrderItem>? ItemConfirmed;
 
     public ProductCustomizationViewModel(Product product, OrderItem? existingItem = null)
     {
         Product = product;
+        _editingItem = existingItem;
+
+        // Attach collection-changed handler first to ensure UI updates when addons are pre-populated
+        // Wire up addon option changes to reflect in AddOns list and prices
+        AddOnOptions.CollectionChanged += (s, e) =>
+        {
+            // no-op, options replaced by explicit population
+        };
+
         if (existingItem != null)
         {
             Quantity = existingItem.Quantity;
-            //if (existingItem.DrinkOptions != null)
-            //{
-            //    Size = existingItem.DrinkOptions.Size;
-            //    Sugar = existingItem.DrinkOptions.Sugar;
-            //    Ice = existingItem.DrinkOptions.Ice;
-            //    Notes = existingItem.DrinkOptions.Notes;
-            //    foreach (var addOn in existingItem.DrinkOptions.AddOns) AddOns.Add(addOn);
-            //}
-        }
 
-        AddOns.CollectionChanged += (s, e) =>
+            if (existingItem.DrinkOptions != null && HasCustomization)
+            {
+                Size = existingItem.DrinkOptions.Size;
+                Sugar = existingItem.DrinkOptions.Sugar;
+                Ice = existingItem.DrinkOptions.Ice;
+                Notes = existingItem.DrinkOptions.Notes;
+
+                foreach (var addOn in existingItem.DrinkOptions.AddOns)
+                    AddOns.Add(addOn);
+            }
+        }
+        
+        // Initialize UI addon options from available addons and sync initial selection
+        if (HasCustomization)
         {
-            OnPropertyChanged(nameof(UnitTotalPrice));
-            OnPropertyChanged(nameof(TotalPrice));
-        };
+            foreach (var addon in AvailableAddOns)
+            {
+                bool isSelected = existingItem?.DrinkOptions?.AddOns.Contains(addon) == true;
+                AddOnOptions.Add(new AddOnOption(addon, isSelected));
+            }
+        }
+        foreach (var opt in AddOnOptions)
+        {
+            opt.IsSelectedChanged += (s, e) =>
+            {
+                if (opt.IsSelected)
+                {
+                    if (!AddOns.Contains(opt.Name)) AddOns.Add(opt.Name);
+                }
+                else
+                {
+                    AddOns.Remove(opt.Name);
+                }
+                OnPropertyChanged(nameof(UnitTotalPrice));
+                OnPropertyChanged(nameof(TotalPrice));
+            };
+        }
+        
+        // Ensure UI reflects initial addon selections
+        foreach (var opt in AddOnOptions)
+        {
+            if (opt.IsSelected && !AddOns.Contains(opt.Name))
+            {
+                AddOns.Add(opt.Name);
+            }
+            opt.IsSelectedChanged += (s, e) =>
+            {
+                if (opt.IsSelected)
+                {
+                    if (!AddOns.Contains(opt.Name)) AddOns.Add(opt.Name);
+                }
+                else
+                {
+                    AddOns.Remove(opt.Name);
+                }
+                OnPropertyChanged(nameof(UnitTotalPrice));
+                OnPropertyChanged(nameof(TotalPrice));
+            };
+        }
     }
 
     private double CalculateBasePrice()
     {
         double price = (double)Product.Price;
-        if (Product.Category?.Name == "Coffee" || Product.Category?.Name == "Tea")
+        if (Product.Category?.HasCustomization == true)
         {
             if (Size == "M") price += 15000;
             else if (Size == "L") price += 25000;
 
-            // Add-ons are 10.000 each in the web version
             price += AddOns.Count * 10000;
         }
         return price;
@@ -87,16 +177,30 @@ public partial class ProductCustomizationViewModel : ObservableObject
     [RelayCommand]
     private void Confirm()
     {
-        var drinkOpts = new DrinkOptions
+        bool customizable = HasCustomization;
+        DrinkOptions? drinkOpts = null;
+        if (customizable)
         {
-            Size = Size,
-            Sugar = Sugar,
-            Ice = Ice,
-            Notes = Notes
-        };
-        foreach (var addOn in AddOns) drinkOpts.AddOns.Add(addOn);
+            drinkOpts = new DrinkOptions
+            {
+                Size = Size,
+                Sugar = Sugar,
+                Ice = Ice,
+                Notes = Notes
+            };
+            foreach (var addOn in AddOns)
+                drinkOpts.AddOns.Add(addOn);
+        }
 
-        DrinkConfirmed?.Invoke(drinkOpts, Quantity);
+        var item = _editingItem ?? new OrderItem();
+
+        item.Product = Product;
+        item.Quantity = Quantity;
+        item.DrinkOptions = drinkOpts;
+        item.BasePrice = (decimal)UnitTotalPrice;
+
+        // Only persist items with customization
+        ItemConfirmed?.Invoke(item);
     }
 
     [RelayCommand]
@@ -126,4 +230,6 @@ public partial class ProductCustomizationViewModel : ObservableObject
     {
         Ice = ice;
     }
+    
+    public bool HasCustomization => Product?.Category?.HasCustomization == true;
 }
