@@ -40,7 +40,12 @@ public sealed partial class ManageProductPage : Page
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
     private async void ShowFormDialog(bool isEditMode, ProductListEntry? product = null)
     {
-        var vm = new ProductFormViewModel(isEditMode, product, onCancel: () => { });
+        var managementVm = (ProductContentFrame.Content as ProductManagementView)?.ViewModel;
+        var vm = new ProductFormViewModel(
+            isEditMode,
+            product,
+            onCancel: () => { },
+            onSaved: () => managementVm?.LoadProductsCommand.Execute(null));
         var dialog = new ProductFormView(vm)
         {
             XamlRoot = this.XamlRoot

@@ -4,8 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModels="using:MyShop.ViewModels"
     xmlns:controls="using:MyShop.Views.Controls"
+    xmlns:converters="using:MyShop.Converters"
     x:Name="PageRoot"
     Background="#F3F4F6">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Page.Resources>
 
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -19,34 +24,12 @@
                     <StackPanel Spacing="16">
                         <!-- Categories and Actions -->
                         <StackPanel Spacing="12">
-                            <ItemsControl ItemsSource="{Binding Categories}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="8"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <Button Command="{Binding DataContext.FilterByCategoryCommand, ElementName=PageRoot}"
-                                                CommandParameter="{Binding}"
-                                                Padding="16,8"
-                                                CornerRadius="16"
-                                                BorderBrush="#E5E7EB"
-                                                Background="#FFFFFF">
-                                            <StackPanel Orientation="Horizontal"
-                                                        Spacing="8">
-                                                <FontIcon Glyph="&#xE719;"
-                                                          Foreground="#64748B"
-                                                          FontSize="12"/>
-                                                <TextBlock Text="{Binding}"
-                                                           Foreground="#475569"
-                                                           FontWeight="SemiBold"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <ComboBox Width="220"
+                                      ItemsSource="{Binding Categories}"
+                                      SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                                      PlaceholderText="Filter by category"
+                                      HorizontalAlignment="Left"
+                                      CornerRadius="12"/>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -113,6 +96,7 @@
                                         Command="{Binding FilterByPriceRangeCommand}"/>
                                 <ComboBox Width="160"
                                           SelectedValue="{Binding SortOption, Mode=TwoWay}"
+                                          SelectionChanged="SortComboBox_SelectionChanged"
                                           SelectedValuePath="Tag">
                                     <ComboBoxItem Content="Name" Tag="Name"/>
                                     <ComboBoxItem Content="Price ↑" Tag="PriceAsc"/>
@@ -122,6 +106,22 @@
                         </StackPanel>
 
                         <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
+
+                        <TextBlock Text="{Binding ErrorMessage}"
+                                   Foreground="#B91C1C"
+                                   FontSize="12"
+                                   TextWrapping="WrapWholeWords"/>
+
+                        <Border Background="#FFFBEB"
+                                BorderBrush="#FDE68A"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="14,10"
+                                Visibility="{Binding HasNoData, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="No data found for current search/filter."
+                                       Foreground="#92400E"
+                                       FontSize="13"/>
+                        </Border>
 
                         <ItemsRepeater ItemsSource="{Binding DisplayProducts}">
                             <ItemsRepeater.Layout>
@@ -202,7 +202,9 @@
                                                         VerticalAlignment="Center">
                                                 <Button Background="Transparent"
                                                         BorderThickness="0"
-                                                        Padding="8">
+                                                    Padding="8"
+                                                    Command="{Binding DataContext.GoToProductDetailCommand, ElementName=PageRoot}"
+                                                    CommandParameter="{Binding}">
                                                     <FontIcon Glyph="&#xE72A;"
                                                               FontSize="16"
                                                               Foreground="#6B7280"/>
@@ -219,8 +221,7 @@
                                                 <Button Background="Transparent"
                                                         BorderThickness="0"
                                                         Padding="8"
-                                                        Command="{Binding DataContext.DeleteProductCommand, ElementName=PageRoot}"
-                                                        CommandParameter="{Binding}">
+                                                    Click="DeleteButton_Click">
                                                     <FontIcon Glyph="&#xE74D;"
                                                               FontSize="16"
                                                               Foreground="#EF4444"/>

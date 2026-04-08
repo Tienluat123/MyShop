@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -53,6 +54,12 @@ public partial class ProductManagementViewModel : ObservableObject
     [ObservableProperty]
     private string sortOption = "Name"; // Name | PriceAsc | PriceDesc
 
+    [ObservableProperty]
+    private string errorMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool hasNoData;
+
     public ProductManagementViewModel(
         IProductService productService, 
         Action onAddProduct,
@@ -71,97 +78,108 @@ public partial class ProductManagementViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadProducts()
     {
-        await Task.CompletedTask;
-
-        const int pageSize = 3;
-
-        // Load all first, then apply local filter/sort/paging to avoid double paging.
-        var result = _productService.GetAll();
-
-        IEnumerable<Product> query = result.Items;
-
-        // FILTER CATEGORY
-        if (SelectedCategory != CategoryAll)
+        try
         {
-            query = query.Where(p => p.Category?.Name == SelectedCategory);
-        }
+            ErrorMessage = string.Empty;
+            const int pageSize = 3;
 
-        // SEARCH
-        if (!string.IsNullOrWhiteSpace(SearchText))
-        {
-            query = query.Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
-        }
+            // Load all first, then apply local filter/sort/paging to avoid double paging.
+            var result = _productService.GetAll();
 
-        // PRICE
-        if (MinPrice.HasValue)
-            query = query.Where(p => p.Price >= (decimal)MinPrice.Value);
+            IEnumerable<Product> query = result.Items;
 
-        if (MaxPrice.HasValue)
-            query = query.Where(p => p.Price <= (decimal)MaxPrice.Value);
-
-        // SORT
-        query = SortOption switch
-        {
-            "PriceAsc" => query.OrderBy(p => p.Price),
-            "PriceDesc" => query.OrderByDescending(p => p.Price),
-            _ => query.OrderBy(p => p.Name)
-        };
-
-        var list = query.ToList();
-
-        TotalItems = list.Count;
-        TotalPages = Math.Max(1, (int)Math.Ceiling(list.Count / (double)pageSize));
-
-        if (CurrentPage > TotalPages)
-            CurrentPage = TotalPages;
-
-        var pageItems = list
-            .Skip((CurrentPage - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
-
-        PageNumbers.Clear();
-        for (int i = 1; i <= TotalPages; i++)
-            PageNumbers.Add(i);
-
-        DisplayProducts.Clear();
-        foreach (var p in pageItems)
-        {
-            DisplayProducts.Add(new ProductListEntry
+            // FILTER CATEGORY
+            if (SelectedCategory != CategoryAll)
             {
-                Id = p.Id,
-                Name = p.Name,
-                Category = p.Category?.Name ?? "",
-                SellingPrice = p.Price
-            });
+                query = query.Where(p => p.Category?.Name == SelectedCategory);
+            }
+
+            // SEARCH
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                query = query.Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // PRICE
+            if (MinPrice.HasValue)
+                query = query.Where(p => p.Price >= (decimal)MinPrice.Value);
+
+            if (MaxPrice.HasValue)
+                query = query.Where(p => p.Price <= (decimal)MaxPrice.Value);
+
+            // SORT
+            query = SortOption switch
+            {
+                "PriceAsc" => query.OrderBy(p => p.Price),
+                "PriceDesc" => query.OrderByDescending(p => p.Price),
+                _ => query.OrderBy(p => p.Name)
+            };
+
+            var list = query.ToList();
+
+            TotalItems = list.Count;
+            TotalPages = Math.Max(1, (int)Math.Ceiling(list.Count / (double)pageSize));
+
+            if (CurrentPage > TotalPages)
+                CurrentPage = TotalPages;
+
+            var pageItems = list
+                .Skip((CurrentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            PageNumbers.Clear();
+            for (int i = 1; i <= TotalPages; i++)
+                PageNumbers.Add(i);
+
+            DisplayProducts.Clear();
+            foreach (var p in pageItems)
+            {
+                DisplayProducts.Add(new ProductListEntry
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Category = p.Category?.Name ?? "",
+                    SellingPrice = p.Price
+                });
+            }
+
+            HasNoData = DisplayProducts.Count == 0;
+            var pageStart = TotalItems == 0 ? 0 : (CurrentPage - 1) * pageSize + 1;
+            var pageEnd = pageStart + pageItems.Count - 1;
+            PagingSummary = HasNoData
+                ? "No products found"
+                : $"Showing {pageStart}-{pageEnd} in {TotalItems} items";
         }
-        
-        var pageStart = TotalItems == 0 ? 0 : (CurrentPage - 1) * pageSize + 1;
-        var pageEnd = pageStart + pageItems.Count - 1;
-        PagingSummary = $"Showing {pageStart}-{pageEnd} in {TotalItems} items";
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load products: {ex.Message}";
+            HasNoData = true;
+            DisplayProducts.Clear();
+            PageNumbers.Clear();
+            PagingSummary = "No products found";
+        }
     }
     
     [RelayCommand]
     private async Task SearchByName(string keyword)
     {
-        await Task.CompletedTask;
-
         SearchText = keyword;
+        CurrentPage = 1;
+        await LoadProducts();
     }
 
     [RelayCommand]
     private async Task FilterByCategory(string category)
     {
-        await Task.CompletedTask;
-
         SelectedCategory = category;
+        CurrentPage = 1;
+        await LoadProducts();
     }
 
     [RelayCommand]
     private async Task FilterByPriceRange()
     {
-        await Task.CompletedTask;
-
         CurrentPage = 1;
         await LoadProducts();
     }
@@ -169,16 +187,14 @@ public partial class ProductManagementViewModel : ObservableObject
     [RelayCommand]
     private async Task SortProducts(string sortBy)
     {
-        await Task.CompletedTask;
-
         SortOption = sortBy;
+        CurrentPage = 1;
+        await LoadProducts();
     }
 
     [RelayCommand]
     private async Task LoadPage(int pageNumber)
     {
-        await Task.CompletedTask;
-
         if (pageNumber < 1 || pageNumber > TotalPages)
             return;
 
@@ -219,12 +235,18 @@ public partial class ProductManagementViewModel : ObservableObject
     [RelayCommand]
     private async Task DeleteProduct(ProductListEntry product)
     {
-        await Task.CompletedTask;
-
         if (product == null) return;
 
-        _productService.Delete(product.Id);
-        await LoadProducts();
+        try
+        {
+            ErrorMessage = string.Empty;
+            _productService.Delete(product.Id);
+            await LoadProducts();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to delete product: {ex.Message}";
+        }
     }
 
     partial void OnSearchTextChanged(string value)
@@ -259,22 +281,13 @@ public partial class ProductManagementViewModel : ObservableObject
         CurrentPage = 1;
     }
 
-[RelayCommand]
-    private async Task GoToProductDetail(Product product)
+    [RelayCommand]
+    private async Task GoToProductDetail(ProductListEntry product)
     {
-        await Task.CompletedTask;
-
         if (product == null) return;
 
-        var entry = new ProductListEntry
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Category = product.Category?.Name ?? "",
-            SellingPrice = product.Price
-        };
-
-        onEditProduct(entry);
+        onEditProduct(product);
+        await Task.CompletedTask;
     }
 
     [RelayCommand]
