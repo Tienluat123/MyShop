@@ -3,21 +3,42 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:MyShop.ViewModels"
+    xmlns:converters="using:MyShop.Converters"
     x:Name="PageRoot"
     Background="#F3F4F6">
 
     <Grid>
+        <Grid.Resources>
+            <converters:PromoStatusBrushConverter x:Key="PromoBgConverter" IsBackground="True"/>
+            <converters:PromoStatusBrushConverter x:Key="PromoFgConverter" IsBackground="False"/>
+            <converters:PromoStatusTextConverter x:Key="PromoStatusTextConverter"/>
+            <converters:StringNullOrEmptyToVisibilityConverter x:Key="StringNullOrEmptyToVisibilityConverter"/>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        </Grid.Resources>
+
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="16,12,16,20" Spacing="16">
-                
+
+                <!-- ===== ERROR MESSAGE ===== -->
+                <Border Background="#FEF2F2"
+                        CornerRadius="10"
+                        Padding="12,10"
+                        Visibility="{Binding ErrorMessage, Converter={StaticResource StringNullOrEmptyToVisibilityConverter}}">
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#DC2626"
+                               FontSize="13"
+                               TextWrapping="Wrap"/>
+                </Border>
+
                 <Border Background="#FFFFFF"
                         BorderBrush="#E5E7EB"
                         BorderThickness="1"
                         CornerRadius="14"
                         Padding="16">
+
                     <StackPanel Spacing="16">
-                        
-                        <!-- Actions Section -->
+
+                        <!-- ===== Actions: Add Button + Search ===== -->
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -25,6 +46,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
+                            <!-- Add Promotion Button -->
                             <Button Grid.Column="0"
                                     Command="{Binding AddPromotionCommand}"
                                     Background="#BB4D00"
@@ -38,12 +60,13 @@
                                 </StackPanel>
                             </Button>
 
+                            <!-- Search Box -->
                             <Grid Grid.Column="2">
                                 <TextBox Padding="40,10,10,10"
                                          Background="#F8FAFC"
                                          BorderBrush="#E5E7EB"
                                          CornerRadius="12"
-                                         PlaceholderText="Search by code or type..."
+                                         PlaceholderText="Search by promotion code..."
                                          Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 <FontIcon Glyph="&#xE721;"
                                           Foreground="#94A3B8"
@@ -53,9 +76,38 @@
                             </Grid>
                         </Grid>
 
+                        <!-- ===== Filter by Status Buttons ===== -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Command="{Binding FilterByStatusCommand}"
+                                    CommandParameter="All"
+                                    Content="All"
+                                    CornerRadius="8"
+                                    Padding="12,6"/>
+                            <Button Command="{Binding FilterByStatusCommand}"
+                                    CommandParameter="Active"
+                                    Content="Active"
+                                    CornerRadius="8"
+                                    Padding="12,6"/>
+                            <Button Command="{Binding FilterByStatusCommand}"
+                                    CommandParameter="Upcoming"
+                                    Content="Upcoming"
+                                    CornerRadius="8"
+                                    Padding="12,6"/>
+                            <Button Command="{Binding FilterByStatusCommand}"
+                                    CommandParameter="Expired"
+                                    Content="Expired"
+                                    CornerRadius="8"
+                                    Padding="12,6"/>
+                            <Button Command="{Binding FilterByStatusCommand}"
+                                    CommandParameter="Inactive"
+                                    Content="Inactive"
+                                    CornerRadius="8"
+                                    Padding="12,6"/>
+                        </StackPanel>
+
                         <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
 
-                        <!-- List Section -->
+                        <!-- ===== Promotions List ===== -->
                         <ItemsRepeater ItemsSource="{Binding PageItems}">
                             <ItemsRepeater.Layout>
                                 <StackLayout Orientation="Vertical" Spacing="12"/>
@@ -87,13 +139,14 @@
                                                            Foreground="#92400E"/>
                                             </Border>
 
-                                            <!-- Details -->
+                                            <!-- Promotion Details -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                                <!-- Type + Value row -->
                                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                                     <TextBlock Text="{x:Bind TypeDisplay}"
                                                                FontWeight="SemiBold"
                                                                Foreground="#1E293B"/>
-                                                    <Border Background="#DFE9F3"
+                                                    <Border Background="#DBEAFE"
                                                             CornerRadius="6"
                                                             Padding="8,4">
                                                         <TextBlock Text="{x:Bind ValueDisplay}"
@@ -101,7 +154,18 @@
                                                                    FontWeight="Bold"
                                                                    Foreground="#1E40AF"/>
                                                     </Border>
+                                                    <!-- Status Badge -->
+                                                    <Border CornerRadius="6"
+                                                            Padding="8,4"
+                                                            Background="{x:Bind Converter={StaticResource PromoBgConverter}}">
+                                                        <TextBlock Text="{x:Bind Converter={StaticResource PromoStatusTextConverter}}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{x:Bind Converter={StaticResource PromoFgConverter}}"/>
+                                                    </Border>
                                                 </StackPanel>
+
+                                                <!-- Meta row: Min, Period, Target -->
                                                 <StackPanel Orientation="Horizontal" Spacing="16">
                                                     <TextBlock FontSize="12" Foreground="#6B7280">
                                                         <Run Text="Min: "/><Run Text="{x:Bind MinimumOrderDisplay}"/>
@@ -109,27 +173,38 @@
                                                     <TextBlock FontSize="12" Foreground="#6B7280">
                                                         <Run Text="Period: "/><Run Text="{x:Bind PeriodDisplay}"/>
                                                     </TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="#6B7280">
+                                                        <Run Text="Target: "/><Run Text="{x:Bind TargetDisplay}"/>
+                                                    </TextBlock>
                                                 </StackPanel>
                                             </StackPanel>
 
-                                            <!-- Status -->
+                                            <!-- Toggle Active Switch -->
                                             <ToggleSwitch Grid.Column="2"
-                                                          IsOn="{x:Bind IsActive, Mode=OneWay}"
+                                                          IsOn="{x:Bind IsActive, Mode=TwoWay}"
                                                           OnContent="" OffContent=""
                                                           VerticalAlignment="Center"
                                                           MinWidth="0"
-                                                          Command="{Binding DataContext.ToggleStatusCommand, ElementName=PageRoot}"
-                                                          CommandParameter="{Binding}"/>
+                                                          Tag="{x:Bind}"/>
 
-                                            <!-- Actions -->
-                                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                <Button Background="Transparent" BorderThickness="0" Padding="8"
+                                            <!-- Edit / Delete Buttons -->
+                                            <StackPanel Grid.Column="3"
+                                                        Orientation="Horizontal"
+                                                        Spacing="8"
+                                                        VerticalAlignment="Center">
+                                                <Button Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="8"
+                                                        ToolTipService.ToolTip="Edit"
                                                         Command="{Binding DataContext.EditPromotionCommand, ElementName=PageRoot}"
                                                         CommandParameter="{Binding}">
                                                     <FontIcon Glyph="&#xE70F;" FontSize="16" Foreground="#6B7280"/>
                                                 </Button>
-                                                <Button Background="Transparent" BorderThickness="0" Padding="8"
-                                                        Command="{Binding DataContext.RemoveCommand, ElementName=PageRoot}"
+                                                <Button Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="8"
+                                                        ToolTipService.ToolTip="Delete"
+                                                        Command="{Binding DataContext.DeletePromotionCommand, ElementName=PageRoot}"
                                                         CommandParameter="{Binding}">
                                                     <FontIcon Glyph="&#xE74D;" FontSize="16" Foreground="#EF4444"/>
                                                 </Button>
@@ -140,9 +215,11 @@
                             </ItemsRepeater.ItemTemplate>
                         </ItemsRepeater>
 
+                        <!-- ===== Empty State removed as per request ===== -->
+
                         <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
 
-                        <!-- Paging -->
+                        <!-- ===== Paging ===== -->
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -155,8 +232,11 @@
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                                 <Button Command="{Binding PreviousPageCommand}"
-                                        Background="#FFFFFF" BorderBrush="#E5E7EB"
-                                        CornerRadius="8" Width="32" Height="32">
+                                        Background="#FFFFFF"
+                                        BorderBrush="#E5E7EB"
+                                        CornerRadius="8"
+                                        Width="32"
+                                        Height="32">
                                     <FontIcon Glyph="&#xE76B;" Foreground="#94A3B8" FontSize="12"/>
                                 </Button>
                                 <ItemsControl ItemsSource="{Binding PageNumbers}">
@@ -169,19 +249,27 @@
                                         <DataTemplate x:DataType="x:Int32">
                                             <Button Command="{Binding DataContext.GoToPageCommand, ElementName=PageRoot}"
                                                     CommandParameter="{Binding}"
-                                                    Width="32" Height="32" CornerRadius="8"
-                                                    Background="#FFFFFF" BorderBrush="#E5E7EB"
-                                                    Foreground="#4B5563" Content="{Binding}"/>
+                                                    Width="32"
+                                                    Height="32"
+                                                    CornerRadius="8"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="#E5E7EB"
+                                                    Foreground="#4B5563"
+                                                    Content="{Binding}"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                                 <Button Command="{Binding NextPageCommand}"
-                                        Background="#FFFFFF" BorderBrush="#E5E7EB"
-                                        CornerRadius="8" Width="32" Height="32">
+                                        Background="#FFFFFF"
+                                        BorderBrush="#E5E7EB"
+                                        CornerRadius="8"
+                                        Width="32"
+                                        Height="32">
                                     <FontIcon Glyph="&#xE76C;" Foreground="#94A3B8" FontSize="12"/>
                                 </Button>
                             </StackPanel>
                         </Grid>
+
                     </StackPanel>
                 </Border>
             </StackPanel>

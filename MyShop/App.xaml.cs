@@ -66,6 +66,9 @@ public partial class App : Application
     /// </summary>
     private void RegisterServices()
     {
+        // Cho phép Npgsql xử lý DateTime tự do không bắt buộc UTC
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
         var container = ServiceContainer.Instance;
 
         // Create log file to track database initialization
@@ -219,6 +222,7 @@ public partial class App : Application
             container.Register<IRepository<OrderDetail>>(new Repository<OrderDetail>(dbContext));
             container.Register<IRepository<User>>(new Repository<User>(dbContext));
             container.Register<IRepository<Promotion>>(new Repository<Promotion>(dbContext));
+            container.Register<IPromotionRepository>(new PromotionRepository(dbContext));
             container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
             container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
@@ -237,6 +241,10 @@ public partial class App : Application
                 container.Get<IRepository<Order>>(),
                 container.Get<IRepository<Customer>>(),
                 container.Get<IRepository<User>>()
+            ));
+
+            container.Register<IPromotionService>(new PromotionService(
+                container.Get<IPromotionRepository>()
             ));
 
             LogMessage("✅ All services registered successfully");
