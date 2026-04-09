@@ -1,7 +1,7 @@
 -- ===== CUSTOMERS =====
 -- Coffee Shop Customers
--- Edit by: [Your Name]
--- Last modified: [Date]
+-- Edit by: PhamVanMinhBinhThuan
+-- Last modified: 2026-04-09
 
 INSERT INTO "Customers"
     ("Id", "Name", "Phone", "Email", "Address", "Gender", "Status", "TotalAccumulatedPoints", "CurrentAvailablePoints", "Tier", "TotalVisits", "TotalSpent", "CreatedAt")

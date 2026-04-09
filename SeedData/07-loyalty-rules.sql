@@ -2,6 +2,7 @@
 -- LoyaltyTierConfigs: PointsPerVnd, RedemptionRate, Tier thresholds
 -- Config schema: Tier_{Name} → JSON { "TierName": "Bronze", "MinPoints": 0, "Multiplier": 1.0 }
 -- Run AFTER migration: AddLoyaltyTierConfig
+-- Edit by: PhamVanMinhBinhThuan
 -- Last modified: 2026-04-09
 
 -- =============================================================================

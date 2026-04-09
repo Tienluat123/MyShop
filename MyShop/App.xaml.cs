@@ -306,16 +306,23 @@ public partial class App : Application
                 container.Get<IRepository<Customer>>()
             ));
 
+            // AppConfigService — singleton, caches key-value settings in memory
+            container.Register<IAppConfigService>(new AppConfigService(
+                container.Get<IRepository<AppConfig>>()
+            ));
+
             services.AddSingleton<IProductService, ProductService>();
             services.AddSingleton<ICustomerService, CustomerService>();
             services.AddSingleton<IOrderService, OrderService>();
             services.AddSingleton<ICategoryService, CategoryService>();
             services.AddSingleton<IPromotionService, PromotionService>();
             services.AddSingleton<ILoyaltyService>(container.Get<ILoyaltyService>());
+            services.AddSingleton<IAppConfigService, AppConfigService>();
 
             // ===== Register ViewModels =====
             services.AddTransient<PosViewModel>();
             services.AddTransient<OrderManagementViewModel>();
+            services.AddTransient<ConfigViewModel>();
             // Add other viewmodels as needed...
 
             // Build Provider

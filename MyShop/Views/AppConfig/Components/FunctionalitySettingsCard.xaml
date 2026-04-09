@@ -130,7 +130,7 @@
                 </StackPanel>
                 <ToggleSwitch Grid.Column="1"
                               Style="{StaticResource ConfigToggleStyle}"
-                              IsOn="True"
+                              IsOn="{Binding AutoSaveLastScreen, Mode=TwoWay}"
                               VerticalAlignment="Center"/>
             </Grid>
         </StackPanel>
