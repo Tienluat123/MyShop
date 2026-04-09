@@ -1,5 +1,6 @@
 -- ===== PROMOTIONS =====
 -- Coffee Shop Promotions & Discounts
+-- Edit by: PhamVanMinhBinhThuan
 -- Updated: 2026-04-08
 -- Dữ liệu mẫu bao quát 4 trạng thái: Active, Expired, Upcoming, Inactive
 
