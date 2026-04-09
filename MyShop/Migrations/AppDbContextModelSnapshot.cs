@@ -86,6 +86,9 @@ namespace MyShop.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("CurrentAvailablePoints")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
@@ -106,14 +109,14 @@ namespace MyShop.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Points")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Tier")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalAccumulatedPoints")
                         .HasColumnType("integer");
 
                     b.Property<double>("TotalSpent")
@@ -125,6 +128,36 @@ namespace MyShop.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("MyShop.Models.LoyaltyTierConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConfigKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConfigValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfigKey")
+                        .IsUnique();
+
+                    b.ToTable("LoyaltyTierConfigs");
                 });
 
             modelBuilder.Entity("MyShop.Models.Order", b =>

@@ -2,10 +2,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MyShop.Models;
 
+/// <summary>
+/// Customer entity — loyalty fields split per spec:
+/// - TotalAccumulatedPoints: all-time points used for tier ranking
+/// - CurrentAvailablePoints: spendable points for redemption
+/// </summary>
 public partial class Customer : ObservableObject
 {
     public int Id { get; set; }
-    public string Phone { get; set; } = string.Empty; // SĐT dùng tìm kiếm
+    public string Phone { get; set; } = string.Empty;
     public string? Address { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Email { get; set; }
@@ -13,24 +18,41 @@ public partial class Customer : ObservableObject
     public DateTime? Birthday { get; set; }
     public string? Notes { get; set; }
 
-    // Loyalty properties
-    public int Points { get; set; } = 0;
-    public LoyaltyTier Tier { get; set; } = LoyaltyTier.Regular;
-    public string Status { get; set; } = "Active"; // Active/Inactive
-    public int TotalVisits { get; set; } = 0;
-    public double TotalSpent { get; set; } = 0;
+    /// <summary>All-time accumulated points — used to determine Tier.</summary>
+    [ObservableProperty]
+    private int _totalAccumulatedPoints;
+
+    /// <summary>Points currently available for redemption.</summary>
+    [ObservableProperty]
+    private int _currentAvailablePoints;
+
+    /// <summary>Membership tier derived from TotalAccumulatedPoints.</summary>
+    [ObservableProperty]
+    private LoyaltyTier _tier = LoyaltyTier.Bronze;
+
+    public string Status { get; set; } = "Active"; // Active / Inactive
+
+    [ObservableProperty]
+    private int _totalVisits;
+
+    [ObservableProperty]
+    private double _totalSpent;
+
     public DateTime? LastVisitDate { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    // Navigation properties
+    // Navigation
     public ICollection<Order> Orders { get; set; } = new List<Order>();
 }
 
-// Loyalty tier enum - used here and in PosModels
+/// <summary>
+/// Loyalty membership tiers per Requirement.md spec:
+/// Bronze (1x), Silver (1.5x), Gold (2x), Platinum (2.5x)
+/// </summary>
 public enum LoyaltyTier
 {
-    Regular = 0,
+    Bronze = 0,
     Silver = 1,
     Gold = 2,
-    VIP = 3
+    Platinum = 3
 }

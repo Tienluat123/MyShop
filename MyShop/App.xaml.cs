@@ -251,6 +251,7 @@ public partial class App : Application
             container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
             container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
+            container.Register<IRepository<LoyaltyTierConfig>>(new Repository<LoyaltyTierConfig>(dbContext));
 
             services.AddSingleton<IRepository<Product>>(new Repository<Product>(dbContext));
             services.AddSingleton<IRepository<Category>>(new Repository<Category>(dbContext));
@@ -262,6 +263,7 @@ public partial class App : Application
             services.AddSingleton<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
             services.AddSingleton<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
             services.AddSingleton<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
+            services.AddSingleton<IRepository<LoyaltyTierConfig>>(new Repository<LoyaltyTierConfig>(dbContext));
 
             ////Use InMemoryRepository for demo, or switch to Repository<T> for DB
             //services.AddSingleton<IRepository<Product>>(new InMemoryRepository<Product>());
@@ -299,11 +301,17 @@ public partial class App : Application
                 container.Get<IRepository<Promotion>>()
             ));
 
+            container.Register<ILoyaltyService>(new LoyaltyService(
+                dbContext,
+                container.Get<IRepository<Customer>>()
+            ));
+
             services.AddSingleton<IProductService, ProductService>();
             services.AddSingleton<ICustomerService, CustomerService>();
             services.AddSingleton<IOrderService, OrderService>();
             services.AddSingleton<ICategoryService, CategoryService>();
             services.AddSingleton<IPromotionService, PromotionService>();
+            services.AddSingleton<ILoyaltyService>(container.Get<ILoyaltyService>());
 
             // ===== Register ViewModels =====
             services.AddTransient<PosViewModel>();
