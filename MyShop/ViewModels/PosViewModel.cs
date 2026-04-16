@@ -57,6 +57,7 @@ public partial class PosViewModel : ObservableObject
 
     public string TotalFormatted => $"Total: {Total:F2}";
 
+    public event EventHandler<OrderItem>? EditItemRequested;
     public event EventHandler? CheckoutRequested;
     public event EventHandler<Order>? OrderFinalized;
 
@@ -164,7 +165,7 @@ public partial class PosViewModel : ObservableObject
                     Categories.Add(new CategoryItem
                     {
                         Name = cat.Name,
-                        IconKey = cat.IconGlyph ?? "IconCoffee",
+                        IconKey = cat.IconKey ?? "IconCoffee",
                         IsActive = false
                     });
                 }
@@ -252,16 +253,21 @@ public partial class PosViewModel : ObservableObject
 
         // For simplicity, treating customized items as new entries or matching by notes
         var notes = param.Options != null ? SerializeOptions(param.Options) : null;
-        
+
+        // Compute unit price including size and addons, when applicable
+        decimal unitPrice = param.Product.Price;
+        if (param.Options != null && (param.Product.Category?.HasCustomization == true))
+        {
+            if (param.Options.Size == "M") unitPrice += 15000;
+            else if (param.Options.Size == "L") unitPrice += 25000;
+            unitPrice += (param.Options.AddOns?.Count ?? 0) * 10000;
+        }
+
         var detail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od => 
             od.ProductId == param.Product.Id && od.Notes == notes);
-        
-        var existingDetail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od => 
-            od.ProductId == param.Product.Id && od.Notes == notes);
-            
-        if (existingDetail != null && param.Options == null)
+        if (detail != null)
         {
-            existingDetail.Quantity += param.Quantity;
+            detail.Quantity += param.Quantity;
         }
         else
         {
@@ -269,7 +275,7 @@ public partial class PosViewModel : ObservableObject
             {
                 ProductId = param.Product.Id,
                 Quantity = param.Quantity,
-                UnitPrice = param.Product.Price,
+                UnitPrice = unitPrice,
                 Product = param.Product,
                 Notes = notes
             });
@@ -357,6 +363,25 @@ public partial class PosViewModel : ObservableObject
         }
     }
 
+    public async Task UpdateCustomizedItem(OrderItem originalItem, OrderItem editedItem)
+    {
+        if (_currentDraftOrder == null) return;
+
+        var oldNotes = SerializeOptions(originalItem.DrinkOptions);
+        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od =>
+            od.ProductId == originalItem.Product.Id && od.Notes == oldNotes);
+
+        if (detail != null)
+        {
+            detail.Quantity = editedItem.Quantity;
+            detail.UnitPrice = editedItem.BasePrice;
+            detail.Notes = SerializeOptions(editedItem.DrinkOptions);
+
+            await SaveDraftOrder();
+            SyncCartFromDraft();
+        }
+    }
+
     private async Task SaveDraftOrder()
     {
         if (_currentDraftOrder == null) return;
@@ -424,6 +449,15 @@ public partial class PosViewModel : ObservableObject
             await SaveDraftOrder();
             SyncCartFromDraft();
         }
+    }
+
+    [RelayCommand]
+    private void EditItem(OrderItem item)
+    {
+        if (item == null) return;
+
+        // Trigger the event so the View can open the Customization Modal
+        EditItemRequested?.Invoke(this, item);
     }
 
     [RelayCommand]

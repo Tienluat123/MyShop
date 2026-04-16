@@ -11,6 +11,7 @@ public sealed partial class ProductCustomizationModal : ContentDialog
     public ProductCustomizationModal(Product product, OrderItem? existingItem = null)
     {
         this.InitializeComponent();
+        Loaded += ProductCustomizationModal_Loaded;
         ViewModel = new ProductCustomizationViewModel(product, existingItem);
         DataContext = ViewModel;
 
@@ -22,7 +23,15 @@ public sealed partial class ProductCustomizationModal : ContentDialog
             BeverageOptions.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
         }
 
-        ViewModel.DrinkConfirmed += (opts, qty) => this.Hide();
+        //ViewModel.DrinkConfirmed += (opts, qty) => this.Hide();
+    }
+
+    private void ProductCustomizationModal_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is ProductCustomizationViewModel vm)
+        {
+            vm.ItemConfirmed += item => Hide();
+        }
     }
 
     private void CloseBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

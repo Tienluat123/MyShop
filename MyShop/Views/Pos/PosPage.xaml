@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="MyShop.Views.Pos.PosPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -19,8 +19,8 @@
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
         <converters:CategoryBrushConverter
             x:Key="CategoryBackgroundConverter"
-            ActiveBrush="{StaticResource BrandPrimary}"
-            InactiveBrush="{StaticResource Warning}" />
+            ActiveBrush="{StaticResource Warning}"
+            InactiveBrush="{StaticResource TransparentBrush}" />
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
 
         <converters:EqualityToBrushConverter
@@ -208,10 +208,13 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button
+                                Background="{Binding IsActive, Converter={StaticResource CategoryBackgroundConverter}}"
                                 Command="{Binding DataContext.SetCategoryCommand, ElementName=PageRoot}"
                                 CommandParameter="{Binding}"
                                 Style="{StaticResource CategoryButtonStyle}">
+
                                 <StackPanel Orientation="Horizontal" Spacing="8">
+
                                     <Path
                                         Width="18"
                                         Height="18"
@@ -228,6 +231,7 @@
                                         VerticalAlignment="Center"
                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                         Text="{Binding Name}" />
+
                                 </StackPanel>
                             </Button>
                         </DataTemplate>
@@ -263,7 +267,7 @@
                     <ItemsRepeater.Layout>
                         <UniformGridLayout
                             ItemsStretch="Fill"
-                            MaximumRowsOrColumns="5"
+                            MaximumRowsOrColumns="3"
                             MinColumnSpacing="12"
                             MinItemWidth="150"
                             MinRowSpacing="12"
@@ -299,17 +303,20 @@
                                                 Glyph="&#xEB9F;" />
                                         </Border>
 
-                                        <StackPanel Grid.Row="1" Padding="12,10">
+                                        <StackPanel
+                                            Grid.Row="1"
+                                            Padding="12,10"
+                                            VerticalAlignment="Center">
                                             <TextBlock
                                                 FontWeight="SemiBold"
                                                 MaxLines="1"
-                                                Style="{StaticResource BodyTextStyle}"
+                                                Style="{StaticResource SubtitleTextStyle}"
                                                 Text="{Binding Name}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <TextBlock
                                                 FontWeight="Bold"
                                                 Foreground="{StaticResource BrandPrimary}"
-                                                Text="{Binding DisplayPrice}" />
+                                                Text="{Binding Price, Converter={StaticResource CurrencyConverter}}" />
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -529,6 +536,8 @@
                                         Padding="0"
                                         Background="Transparent"
                                         BorderThickness="0"
+                                        Command="{Binding DataContext.EditItemCommand, ElementName=PageRoot}"
+                                        CommandParameter="{Binding}"
                                         Foreground="{StaticResource TextMuted}"
                                         Style="{StaticResource AppIconButtonStyle}"
                                         ToolTipService.ToolTip="Edit">
