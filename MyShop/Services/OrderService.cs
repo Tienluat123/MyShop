@@ -122,7 +122,7 @@ public class OrderService : IOrderService
     {
         try
         {
-            return _orderRepository.GetAll(paging);
+            return await _orderRepository.GetAllAsync(paging);
         }
         catch (Exception ex)
         {
