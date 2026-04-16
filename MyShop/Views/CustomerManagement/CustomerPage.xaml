@@ -8,6 +8,8 @@
     mc:Ignorable="d"
     Background="#F3F4F6">
 
+
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -43,7 +45,7 @@
         </Border>
 
         <!-- Dynamic Content Area -->
-        <Frame x:Name="CustomerContentFrame" 
-               Grid.Row="1" />
+        <Frame x:Name="CustomerContentFrame"
+               Grid.Row="1"/>
     </Grid>
 </Page>

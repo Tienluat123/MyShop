@@ -1,76 +1,72 @@
-namespace MyShop.Views.StaffManagement.Components;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using MyShop.ViewModels;
+using MyShop.ViewModels.StaffManagement;
+using MyShop.Di;
+using System;
+
+namespace MyShop.Views.StaffManagement.Components;
 
 public sealed partial class EmployeeListTab : UserControl
 {
-    private EmployeeListViewModel _viewModel;
+    public EmployeeManagementViewModel? ViewModel
+    {
+        get => (EmployeeManagementViewModel?)GetValue(ViewModelProperty);
+        set => SetValue(ViewModelProperty, value);
+    }
+
+    public static readonly DependencyProperty ViewModelProperty =
+        DependencyProperty.Register("ViewModel", typeof(EmployeeManagementViewModel), typeof(EmployeeListTab), new PropertyMetadata(null));
 
     public EmployeeListTab()
     {
         this.InitializeComponent();
-        _viewModel = new EmployeeListViewModel();
-        this.DataContext = _viewModel;
-
-        // Wire up search textbox
-        SearchTextBox.TextChanged += SearchTextBox_TextChanged;
+        this.Loaded += EmployeeListTab_Loaded;
     }
 
-    private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    private async void EmployeeListTab_Loaded(object sender, RoutedEventArgs e)
     {
-        _viewModel.SearchText = SearchTextBox.Text;
-        _viewModel.SearchCommand.Execute(null);
-    }
-
-    private async void AddEmployee_Click(object sender, RoutedEventArgs e)
-    {
-        var viewModel = new EmployeeFormViewModel(isEditMode: false, employee: null, onCancel: () => { });
-        var dialog = new EmployeeFormView(viewModel)
+        if (ViewModel == null)
         {
-            XamlRoot = this.XamlRoot
-        };
+            ViewModel = ServiceContainer.Instance.Get<EmployeeManagementViewModel>();
+        }
 
-        var result = await dialog.ShowAsync();
-
-        if (result == ContentDialogResult.Primary)
+        if (ViewModel != null)
         {
-            // Employee data is available in viewModel.EmployeeData
-            // Save it to your data source
+            await ViewModel.RefreshDashboardCommand.ExecuteAsync(null);
         }
     }
 
-    private async void EditEmployee_Click(object sender, RoutedEventArgs e)
+    private void Status_Toggled(object sender, RoutedEventArgs e)
     {
-        // Get the employee from the button's Tag
-        var button = sender as Button;
-        var employee = button?.Tag as EmployeeListItem;
-
-        if (employee == null)
-            return;
-
-        // Create employee data object from existing data
-        var employeeData = new EmployeeData
+        if (sender is ToggleSwitch toggle && toggle.DataContext is UserSalaryInfo info)
         {
-            Name = employee.Name,
-            Phone = employee.Phone,
-            Position = 0, // Admin - you might want to map this properly
-            Status = 0    // Đang làm việc - you might want to map this properly
-        };
-
-        var viewModel = new EmployeeFormViewModel(isEditMode: true, employee: employeeData, onCancel: () => { });
-        var dialog = new EmployeeFormView(viewModel)
-        {
-            XamlRoot = this.XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-
-        if (result == ContentDialogResult.Primary)
-        {
-            // Employee data updated in viewModel.EmployeeData
-            // Save changes to your data source
+            ViewModel?.UpdateUserStatusCommand.Execute(info);
         }
+    }
+
+    private void EditButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is UserSalaryInfo info)
+        {
+            ViewModel?.EditEmployeeCommand.ExecuteAsync(info);
+        }
+    }
+
+    private void DeleteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is UserSalaryInfo info)
+        {
+            ViewModel?.DeleteEmployeeCommand.ExecuteAsync(info);
+        }
+    }
+
+    private void PreviousButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.PreviousPageAsyncCommand.Execute(null);
+    }
+
+    private void NextButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.NextPageAsyncCommand.Execute(null);
     }
 }

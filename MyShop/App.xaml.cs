@@ -7,6 +7,8 @@ using MyShop.Data;
 using MyShop.Services;
 using MyShop.Di;
 using MyShop.Models;
+using MyShop.ViewModels;
+using MyShop.ViewModels.StaffManagement;
 using Microsoft.EntityFrameworkCore;
 
 namespace MyShop;
@@ -22,7 +24,8 @@ public partial class App : Application
         this.InitializeComponent();
     }
 
-    protected Window? MainWindow { get; private set; }
+    // ✅ Make MainWindow public for DialogService to access XamlRoot
+    public Window? MainWindow { get; private set; }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
@@ -33,6 +36,8 @@ public partial class App : Application
 
         // Setup Dependency Injection trước khi tạo UI
         RegisterServices();
+
+        // DialogService ready - XamlRoot được set tự động từ constructor
 
         // Do not repeat app initialization when the Window already has content,
         // just ensure that the window is active
@@ -129,12 +134,12 @@ public partial class App : Application
                             SslMode = dbElement.GetProperty("SslMode").GetString() ?? "Require"
                         };
                     }
-                    LogMessage($"✅ Loaded config from: {foundPath}");
+                    LogMessage($" Loaded config from: {foundPath}");
                     LogMessage($"   Host: {dbConfig.Host}:{dbConfig.Port}, DB: {dbConfig.Database}, User: {dbConfig.Username}");
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($"❌ Failed to parse appsettings.json from {foundPath}: {ex.Message}");
+                    LogMessage($" Failed to parse appsettings.json from {foundPath}: {ex.Message}");
                     dbConfig = CreateDefaultConfig();
                 }
             }
@@ -164,18 +169,18 @@ public partial class App : Application
 
                 dbContext = new AppDbContext(dbContextOptions);
 
-                // ✅ Test connection first
+                //  Test connection first
                 LogMessage("🔍 Testing database connection...");
                 var canConnect = dbContext.Database.CanConnect();
                 if (canConnect)
                 {
-                    LogMessage("✅ Database connection successful!");
+                    LogMessage(" Database connection successful!");
 
-                    // ✅ Apply migrations (tạo database schema)
+                    //  Apply migrations (tạo database schema)
                     try
                     {
                         dbContext.Database.Migrate();
-                        LogMessage("✅ Database migrations applied successfully");
+                        LogMessage(" Database migrations applied successfully");
                     }
                     catch (Exception ex)
                     {
@@ -184,9 +189,9 @@ public partial class App : Application
                         try
                         {
                             dbContext.Database.EnsureCreated();
-                            LogMessage("✅ Database schema created (fallback)");
+                            LogMessage("Database schema created (fallback)");
                         }
-                        catch (Exception ex2) { LogMessage($"❌ Schema creation failed: {ex2.Message}"); }
+                        catch (Exception ex2) { LogMessage($"Schema creation failed: {ex2.Message}"); }
                     }
                 }
                 else
@@ -196,7 +201,7 @@ public partial class App : Application
             }
             catch (Exception ex)
             {
-                LogMessage($"❌ Database initialization error: {ex.Message}");
+                LogMessage($" Database initialization error: {ex.Message}");
                 LogMessage($"   Inner exception: {ex.InnerException?.Message}");
                 LogMessage("   App will continue - ensure Supabase is accessible");
 
@@ -212,18 +217,28 @@ public partial class App : Application
             }
 
             // ===== Register Data Access Layer (Repositories) =====
-            container.Register<IRepository<Product>>(new Repository<Product>(dbContext));
-            container.Register<IRepository<Category>>(new Repository<Category>(dbContext));
-            container.Register<IRepository<Customer>>(new Repository<Customer>(dbContext));
-            container.Register<IRepository<Order>>(new Repository<Order>(dbContext));
-            container.Register<IRepository<OrderDetail>>(new Repository<OrderDetail>(dbContext));
-            container.Register<IRepository<User>>(new Repository<User>(dbContext));
-            container.Register<IRepository<Promotion>>(new Repository<Promotion>(dbContext));
-            container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
-            container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
-            container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
+            // Each Repository operation gets fresh DbContext instance
+            var contextFactory = new AppDbContextFactory();
+            container.Register<AppDbContextFactory>(contextFactory);
+
+            container.Register<IRepository<Product>>(new Repository<Product>(contextFactory));
+            container.Register<IRepository<Category>>(new Repository<Category>(contextFactory));
+            container.Register<IRepository<Customer>>(new Repository<Customer>(contextFactory));
+            container.Register<IRepository<Order>>(new Repository<Order>(contextFactory));
+            container.Register<IRepository<OrderDetail>>(new Repository<OrderDetail>(contextFactory));
+            container.Register<IRepository<User>>(new Repository<User>(contextFactory));
+            container.Register<IRepository<Promotion>>(new Repository<Promotion>(contextFactory));
+            container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(contextFactory));
+            container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(contextFactory));
+            container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(contextFactory));
 
             // ===== Register Business Logic Layer (Services) =====
+            var dialogService = new DialogService();
+            container.Register<IDialogService>(dialogService);
+
+            var notificationService = new NotificationService();
+            container.Register<INotificationService>(notificationService);
+
             container.Register<IProductService>(new ProductService(
                 container.Get<IRepository<Product>>(),
                 container.Get<IRepository<Category>>()
@@ -239,12 +254,38 @@ public partial class App : Application
                 container.Get<IRepository<User>>()
             ));
 
-            LogMessage("✅ All services registered successfully");
+            container.Register<IScheduleService>(new ScheduleService(
+                container.Get<IRepository<WorkSchedule>>()
+            ));
+
+            container.Register<IEmployeeService>(new EmployeeService(
+                container.Get<IRepository<User>>(),
+                new AppDbContextFactory()
+            ));
+
+            // WeeklyRosterViewModel requires both ScheduleService and EmployeeService
+            container.Register<WeeklyRosterViewModel>(new WeeklyRosterViewModel(
+                container.Get<IScheduleService>(),
+                container.Get<IEmployeeService>(),
+                container.Get<INotificationService>()
+            ));
+
+            // ===== Register ViewModels =====
+            container.Register<EmployeeManagementViewModel>(new EmployeeManagementViewModel(
+                container.Get<IEmployeeService>(),
+                container.Get<IDialogService>(),
+                container.Get<IScheduleService>(),
+                container.Get<INotificationService>()
+            ));
+
+            container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
+
+            LogMessage(" All services registered successfully");
             LogMessage("====== DATABASE INITIALIZATION END ======");
         }
         catch (Exception ex)
         {
-            LogMessage($"❌ ERROR registering services: {ex.Message}");
+            LogMessage($" ERROR registering services: {ex.Message}");
             LogMessage($"StackTrace: {ex.StackTrace}");
             throw;
         }

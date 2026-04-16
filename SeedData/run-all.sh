@@ -22,6 +22,7 @@ FILES=(
     "04-users.sql"
     "05-orders.sql"
     "06-promotions.sql"
+    "07-workschedules.sql"
 )
 
 # Run each SQL file

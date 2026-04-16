@@ -1,5 +1,7 @@
 namespace MyShop.Data;
 
+using System.Linq.Expressions;
+
 /// <summary>
 /// Generic repository interface định nghĩa các CRUD operations cơ bản
 /// Tất cả repositories phải implement interface này
@@ -7,6 +9,7 @@ namespace MyShop.Data;
 /// <typeparam name="TEntity">Kiểu Entity (Model)</typeparam>
 public interface IRepository<TEntity> where TEntity : class
 {
+    // ===== SYNC Methods (legacy) =====
     /// <summary>
     /// Lấy tất cả entities với phân trang
     /// </summary>
@@ -44,4 +47,40 @@ public interface IRepository<TEntity> where TEntity : class
     /// Lưu tất cả thay đổi vào database
     /// </summary>
     void SaveChanges();
+
+    // ===== ASYNC Methods (modern, scalable) =====
+    /// <summary>
+    /// Lấy tất cả entities với phân trang (Async)
+    /// </summary>
+    /// <param name="paging">Phân trang (nếu không cung cấp lấy hết)</param>
+    /// <returns>PagedResult chứa danh sách entities + metadata</returns>
+    Task<PagedResult<TEntity>> GetAllAsync(PagingRequest? paging = null);
+
+    /// <summary>
+    /// Lấy entities theo điều kiện với Include support (Async)
+    /// </summary>
+    /// <param name="predicate">Điều kiện lọc (vd: x => x.WorkDate >= weekStart)</param>
+    /// <param name="includes">Danh sách Include properties (vd: "User", "Details")</param>
+    /// <returns>Danh sách entities kèm related data</returns>
+    Task<List<TEntity>> GetAsync(Expression<Func<TEntity, bool>>? predicate = null, params string[] includes);
+
+    /// <summary>
+    /// Thêm entity mới (Async)
+    /// </summary>
+    Task<TEntity> AddAsync(TEntity entity);
+
+    /// <summary>
+    /// Cập nhật entity (Async)
+    /// </summary>
+    Task UpdateAsync(TEntity entity);
+
+    /// <summary>
+    /// Xóa entity theo ID (Async)
+    /// </summary>
+    Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Lưu tất cả thay đổi vào database (Async)
+    /// </summary>
+    Task SaveChangesAsync();
 }

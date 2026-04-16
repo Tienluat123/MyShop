@@ -1,208 +1,620 @@
 <UserControl
     x:Class="MyShop.Views.StaffManagement.Components.EmployeeListTab"
+    x:Name="Root"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:comps="using:MyShop.Views.StaffManagement.Components"
-    xmlns:viewModels="using:MyShop.ViewModels">
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:MyShop.ViewModels.StaffManagement"
+    xmlns:converters="using:MyShop.Converters"
+    mc:Ignorable="d">
 
     <UserControl.Resources>
-        <DataTemplate x:Key="EmployeeCardTemplate"
-                      x:DataType="viewModels:EmployeeListItem">
-            <Border Background="White"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource RadiusSmall}"
-                    Padding="16"
-                    Margin="0,0,0,12">
-                <Grid ColumnSpacing="16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Avatar -->
-                    <PersonPicture Grid.Column="0"
-                                   Initials="{Binding Initials}"
-                                   Width="{StaticResource Size3XLarge}"
-                                   Height="{StaticResource Size3XLarge}"
-                                   VerticalAlignment="Center"/>
-
-                    <!-- Employee Info -->
-                    <StackPanel Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Spacing="8">
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="12">
-                            <TextBlock Text="{Binding Name}"
-                                       Style="{StaticResource BodyTextStyle}"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimary}"/>
-                            <Border Background="{StaticResource ErrorStrong}"
-                                    CornerRadius="6"
-                                    Padding="8,4"
-                                    Visibility="{Binding Position, Converter={StaticResource StringToVisibilityConverter}}">
-                                <TextBlock Text="{Binding Position}"
-                                           FontSize="12"
-                                           FontWeight="Bold"
-                                           Foreground="White"/>
-                            </Border>
-                            <Border Background="{StaticResource SuccessStrong}"
-                                    CornerRadius="6"
-                                    Padding="8,4"
-                                    Visibility="{Binding Status, Converter={StaticResource StringToVisibilityConverter}}">
-                                <TextBlock Text="{Binding Status}"
-                                           FontSize="12"
-                                           FontWeight="Bold"
-                                           Foreground="White"/>
-                            </Border>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="16">
-                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                       Foreground="{StaticResource TextSecondary}">
-                                <Run Text="ID: "/><Run Text="{Binding Code}"/>
-                            </TextBlock>
-                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                       Foreground="{StaticResource TextSecondary}">
-                                <Run Text="Phone: "/><Run Text="{Binding Phone}"/>
-                            </TextBlock>
-                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                       Foreground="{StaticResource TextSecondary}"
-                                       Visibility="{Binding ShiftCount, Converter={StaticResource StringToVisibilityConverter}}">
-                                <Run Text="Shifts: "/><Run Text="{Binding ShiftCount}"/><Run Text=" shift"/>
-                            </TextBlock>
-                            <TextBlock Style="{StaticResource CaptionTextStyle}"
-                                       Foreground="{StaticResource TextSecondary}"
-                                       FontStyle="Italic"
-                                       Visibility="{Binding ShiftCount, Converter={StaticResource StringToVisibilityConverter}}">
-                                <Run Text="Not assigned"/>
-                            </TextBlock>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- Schedule Button -->
-                    <Button Grid.Column="2"
-                            Content="{Binding ScheduleButtonText}"
-                            Background="{StaticResource SurfaceHover}"
-                            Foreground="{StaticResource TextPrimary}"
-                            CornerRadius="{StaticResource RadiusMedium}"
-                            Padding="{StaticResource SpaceMedium_Small}"
-                            FontWeight="{StaticResource FontWeightSemiBold}"
-                            BorderThickness="0"
-                            Style="{StaticResource AppGhostButtonStyle}"
-                            VerticalAlignment="Center">
-                        <Button.Flyout>
-                            <Flyout>
-                                <comps:EmployeeScheduleFlyout/>
-                            </Flyout>
-                        </Button.Flyout>
-                    </Button>
-
-                    <!-- Actions -->
-                    <StackPanel Grid.Column="3"
-                                Orientation="Horizontal"
-                                Spacing="8"
-                                VerticalAlignment="Center">
-                        <Button Background="Transparent"
-                                BorderThickness="0"
-                                Padding="8"
-                                CornerRadius="{StaticResource RadiusSmall}"
-                                ToolTipService.ToolTip="Edit"
-                                Tag="{Binding}"
-                                Click="EditEmployee_Click"
-                                Style="{StaticResource AppIconButtonStyle}">
-                            <FontIcon Glyph="&#xE70F;"
-                                      Foreground="{StaticResource InfoStrong}"
-                                      Style="{StaticResource IconBodyStyle}"/>
-                        </Button>
-                        <Button Background="Transparent"
-                                BorderThickness="0"
-                                Padding="8"
-                                CornerRadius="{StaticResource RadiusSmall}"
-                                ToolTipService.ToolTip="Lock Account"
-                                Style="{StaticResource AppIconButtonStyle}">
-                            <FontIcon Glyph="&#xE72E;"
-                                      Foreground="{StaticResource ErrorStrong}"
-                                      Style="{StaticResource IconBodyStyle}"/>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </DataTemplate>
+        <converters:RoleToDisplayConverter x:Key="RoleToDisplayConverter"/>
+        <converters:CurrencyConverter x:Key="CurrencyConverter"/>
+        <converters:SortIndicatorConverter x:Key="SortIndicatorConverter"/>
     </UserControl.Resources>
 
-    <Grid Margin="0,16,0,0"
-          Background="{StaticResource SurfaceBackground}"
-          CornerRadius="{StaticResource RadiusMedium}"
-          BorderBrush="{StaticResource BorderBrush}"
-          BorderThickness="1"
-          Padding="{StaticResource SpaceXLarge}">
+    <Grid Padding="0"
+          Background="#F5F5F5">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0"
-              Margin="0,0,0,24">
+              Margin="16,12,16,8"
+              ColumnSpacing="16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button Content="+ Add Employee"
-                    Height="{StaticResource Size40}"
-                    Background="{StaticResource BrandPrimary}"
-                    Foreground="{StaticResource BrandPrimaryForeground}"
-                    Padding="{StaticResource SpaceMedium}"
-                    FontSize="{StaticResource FontBody}"
-                    BorderThickness="0"
-                    CornerRadius="{StaticResource RadiusSmall}"
-                    FontWeight="{StaticResource FontWeightSemiBold}"
-                    VerticalAlignment="Center"
-                    Style="{StaticResource AppPrimaryButtonStyle}"
-                    Click="AddEmployee_Click"/>
+            <Border Grid.Column="0"
+                    Background="White"
+                    Padding="20"
+                    CornerRadius="12"
+                    BorderThickness="1"
+                    BorderBrush="#EEEEEE">
+                <StackPanel>
+                    <TextBlock Text="Total Monthly Payroll"
+                               FontSize="12"
+                               Foreground="Gray"/>
+                    <TextBlock Text="{x:Bind ViewModel.TotalPayrollDisplay, Mode=OneWay}"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Margin="0,5,0,0"
+                               Foreground="#2E7D32"/>
+                </StackPanel>
+            </Border>
 
-            <ComboBox Grid.Column="1"
-                      Margin="16,0,0,0"
-                      Width="180"
-                      Height="{StaticResource Size40}"
-                      Padding="{StaticResource SpaceMedium}"
-                      PlaceholderText="Filter by position"
-                      CornerRadius="{StaticResource RadiusSmall}"
-                      VerticalAlignment="Center"/>
+            <Border Grid.Column="1"
+                    Background="White"
+                    Padding="20"
+                    CornerRadius="12"
+                    BorderThickness="1"
+                    BorderBrush="#EEEEEE">
+                <StackPanel>
+                    <TextBlock Text="Active Employees"
+                               FontSize="12"
+                               Foreground="Gray"/>
+                    <TextBlock Text="{x:Bind ViewModel.ActiveStaffCount, Mode=OneWay}"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
 
-            <Grid Grid.Column="3"
-                  Margin="12,0,0,0"
-                  Height="{StaticResource Size40}">
-
-                <TextBox x:Name="SearchTextBox"
-                         PlaceholderText="Search employees..."
-                         CornerRadius="{StaticResource RadiusSmall}"
-                         Padding="12,8,36,8"
-                         VerticalAlignment="Stretch"
-                         VerticalContentAlignment="Center"
-                         FontWeight="{StaticResource FontWeightSemiBold}"/>
-
-                <FontIcon Glyph="&#xE721;"
-                          Foreground="{StaticResource TextMuted}"
-                          Style="{StaticResource IconBodyStyle}"
-                          HorizontalAlignment="Right"
-                          VerticalAlignment="Center"
-                          Margin="0,0,12,0"
-                          IsHitTestVisible="False"/>
-            </Grid>
+            <Border Grid.Column="2"
+                    Background="White"
+                    Padding="20"
+                    CornerRadius="12"
+                    BorderThickness="1"
+                    BorderBrush="#EEEEEE">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Monthly Top Performer"
+                                   FontSize="12"
+                                   Foreground="Gray"/>
+                        <TextBlock Text="{x:Bind ViewModel.TopPerformerName, Mode=OneWay}"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Margin="0,5,0,0"
+                                   Foreground="#E67E22"/>
+                        <TextBlock Text="Best effort this month"
+                                   FontSize="11"
+                                   Foreground="Gray"/>
+                    </StackPanel>
+                    <FontIcon Grid.Column="1"
+                              Glyph="&#xE734;"
+                              Foreground="#FFD700"
+                              FontSize="24"
+                              VerticalAlignment="Top"/>
+                </Grid>
+            </Border>
         </Grid>
 
-        <ScrollViewer Grid.Row="1">
-            <ItemsRepeater ItemsSource="{Binding Employees}"
-                           ItemTemplate="{StaticResource EmployeeCardTemplate}"
-                           Margin="0,16,0,0"/>
-        </ScrollViewer>
-    </Grid>
+        <Border Grid.Row="1"
+                Margin="16,12,16,16"
+                Background="White"
+                CornerRadius="12"
+                BorderThickness="1"
+                BorderBrush="#EEEEEE">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
+                <!-- Search and Filter Row -->
+                <Grid Grid.Row="0"
+                      Padding="16,16,16,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="3"
+                            Command="{x:Bind ViewModel.AddEmployeeCommand}"
+                            Style="{StaticResource AppPrimaryButtonStyle}"
+                            Height="35"
+                            Padding="20,0"
+                            CornerRadius="20"
+                            VerticalAlignment="Center"
+                            BorderThickness="0">
+                        <Button.Shadow>
+                            <ThemeShadow/>
+                        </Button.Shadow>
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <FontIcon Glyph="&#xE710;"
+                                      FontSize="14"
+                                      FontWeight="Bold"
+                                      VerticalAlignment="Center"/>
+                            <TextBlock Text="Add New Employee"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Border Grid.Column="0"
+                            Width="320"
+                            Height="35"
+                            Background="#F0F0F0"
+                            CornerRadius="20"
+                            BorderThickness="1"
+                            BorderBrush="Gray"
+                            Padding="12,0,12,0"
+                            VerticalAlignment="Center">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon Glyph="&#xE71E;"
+                                      FontSize="14"
+                                      Foreground="Gray"
+                                      VerticalAlignment="Center"/>
+
+                            <TextBox Grid.Column="1"
+                                     PlaceholderText="Search everything..."
+                                     Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     VerticalAlignment="Center"
+                                     Margin="0,3,0,0">
+                                <TextBox.Resources>
+                                    <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
+                                    <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                                    <SolidColorBrush x:Key="TextControlBackground"
+                                                     Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused"
+                                                     Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver"
+                                                     Color="Transparent"/>
+                                </TextBox.Resources>
+                            </TextBox>
+                        </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                Margin="12,0,0,0"
+                                Spacing="8">
+
+                        <Border Background="White"
+                                Height="35"
+                                CornerRadius="20"
+                                BorderThickness="1"
+                                BorderBrush="#E0E0E0"
+                                Padding="12,0,4,0">
+                            <ComboBox PlaceholderText="All Roles"
+                                      SelectedValue="{x:Bind ViewModel.SelectedRole, Mode=TwoWay}"
+                                      SelectedValuePath="Content"
+                                      Width="120"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      VerticalAlignment="Center">
+                                <ComboBox.Resources>
+                                    <Thickness x:Key="ComboBoxBorderThemeThickness">0</Thickness>
+                                    <Thickness x:Key="ComboBoxBorderThemeThicknessFocused">0</Thickness>
+                                    <SolidColorBrush x:Key="ComboBoxBackground"
+                                                     Color="Transparent"/>
+                                    <SolidColorBrush x:Key="ComboBoxBackgroundFocused"
+                                                     Color="Transparent"/>
+                                    <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver"
+                                                     Color="Transparent"/>
+                                </ComboBox.Resources>
+                                <ComboBoxItem Content="All Roles"/>
+                                <ComboBoxItem Content="Admin"/>
+                                <ComboBoxItem Content="Sale"/>
+                            </ComboBox>
+                        </Border>
+
+                        <Border Background="White"
+                                Height="35"
+                                CornerRadius="20"
+                                BorderThickness="1"
+                                BorderBrush="#E0E0E0"
+                                Padding="12,0,4,0">
+                            <ComboBox PlaceholderText="All Status"
+                                      SelectedValue="{x:Bind ViewModel.SelectedStatus, Mode=TwoWay}"
+                                      SelectedValuePath="Content"
+                                      Width="120"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      VerticalAlignment="Center">
+                                <ComboBox.Resources>
+                                    <Thickness x:Key="ComboBoxBorderThemeThickness">0</Thickness>
+                                    <Thickness x:Key="ComboBoxBorderThemeThicknessFocused">0</Thickness>
+                                    <SolidColorBrush x:Key="ComboBoxBackground"
+                                                     Color="Transparent"/>
+                                    <SolidColorBrush x:Key="ComboBoxBackgroundFocused"
+                                                     Color="Transparent"/>
+                                    <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver"
+                                                     Color="Transparent"/>
+                                </ComboBox.Resources>
+                                <ComboBoxItem Content="All Status"/>
+                                <ComboBoxItem Content="Active"/>
+                                <ComboBoxItem Content="Inactive"/>
+                            </ComboBox>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!-- List Grid with Header and Paging -->
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header Row -->
+                    <Border Grid.Row="0"
+                            Background="#FAFAFA"
+                            Padding="16,12"
+                            BorderBrush="#EEEEEE"
+                            BorderThickness="0,1,0,1">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="0.7*"/>
+                                <ColumnDefinition Width="0.5*"/>
+                                <ColumnDefinition Width="1.1*"/>
+                                <ColumnDefinition Width="1.3*"/>
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Column 0: EMPLOYEE -->
+                            <Button Background="Transparent"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="FullName"
+                                    Foreground="Gray">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4">
+                                    <TextBlock Text="EMPLOYEE"
+                                               FontSize="11"
+                                               FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=FullName}"
+                                              FontSize="12"
+                                              FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Column 1: CONTACT -->
+                            <Button Grid.Column="1"
+                                    Background="Transparent"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="Phone"
+                                    Foreground="Gray">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4">
+                                    <TextBlock Text="CONTACT"
+                                               FontSize="11"
+                                               FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Phone}"
+                                              FontSize="12"
+                                              FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Column 2: ROLE -->
+                            <Button Grid.Column="2"
+                                    Background="Transparent"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="Role"
+                                    Foreground="Gray">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4">
+                                    <TextBlock Text="ROLE"
+                                               FontSize="11"
+                                               FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Role}"
+                                              FontSize="12"
+                                              FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Column 3: STATUS -->
+                            <Button Grid.Column="3"
+                                    Background="Transparent"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Center"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="Status"
+                                    Foreground="Gray">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4">
+                                    <TextBlock Text="STATUS"
+                                               FontSize="11"
+                                               FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Status}"
+                                              FontSize="12"
+                                              FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Column 4: RATE -->
+                            <Button Grid.Column="4"
+                                    Background="Transparent"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Right"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="HourlyRate"
+                                    Foreground="Gray">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4">
+                                    <TextBlock Text="RATE"
+                                               FontSize="11"
+                                               FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=HourlyRate}"
+                                              FontSize="12"
+                                              FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Column 5: HRS -->
+                            <Button Grid.Column="5"
+                                    Background="Transparent"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Center"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="TotalHours"
+                                    Foreground="Gray">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4">
+                                    <TextBlock Text="HRS"
+                                               FontSize="11"
+                                               FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=TotalHours}"
+                                              FontSize="12"
+                                              FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Column 6: PREV. -->
+                            <Button Grid.Column="6"
+                                    Background="Transparent"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Right"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="LastMonthSalary"
+                                    Foreground="Gray">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4">
+                                    <TextBlock Text="PREV."
+                                               FontSize="11"
+                                               FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=LastMonthSalary}"
+                                              FontSize="12"
+                                              FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Column 7: NET SALARY -->
+                            <Button Grid.Column="7"
+                                    Background="Transparent"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Right"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="FinalSalary"
+                                    Foreground="Gray">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="4">
+                                    <TextBlock Text="NET SALARY"
+                                               FontSize="11"
+                                               FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=FinalSalary}"
+                                              FontSize="12"
+                                              FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Column 8: ACTIONS -->
+                            <TextBlock Grid.Column="8"
+                                       Text="ACTIONS"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       Foreground="Gray"
+                                       HorizontalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- List -->
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.DisplayEmployees, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels:UserSalaryInfo">
+                                    <Border BorderBrush="#F9F9F9"
+                                            BorderThickness="0,0,0,1"
+                                            Padding="16,10">
+                                        <Grid ColumnSpacing="10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="1*"/>
+                                                <ColumnDefinition Width="0.8*"/>
+                                                <ColumnDefinition Width="1*"/>
+                                                <ColumnDefinition Width="0.7*"/>
+                                                <ColumnDefinition Width="0.5*"/>
+                                                <ColumnDefinition Width="1.1*"/>
+                                                <ColumnDefinition Width="1.3*"/>
+                                                <ColumnDefinition Width="100"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Orientation="Horizontal"
+                                                        Spacing="8">
+                                                <PersonPicture DisplayName="{x:Bind User.FullName, Mode=OneWay}"
+                                                               Height="28"
+                                                               VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{x:Bind User.FullName, Mode=OneWay}"
+                                                               FontWeight="Bold"
+                                                               FontSize="13"/>
+                                                    <TextBlock Text="{x:Bind User.Username, Mode=OneWay}"
+                                                               FontSize="10"
+                                                               Foreground="Gray"/>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{x:Bind User.Phone, Mode=OneWay}"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="12"
+                                                       Foreground="#555555"/>
+
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{x:Bind User.Role, Mode=OneWay, Converter={StaticResource RoleToDisplayConverter}}"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="12"
+                                                       Foreground="#444444"/>
+
+                                            <ToggleSwitch Grid.Column="3"
+                                                          IsOn="{x:Bind User.IsActive, Mode=TwoWay}"
+                                                          OnContent="Active"
+                                                          OffContent="Inactive"
+                                                          FontSize="10"
+                                                          MinWidth="0"
+                                                          HorizontalAlignment="Center"
+                                                          Toggled="Status_Toggled"/>
+
+                                            <TextBlock Grid.Column="4"
+                                                       Text="{x:Bind User.HourlyRate, Mode=OneWay, Converter={StaticResource CurrencyConverter}}"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Right"
+                                                       Foreground="#666666"/>
+
+                                            <TextBlock Grid.Column="5"
+                                                       Text="{x:Bind TotalHours, Mode=OneWay}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="6"
+                                                       Text="{x:Bind LastMonthSalary, Mode=OneWay, Converter={StaticResource CurrencyConverter}}"
+                                                       Foreground="Gray"
+                                                       FontSize="12"
+                                                       HorizontalAlignment="Right"
+                                                       VerticalAlignment="Center"/>
+
+                                            <StackPanel Grid.Column="7"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind FinalSalary, Mode=OneWay, Converter={StaticResource CurrencyConverter}}"
+                                                           FontWeight="Black"
+                                                           Foreground="#1B5E20"
+                                                           FontSize="14"
+                                                           HorizontalAlignment="Right"/>
+                                                <Border Background="{x:Bind TagColor, Mode=OneWay}"
+                                                        CornerRadius="4"
+                                                        Padding="4,0"
+                                                        Margin="0,1,0,0"
+                                                        HorizontalAlignment="Right">
+                                                    <TextBlock Text="{x:Bind BonusTag, Mode=OneWay}"
+                                                               FontSize="8"
+                                                               Foreground="White"
+                                                               FontWeight="Bold"/>
+                                                </Border>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="8"
+                                                        Orientation="Horizontal"
+                                                        Spacing="10"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Background="Transparent">
+                                                <Button Style="{StaticResource AppIconButtonStyle}"
+                                                        Click="EditButton_Click"
+                                                        ToolTipService.ToolTip="Edit Employee"
+                                                        Foreground="#0078D4">
+                                                    <FontIcon Glyph="&#xEB7E;"
+                                                              FontSize="16"/>
+                                                </Button>
+
+                                                <Button Style="{StaticResource AppIconButtonStyle}"
+                                                        Click="DeleteButton_Click"
+                                                        ToolTipService.ToolTip="Delete Employee"
+                                                        Foreground="#E81123">
+                                                    <FontIcon Glyph="&#xED62;"
+                                                              FontSize="16"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Paging Controls -->
+                    <Border Grid.Row="2"
+                            Background="White"
+                            Padding="10"
+                            BorderBrush="#EEEEEE"
+                            BorderThickness="0,1,0,0">
+                        <Grid ColumnSpacing="12"
+                              HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Previous Button -->
+                            <Button Grid.Column="0"
+                                    Content="←"
+                                    Click="PreviousButton_Click"
+                                    Height="30"
+                                    Padding="16,0"
+                                    CornerRadius="8"
+                                    Background="#F0F0F0"
+                                    Foreground="#333333"/>
+
+                            <!-- Page Info -->
+                            <TextBlock Grid.Column="1"
+                                       Text="{x:Bind ViewModel.PageInfoDisplay, Mode=OneWay}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#555555"/>
+
+                            <!-- Next Button -->
+                            <Button Grid.Column="2"
+                                    Content="→"
+                                    Click="NextButton_Click"
+                                    Height="30"
+                                    Padding="16,0"
+                                    CornerRadius="8"
+                                    Background="#0078D4"
+                                    Foreground="White"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>
