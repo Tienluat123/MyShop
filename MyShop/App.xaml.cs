@@ -291,6 +291,11 @@ public partial class App : Application
                 container.Get<IPromotionService>()
             ));
 
+            container.Register<OrderManagementViewModel>(new OrderManagementViewModel(
+                container.Get<IOrderService>(),
+                container.Get<IProductService>()
+            ));
+
             container.Register<EmployeeManagementViewModel>(new EmployeeManagementViewModel(
                 container.Get<IEmployeeService>(),
                 container.Get<IDialogService>(),
