@@ -113,7 +113,8 @@ public class ProductService : IProductService
 
         try
         {
-            return await _productRepository.GetById(id);
+            var product = _productRepository.GetById(id);
+            return product;
         }
         catch (Exception ex)
         {
@@ -180,13 +181,13 @@ public class ProductService : IProductService
         if (product.CategoryId <= 0)
             throw new ArgumentException("Phải chọn category hợp lệ", nameof(product.CategoryId));
 
-        var category = await _categoryRepository.GetById(product.CategoryId);
+        var category = _categoryRepository.GetById(product.CategoryId);
         if (category == null)
             throw new InvalidOperationException($"Category với ID {product.CategoryId} không tồn tại");
 
         try
         {
-            return await _productRepository.Add(product);
+            return await _productRepository.AddAsync(product);
         }
         catch (Exception ex)
         {
@@ -213,7 +214,7 @@ public class ProductService : IProductService
 
         try
         {
-            await _productRepository.Update(product);
+            await _productRepository.UpdateAsync(product);
         }
         catch (Exception ex)
         {
@@ -231,7 +232,7 @@ public class ProductService : IProductService
 
         try
         {
-            await _productRepository.Delete(id);
+            await _productRepository.DeleteAsync(id);
         }
         catch (Exception ex)
         {

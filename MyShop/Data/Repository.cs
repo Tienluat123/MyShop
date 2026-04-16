@@ -174,6 +174,24 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         }
     }
 
+    /// <summary>
+    /// Lấy IQueryable để thực hiện LINQ queries phức tạp
+    /// </summary>
+    public IQueryable<TEntity> Query()
+    {
+        using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
+        return context.Set<TEntity>().AsQueryable();
+    }
+
+    /// <summary>
+    /// Tìm kiếm entities theo điều kiện
+    /// </summary>
+    public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+    {
+        using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
+        return context.Set<TEntity>().Where(predicate).ToList();
+    }
+
     // ===== ASYNC Methods (modern, scalable) =====
     /// <summary>
     /// Lấy tất cả entities với phân trang (Async)

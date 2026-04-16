@@ -24,6 +24,11 @@ public partial class App : Application
         this.InitializeComponent();
     }
 
+    /// <summary>
+    /// Static provider to access services globally if needed (like in XAML)
+    /// </summary>
+    public static IServiceProvider Services { get; private set; } = null!;
+
     // ✅ Make MainWindow public for DialogService to access XamlRoot
     public Window? MainWindow { get; private set; }
 
@@ -254,6 +259,14 @@ public partial class App : Application
                 container.Get<IRepository<User>>()
             ));
 
+            container.Register<ICategoryService>(new CategoryService(
+                container.Get<IRepository<Category>>()
+            ));
+
+            container.Register<IPromotionService>(new PromotionService(
+                container.Get<IRepository<Promotion>>()
+            ));
+
             container.Register<IScheduleService>(new ScheduleService(
                 container.Get<IRepository<WorkSchedule>>()
             ));
@@ -279,6 +292,9 @@ public partial class App : Application
             ));
 
             container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
+
+            // ===== Set static Services property for app-wide access =====
+            Services = container;
 
             LogMessage(" All services registered successfully");
             LogMessage("====== DATABASE INITIALIZATION END ======");

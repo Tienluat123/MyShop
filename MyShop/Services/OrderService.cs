@@ -122,7 +122,7 @@ public class OrderService : IOrderService
     {
         try
         {
-            return await _orderRepository.GetAll(paging);
+            return _orderRepository.GetAll(paging);
         }
         catch (Exception ex)
         {
@@ -140,7 +140,7 @@ public class OrderService : IOrderService
 
         try
         {
-            return await _orderRepository.GetById(id);
+            return _orderRepository.GetById(id);
         }
         catch (Exception ex)
         {
@@ -158,8 +158,8 @@ public class OrderService : IOrderService
 
         try
         {
-            var items = await _orderRepository.Find(o => o.CustomerId == customerId);
-            return items.ToList();
+            var items = await _orderRepository.GetAsync(o => o.CustomerId == customerId);
+            return items;
         }
         catch (Exception ex)
         {
@@ -177,8 +177,8 @@ public class OrderService : IOrderService
 
         try
         {
-            var items = await _orderRepository.Find(o => o.PaymentStatus == status);
-            return items.ToList();
+            var items = await _orderRepository.GetAsync(o => o.PaymentStatus == status);
+            return items;
         }
         catch (Exception ex)
         {
@@ -246,17 +246,17 @@ public class OrderService : IOrderService
         if (order.TotalAmount < 0)
             throw new ArgumentException("Tổng tiền không được âm", nameof(order.TotalAmount));
 
-        var customer = await _customerRepository.GetById(order.CustomerId);
+        var customer = _customerRepository.GetById(order.CustomerId);
         if (customer == null)
             throw new InvalidOperationException($"Khách hàng với ID {order.CustomerId} không tồn tại");
 
-        var user = await _userRepository.GetById(order.UserId);
+        var user = _userRepository.GetById(order.UserId);
         if (user == null)
             throw new InvalidOperationException($"Nhân viên với ID {order.UserId} không tồn tại");
 
         try
         {
-            return await _orderRepository.Add(order);
+            return await _orderRepository.AddAsync(order);
         }
         catch (Exception ex)
         {
@@ -277,7 +277,7 @@ public class OrderService : IOrderService
 
         try
         {
-            await _orderRepository.Update(order);
+            await _orderRepository.UpdateAsync(order);
         }
         catch (Exception ex)
         {
@@ -295,7 +295,7 @@ public class OrderService : IOrderService
 
         try
         {
-            await _orderRepository.Delete(id);
+            await _orderRepository.DeleteAsync(id);
         }
         catch (Exception ex)
         {
@@ -322,7 +322,7 @@ public class OrderService : IOrderService
 
             if (order.PaymentStatus == "Paid" && newStatus != "Paid" && newStatus != "Refunded")
                 throw new InvalidOperationException("Không thể thay đổi trạng thái của đơn hàng đã thanh toán");
-            
+
             if (order.PaymentStatus == "Cancelled")
                 throw new InvalidOperationException("Không thể thay đổi trạng thái của đơn hàng đã hủy");
 
@@ -369,13 +369,13 @@ public class OrderService : IOrderService
         try
         {
             var query = _orderRepository.Query();
-            
+
             if (paymentStatuses != null && paymentStatuses.Count > 0)
                 query = query.Where(o => paymentStatuses.Contains(o.PaymentStatus));
-            
+
             if (fulfillmentStatuses != null && fulfillmentStatuses.Count > 0)
                 query = query.Where(o => fulfillmentStatuses.Contains(o.FulfillmentStatus));
-            
+
             if (startDate.HasValue)
                 query = query.Where(o => o.OrderDate >= startDate.Value);
 
@@ -408,10 +408,10 @@ public class OrderService : IOrderService
                     .ThenInclude(od => od.Product)
                 .Include(o => o.Customer)
                 .AsQueryable();
-            
+
             if (paymentStatuses != null && paymentStatuses.Count > 0)
                 query = query.Where(o => paymentStatuses.Contains(o.PaymentStatus));
-            
+
             if (fulfillmentStatuses != null && fulfillmentStatuses.Count > 0)
                 query = query.Where(o => fulfillmentStatuses.Contains(o.FulfillmentStatus));
 
@@ -519,7 +519,7 @@ public class OrderService : IOrderService
             // History logic: (Paid AND Completed) OR Cancelled OR Refunded
             if (string.IsNullOrEmpty(statusFilter) || statusFilter == "All History")
             {
-                query = query.Where(o => 
+                query = query.Where(o =>
                     (o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed") ||
                     o.PaymentStatus == "Cancelled" ||
                     o.PaymentStatus == "Refunded");
@@ -565,7 +565,7 @@ public class OrderService : IOrderService
     public async Task<int> GetHistoryCount(DateTime? startDate = null, DateTime? endDate = null)
     {
         var query = _orderRepository.Query()
-            .Where(o => 
+            .Where(o =>
                 (o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed") ||
                 o.PaymentStatus == "Cancelled" ||
                 o.PaymentStatus == "Refunded");
