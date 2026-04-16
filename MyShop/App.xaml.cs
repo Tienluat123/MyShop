@@ -284,6 +284,13 @@ public partial class App : Application
             ));
 
             // ===== Register ViewModels =====
+            container.Register<PosViewModel>(new PosViewModel(
+                container.Get<IProductService>(),
+                container.Get<ICategoryService>(),
+                container.Get<IOrderService>(),
+                container.Get<IPromotionService>()
+            ));
+
             container.Register<EmployeeManagementViewModel>(new EmployeeManagementViewModel(
                 container.Get<IEmployeeService>(),
                 container.Get<IDialogService>(),
