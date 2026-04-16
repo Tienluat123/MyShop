@@ -19,6 +19,9 @@ public partial class OrderDetail : ObservableObject
     [ObservableProperty]
     private decimal unitPrice; // Giá tại thời điểm mua
 
+    [ObservableProperty]
+    private string? notes;
+
     // Navigation properties
     public Order? Order { get; set; }
     public Product? Product { get; set; }

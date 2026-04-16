@@ -8,13 +8,13 @@ public class StatusToNextStatusTextConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is not OrderStatus status) return "";
+        string statusStr = value?.ToString() ?? "";
 
-        return status switch
+        return statusStr switch
         {
-            OrderStatus.Pending => "Update to Preparing",
-            OrderStatus.Preparing => "Update to Ready",
-            OrderStatus.Ready => "Update to Completed",
+            "None" => "Update to Preparing",
+            "Preparing" => "Update to Ready",
+            "Ready" => "Update to Completed",
             _ => ""
         };
     }

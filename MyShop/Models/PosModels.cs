@@ -23,14 +23,21 @@ public partial class PaymentMethodItem : ObservableObject
     private bool _isSelected;
 }
 
-public enum OrderStatus
+public enum PaymentStatus
 {
-    Pending,
+    Draft,
+    PendingPayment,
+    Paid,
+    Cancelled,
+    Refunded
+}
+
+public enum FulfillmentStatus
+{
+    None,
     Preparing,
     Ready,
-    Completed,
-    Voided,
-    Refunded
+    Completed
 }
 
 public partial class DrinkOptions : ObservableObject
@@ -44,7 +51,8 @@ public partial class DrinkOptions : ObservableObject
     [ObservableProperty]
     private string _ice = "Regular";
 
-    public ObservableCollection<string> AddOns { get; } = new();
+    [ObservableProperty]
+    private ObservableCollection<string> _addOns = new();
 
     [ObservableProperty]
     private string _notes = "";
@@ -54,14 +62,15 @@ public partial class OrderItem : ObservableObject
 {
     public Product Product { get; set; } = null!;
 
-    public double BasePrice { get; set; }
+    public decimal BasePrice { get; set; }
 
     [ObservableProperty]
     private int _quantity;
 
-    public DrinkOptions? DrinkOptions { get; set; }
+    [ObservableProperty]
+    private DrinkOptions? _drinkOptions;
 
-    public double TotalPrice => BasePrice * Quantity;
+    public decimal TotalPrice => BasePrice * Quantity;
 
     partial void OnQuantityChanged(int value)
     {
@@ -77,13 +86,13 @@ public partial class PosOrder : ObservableObject
     public ObservableCollection<OrderItem> Items { get; } = new();
 
     [ObservableProperty]
-    private double _subtotal;
+    private decimal _subtotal;
 
     [ObservableProperty]
-    private double _tax;
+    private decimal _tax;
 
     [ObservableProperty]
-    private double _total;
+    private decimal _total;
 
     [ObservableProperty]
     private string _type = "Dine-in";
@@ -95,7 +104,10 @@ public partial class PosOrder : ObservableObject
     private PaymentMethod _method;
 
     [ObservableProperty]
-    private OrderStatus _status = OrderStatus.Pending;
+    private PaymentStatus _paymentStatus = PaymentStatus.Draft;
+
+    [ObservableProperty]
+    private FulfillmentStatus _fulfillmentStatus = FulfillmentStatus.None;
 
     [ObservableProperty]
     private DateTime _createdAt = DateTime.Now;
@@ -105,6 +117,12 @@ public partial class PosOrder : ObservableObject
 
     [ObservableProperty]
     private string? _customerName;
+
+    public bool IsFulfillmentActionEnabled => 
+        !(FulfillmentStatus == FulfillmentStatus.Ready && PaymentStatus != PaymentStatus.Paid);
+
+    partial void OnPaymentStatusChanged(PaymentStatus value) => OnPropertyChanged(nameof(IsFulfillmentActionEnabled));
+    partial void OnFulfillmentStatusChanged(FulfillmentStatus value) => OnPropertyChanged(nameof(IsFulfillmentActionEnabled));
 }
 
 

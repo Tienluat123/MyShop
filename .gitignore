@@ -486,6 +486,9 @@ solution-config.props
 # Publish Profiles
 !**/Properties/PublishProfiles/*.pubxml
 
+# DB config
+appsettings.json
+run-all.sh
 
 # === Uno Platform Specific ===
 .uno/

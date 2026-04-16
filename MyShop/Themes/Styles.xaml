@@ -12,9 +12,9 @@
     <Style x:Key="PrimaryButtonStyle"
             TargetType="Button">
         <Setter Property="Background"
-                Value="{StaticResource PrimaryBrush}"/>
+                Value="{StaticResource BrandPrimary}"/>
         <Setter Property="Foreground"
-                Value="White"/>
+                Value="{StaticResource BrandPrimaryForeground}"/>
         <Setter Property="BorderThickness"
                 Value="0"/>
         <Setter Property="Padding"
@@ -34,7 +34,7 @@
         <Setter Property="Background"
                 Value="{StaticResource SecondaryBackground}"/>
         <Setter Property="Foreground"
-                Value="{StaticResource PrimaryBrush}"/>
+                Value="{StaticResource BrandPrimary}"/>
         <Setter Property="BorderBrush"
                 Value="{StaticResource BorderBrush}"/>
         <Setter Property="BorderThickness"
