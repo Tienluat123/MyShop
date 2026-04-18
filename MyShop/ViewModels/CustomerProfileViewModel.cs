@@ -27,9 +27,9 @@ public partial class CustomerProfileViewModel : ObservableObject
     private bool isLoading;
 
     public CustomerProfileViewModel(
-        CustomerListItem selectedCustomerItem, 
-        ICustomerService customerService, 
-        IOrderService orderService, 
+        CustomerListItem selectedCustomerItem,
+        ICustomerService customerService,
+        IOrderService orderService,
         Action onBack)
     {
         _customerService = customerService;
@@ -38,8 +38,8 @@ public partial class CustomerProfileViewModel : ObservableObject
 
         // Gán giá trị vào Property viết hoa để kích hoạt thông báo UI
         SelectedCustomer.Customer = selectedCustomerItem;
-        
-      
+
+
     }
     [RelayCommand]
     public async Task LoadInitialData() // Đổi tên cho rõ nghĩa
@@ -82,7 +82,7 @@ public partial class CustomerProfileViewModel : ObservableObject
             SelectedCustomer.Birthday = dbCustomer.Birthday ?? DateTime.MinValue;
             SelectedCustomer.Notes = dbCustomer.Notes ?? "";
             SelectedCustomer.TotalSpent = (decimal)dbCustomer.TotalSpent;
-            
+
             OnPropertyChanged(nameof(SelectedCustomer));
         }
     }
@@ -125,14 +125,14 @@ public partial class CustomerProfileViewModel : ObservableObject
     private async void AddNote()
     {
         SelectedCustomer.Notes = "VIP customer. Prefers medium sugar and oat milk.";
-        
+
         var dbCustomer = await _customerService.GetById(SelectedCustomer.Customer.Id);
         if (dbCustomer != null)
         {
             dbCustomer.Notes = SelectedCustomer.Notes;
             await _customerService.Update(dbCustomer);
         }
-        
+
         OnPropertyChanged(nameof(SelectedCustomer));
     }
 }

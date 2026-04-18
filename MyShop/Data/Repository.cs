@@ -47,12 +47,12 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             if (!string.IsNullOrEmpty(paging.SearchText))
             {
                 var search = paging.SearchText.ToLower();
-                
+
                 // Vì đây là Repository Generic, ta kiểm tra nếu là Customer thì lọc theo Name/Phone
                 if (typeof(TEntity) == typeof(Customer))
                 {
-                    query = query.Where(e => 
-                        (e as Customer).Name.ToLower().Contains(search) || 
+                    query = query.Where(e =>
+                        (e as Customer).Name.ToLower().Contains(search) ||
                         (e as Customer).Phone.Contains(search));
                 }
                 // Sau này nếu có Product, bạn có thể thêm else if ở đây

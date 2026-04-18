@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks; // Cần thiết cho Task
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MyShop.Models; 
+using MyShop.Models;
 using MyShop.Services;
-using MyShop.Data; 
+using MyShop.Data;
 namespace MyShop.ViewModels;
 
 public partial class CustomerManagementViewModel : ObservableObject
@@ -63,40 +63,40 @@ public partial class CustomerManagementViewModel : ObservableObject
     // --- LOGIC CỐT LÕI ---
 
     [RelayCommand]
-private async Task LoadCustomers()
-{
-    var request = new PagingRequest 
-    { 
-        PageNumber = CurrentPage, 
-        PageSize = PageSize,
-        SearchText = SearchText?.Trim() 
-    };
-
-    //var result = await Task.Run(() => _customerService.GetAll(request));
-    var result = await _customerService.GetAll(request);
-    Console.WriteLine($"[DEBUG] Đã lấy được {result.Items.Count} khách hàng từ Database!");
-
-    DisplayCustomers.Clear();
-    foreach (var c in result.Items)
+    private async Task LoadCustomers()
     {
-        DisplayCustomers.Add(new CustomerListItem 
-        { 
-            Id = c.Id, 
-            Name = c.Name, 
-            Phone = c.Phone, 
-            Code = $"CUST-{c.Id:D3}",
-            Tier = "Active", 
-            Initials = string.Join("", c.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x[0])) 
-        });
-    }
+        var request = new PagingRequest
+        {
+            PageNumber = CurrentPage,
+            PageSize = PageSize,
+            SearchText = SearchText?.Trim()
+        };
 
-    // SỬA 2 DÒNG NÀY: Truy cập thông qua result.Pagination
-    TotalItems = result.Pagination.TotalItems; 
-    TotalPages = result.Pagination.TotalPages; 
-    
-    UpdatePagingSummary(result.Items.Count);
-    UpdatePageNumbers();
-}
+        //var result = await Task.Run(() => _customerService.GetAll(request));
+        var result = await _customerService.GetAll(request);
+        Console.WriteLine($"[DEBUG] Đã lấy được {result.Items.Count} khách hàng từ Database!");
+
+        DisplayCustomers.Clear();
+        foreach (var c in result.Items)
+        {
+            DisplayCustomers.Add(new CustomerListItem
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Phone = c.Phone,
+                Code = $"CUST-{c.Id:D3}",
+                Tier = "Active",
+                Initials = string.Join("", c.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x[0]))
+            });
+        }
+
+        // SỬA 2 DÒNG NÀY: Truy cập thông qua result.Pagination
+        TotalItems = result.Pagination.TotalItems;
+        TotalPages = result.Pagination.TotalPages;
+
+        UpdatePagingSummary(result.Items.Count);
+        UpdatePageNumbers();
+    }
 
     // --- HÀM BỔ TRỢ (Giải quyết lỗi thiếu hàm) ---
 
@@ -168,18 +168,18 @@ private async Task LoadCustomers()
 
     [RelayCommand] private void MapsToAdd() => onAdd();
     [RelayCommand] private void MapsToRules() => onRules();
-    [RelayCommand] 
-   
+    [RelayCommand]
+
     private void MapsToProfile(CustomerListItem customer) // Nhận tham số trực tiếp
     {
         if (customer != null) onProfile(customer);
     }
 
-    [RelayCommand] 
+    [RelayCommand]
     private void EditCustomer(CustomerListItem customer) // Nhận tham số trực tiếp
     {
         if (customer != null) onEdit(customer);
     }
-    
+
 }
 
