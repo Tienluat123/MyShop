@@ -139,7 +139,7 @@
                     <TextBlock Text="Shop Name"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
-                             Text="MyShop - Cafe &amp; Tea"/>
+                             Text="{Binding ShopName, Mode=TwoWay}"/>
                 </StackPanel>
 
                 <!-- Shop Code -->
@@ -148,10 +148,7 @@
                     <TextBlock Text="Shop Code"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
-                            Text="MYSHOP-001"
-                             IsReadOnly="True"
-                            Background="#F3F4F6"
-                            Foreground="#9CA3AF"/>
+                            Text="{Binding ShopCode, Mode=TwoWay}"/>
                 </StackPanel>
 
                 <!-- Address -->
@@ -161,7 +158,7 @@
                     <TextBlock Text="Address"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
-                             Text="123 Nguyen Van Cu St, District 5, Ho Chi Minh City"/>
+                             Text="{Binding Address, Mode=TwoWay}"/>
                 </StackPanel>
 
                 <!-- Phone -->
@@ -170,7 +167,7 @@
                     <TextBlock Text="Phone Number"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
-                            Text="0912 345 678"/>
+                            Text="{Binding Phone, Mode=TwoWay}"/>
                 </StackPanel>
 
                 <!-- Email -->
@@ -179,7 +176,7 @@
                     <TextBlock Text="Contact Email"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
-                            Text="contact@myshop.vn"/>
+                            Text="{Binding ContactEmail, Mode=TwoWay}"/>
                 </StackPanel>
             </Grid>
         </StackPanel>

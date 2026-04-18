@@ -239,6 +239,7 @@ public partial class App : Application
             container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(contextFactory));
             container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(contextFactory));
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(contextFactory));
+            container.Register<IRepository<LoyaltyTierConfig>>(new Repository<LoyaltyTierConfig>(contextFactory));
 
             // ===== Register Business Logic Layer (Services) =====
             var dialogService = new DialogService();
@@ -272,7 +273,17 @@ public partial class App : Application
 
             container.Register<IEmployeeService>(new EmployeeService(
                 container.Get<IRepository<User>>(),
-                new AppDbContextFactory()
+                contextFactory
+            ));
+
+            container.Register<ILoyaltyService>(new LoyaltyService(
+                contextFactory.CreateDbContext(Array.Empty<string>()),
+                container.Get<IRepository<Customer>>()
+            ));
+
+            // AppConfigService — singleton, caches key-value settings in memory
+            container.Register<IAppConfigService>(new AppConfigService(
+                container.Get<IRepository<AppConfig>>()
             ));
 
             // WeeklyRosterViewModel requires both ScheduleService and EmployeeService
@@ -288,6 +299,10 @@ public partial class App : Application
                 container.Get<ICategoryService>(),
                 container.Get<IOrderService>(),
                 container.Get<IPromotionService>()
+            ));
+
+            container.Register<ConfigViewModel>(new ConfigViewModel(
+                container.Get<IAppConfigService>()
             ));
 
             container.Register<OrderManagementViewModel>(new OrderManagementViewModel(

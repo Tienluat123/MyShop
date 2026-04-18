@@ -1,6 +1,10 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
+using MyShop.Models;
+using MyShop.Services;
 using MyShop.ViewModels;
 using MyShop.Views.CustomerManagement.Components;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace MyShop.Views.CustomerManagement;
@@ -15,8 +19,10 @@ public sealed partial class CustomerPage : Page
 
     private void CustomerPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        Debug.WriteLine("[CustomerPage] Loaded event fired. Frame.Content is null: " + (CustomerContentFrame.Content is null));
         if (CustomerContentFrame.Content is null)
         {
+            Debug.WriteLine("[CustomerPage] Navigating to ManagementView...");
             NavigateToManagement();
         }
     }
@@ -41,8 +47,13 @@ public sealed partial class CustomerPage : Page
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
     private void NavigateToRules()
     {
-        var viewModel = new LoyaltyRulesViewModel(onBack: NavigateToManagement);
+        Debug.WriteLine("[CustomerPage] NavigateToRules called.");
+        var loyaltyService = App.Services.GetRequiredService<ILoyaltyService>();
+        Debug.WriteLine($"[CustomerPage] LoyaltyService resolved: {loyaltyService != null}");
+        var viewModel = new LoyaltyRulesViewModel(loyaltyService, onBack: NavigateToManagement);
+        Debug.WriteLine("[CustomerPage] LoyaltyRulesViewModel created, now navigating...");
         CustomerContentFrame.Navigate(typeof(LoyaltyRulesView), viewModel);
+        Debug.WriteLine("[CustomerPage] Navigate called.");
     }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
