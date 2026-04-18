@@ -1,16 +1,15 @@
 using System;
-using System.ComponentModel;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Uno.Resizetizer;
+using MyShop.Views;
 using MyShop.Data;
+using MyShop.Services;
 using MyShop.Di;
 using MyShop.Models;
-using MyShop.Services;
 using MyShop.ViewModels;
-using MyShop.Views;
-using Uno.Resizetizer;
+using MyShop.ViewModels.StaffManagement;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyShop;
 
@@ -30,7 +29,8 @@ public partial class App : Application
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
 
-    protected Window? MainWindow { get; private set; }
+    // ✅ Make MainWindow public for DialogService to access XamlRoot
+    public Window? MainWindow { get; private set; }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
@@ -41,6 +41,8 @@ public partial class App : Application
 
         // Setup Dependency Injection trước khi tạo UI
         RegisterServices();
+
+        // DialogService ready - XamlRoot được set tự động từ constructor
 
         // Do not repeat app initialization when the Window already has content,
         // just ensure that the window is active
@@ -75,7 +77,6 @@ public partial class App : Application
     private void RegisterServices()
     {
         var container = ServiceContainer.Instance;
-        var services = new ServiceCollection();
 
         // Create log file to track database initialization
         var logPath = Path.Combine(
@@ -127,43 +128,23 @@ public partial class App : Application
                     var json = File.ReadAllText(foundPath);
                     using (var doc = JsonDocument.Parse(json))
                     {
-                        var root = doc.RootElement;
-                        
-                        // Try ConnectionStrings:DefaultConnection first (standard EF Core)
-                        if (root.TryGetProperty("ConnectionStrings", out var connStrings) && 
-                            connStrings.TryGetProperty("DefaultConnection", out var defaultConn))
+                        var dbElement = doc.RootElement.GetProperty("Database");
+                        dbConfig = new DatabaseConfig
                         {
-                            var connStr = defaultConn.GetString();
-                            LogMessage($"✅ Found connection string in ConnectionStrings:DefaultConnection");
-                            dbConfig = ParseConnectionString(connStr);
-                        }
-                        // Fallback to custom Database section
-                        else if (root.TryGetProperty("Database", out var dbElement))
-                        {
-                            dbConfig = new DatabaseConfig
-                            {
-                                Host = dbElement.TryGetProperty("Host", out var h) ? h.GetString() : "localhost",
-                                Database = dbElement.TryGetProperty("Database", out var d) ? d.GetString() : "postgres",
-                                Username = dbElement.TryGetProperty("Username", out var u) ? u.GetString() : "postgres",
-                                Password = dbElement.TryGetProperty("Password", out var p) ? p.GetString() : "password",
-                                Port = dbElement.TryGetProperty("Port", out var po) ? po.GetInt32() : 5432,
-                                SslMode = dbElement.TryGetProperty("SslMode", out var s) ? s.GetString() : "Disable"
-                            };
-                            LogMessage($"✅ Loaded config from Database section");
-                        }
+                            Host = dbElement.GetProperty("Host").GetString() ?? "localhost",
+                            Database = dbElement.GetProperty("Database").GetString() ?? "postgres",
+                            Username = dbElement.GetProperty("Username").GetString() ?? "postgres",
+                            Password = dbElement.GetProperty("Password").GetString() ?? "password",
+                            Port = dbElement.GetProperty("Port").GetInt32(),
+                            SslMode = dbElement.GetProperty("SslMode").GetString() ?? "Require"
+                        };
                     }
-                    
-                    if (dbConfig != null) {
-                        LogMessage($"✅ Config successful from: {foundPath}");
-                        LogMessage($"   Host: {dbConfig.Host}:{dbConfig.Port}, DB: {dbConfig.Database}, User: {dbConfig.Username}");
-                    } else {
-                        LogMessage($"⚠️ Could not find supported config sections in {foundPath}. Using defaults.");
-                        dbConfig = CreateDefaultConfig();
-                    }
+                    LogMessage($" Loaded config from: {foundPath}");
+                    LogMessage($"   Host: {dbConfig.Host}:{dbConfig.Port}, DB: {dbConfig.Database}, User: {dbConfig.Username}");
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($"❌ Failed to parse appsettings.json from {foundPath}: {ex.Message}");
+                    LogMessage($" Failed to parse appsettings.json from {foundPath}: {ex.Message}");
                     dbConfig = CreateDefaultConfig();
                 }
             }
@@ -193,18 +174,18 @@ public partial class App : Application
 
                 dbContext = new AppDbContext(dbContextOptions);
 
-                // ✅ Test connection first
+                //  Test connection first
                 LogMessage("🔍 Testing database connection...");
                 var canConnect = dbContext.Database.CanConnect();
                 if (canConnect)
                 {
-                    LogMessage("✅ Database connection successful!");
+                    LogMessage(" Database connection successful!");
 
-                    // ✅ Apply migrations (tạo database schema)
+                    //  Apply migrations (tạo database schema)
                     try
                     {
                         dbContext.Database.Migrate();
-                        LogMessage("✅ Database migrations applied successfully");
+                        LogMessage(" Database migrations applied successfully");
                     }
                     catch (Exception ex)
                     {
@@ -213,9 +194,9 @@ public partial class App : Application
                         try
                         {
                             dbContext.Database.EnsureCreated();
-                            LogMessage("✅ Database schema created (fallback)");
+                            LogMessage("Database schema created (fallback)");
                         }
-                        catch (Exception ex2) { LogMessage($"❌ Schema creation failed: {ex2.Message}"); }
+                        catch (Exception ex2) { LogMessage($"Schema creation failed: {ex2.Message}"); }
                     }
                 }
                 else
@@ -225,7 +206,7 @@ public partial class App : Application
             }
             catch (Exception ex)
             {
-                LogMessage($"❌ Database initialization error: {ex.Message}");
+                LogMessage($" Database initialization error: {ex.Message}");
                 LogMessage($"   Inner exception: {ex.InnerException?.Message}");
                 LogMessage("   App will continue - ensure Supabase is accessible");
 
@@ -241,41 +222,28 @@ public partial class App : Application
             }
 
             // ===== Register Data Access Layer (Repositories) =====
-            container.Register<IRepository<Product>>(new Repository<Product>(dbContext));
-            container.Register<IRepository<Category>>(new Repository<Category>(dbContext));
-            container.Register<IRepository<Customer>>(new Repository<Customer>(dbContext));
-            container.Register<IRepository<Order>>(new Repository<Order>(dbContext));
-            container.Register<IRepository<OrderDetail>>(new Repository<OrderDetail>(dbContext));
-            container.Register<IRepository<User>>(new Repository<User>(dbContext));
-            container.Register<IRepository<Promotion>>(new Repository<Promotion>(dbContext));
-            container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
-            container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
-            container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
+            // Each Repository operation gets fresh DbContext instance
+            var contextFactory = new AppDbContextFactory();
+            container.Register<AppDbContextFactory>(contextFactory);
 
-            services.AddSingleton<IRepository<Product>>(new Repository<Product>(dbContext));
-            services.AddSingleton<IRepository<Category>>(new Repository<Category>(dbContext));
-            services.AddSingleton<IRepository<Customer>>(new Repository<Customer>(dbContext));
-            services.AddSingleton<IRepository<Order>>(new Repository<Order>(dbContext));
-            services.AddSingleton<IRepository<OrderDetail>>(new Repository<OrderDetail>(dbContext));
-            services.AddSingleton<IRepository<User>>(new Repository<User>(dbContext));
-            services.AddSingleton<IRepository<Promotion>>(new Repository<Promotion>(dbContext));
-            services.AddSingleton<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
-            services.AddSingleton<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
-            services.AddSingleton<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
-
-            ////Use InMemoryRepository for demo, or switch to Repository<T> for DB
-            //services.AddSingleton<IRepository<Product>>(new InMemoryRepository<Product>());
-            //services.AddSingleton<IRepository<Category>>(new InMemoryRepository<Category>());
-            //services.AddSingleton<IRepository<Customer>>(new InMemoryRepository<Customer>());
-            //services.AddSingleton<IRepository<Order>>(new InMemoryRepository<Order>());
-            //services.AddSingleton<IRepository<OrderDetail>>(new InMemoryRepository<OrderDetail>());
-            //services.AddSingleton<IRepository<User>>(new InMemoryRepository<User>());
-            //services.AddSingleton<IRepository<Promotion>>(new InMemoryRepository<Promotion>());
-            //services.AddSingleton<IRepository<AppConfig>>(new InMemoryRepository<AppConfig>());
-            //services.AddSingleton<IRepository<UserSetting>>(new InMemoryRepository<UserSetting>());
-            //services.AddSingleton<IRepository<WorkSchedule>>(new InMemoryRepository<WorkSchedule>());
+            container.Register<IRepository<Product>>(new Repository<Product>(contextFactory));
+            container.Register<IRepository<Category>>(new Repository<Category>(contextFactory));
+            container.Register<IRepository<Customer>>(new Repository<Customer>(contextFactory));
+            container.Register<IRepository<Order>>(new Repository<Order>(contextFactory));
+            container.Register<IRepository<OrderDetail>>(new Repository<OrderDetail>(contextFactory));
+            container.Register<IRepository<User>>(new Repository<User>(contextFactory));
+            container.Register<IRepository<Promotion>>(new Repository<Promotion>(contextFactory));
+            container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(contextFactory));
+            container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(contextFactory));
+            container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(contextFactory));
 
             // ===== Register Business Logic Layer (Services) =====
+            var dialogService = new DialogService();
+            container.Register<IDialogService>(dialogService);
+
+            var notificationService = new NotificationService();
+            container.Register<INotificationService>(notificationService);
+
             container.Register<IProductService>(new ProductService(
                 container.Get<IRepository<Product>>(),
                 container.Get<IRepository<Category>>()
@@ -299,63 +267,56 @@ public partial class App : Application
                 container.Get<IRepository<Promotion>>()
             ));
 
-            services.AddSingleton<IProductService, ProductService>();
-            services.AddSingleton<ICustomerService, CustomerService>();
-            services.AddSingleton<IOrderService, OrderService>();
-            services.AddSingleton<ICategoryService, CategoryService>();
-            services.AddSingleton<IPromotionService, PromotionService>();
+            container.Register<IScheduleService>(new ScheduleService(
+                container.Get<IRepository<WorkSchedule>>()
+            ));
+
+            container.Register<IEmployeeService>(new EmployeeService(
+                container.Get<IRepository<User>>(),
+                new AppDbContextFactory()
+            ));
+
+            // WeeklyRosterViewModel requires both ScheduleService and EmployeeService
+            container.Register<WeeklyRosterViewModel>(new WeeklyRosterViewModel(
+                container.Get<IScheduleService>(),
+                container.Get<IEmployeeService>(),
+                container.Get<INotificationService>()
+            ));
 
             // ===== Register ViewModels =====
-            services.AddTransient<PosViewModel>();
-            services.AddTransient<OrderManagementViewModel>();
-            // Add other viewmodels as needed...
+            container.Register<PosViewModel>(new PosViewModel(
+                container.Get<IProductService>(),
+                container.Get<ICategoryService>(),
+                container.Get<IOrderService>(),
+                container.Get<IPromotionService>()
+            ));
 
-            // Build Provider
-            Services = services.BuildServiceProvider();
+            container.Register<OrderManagementViewModel>(new OrderManagementViewModel(
+                container.Get<IOrderService>(),
+                container.Get<IProductService>()
+            ));
 
-            //// Seed Mock Data
-            //SampleDataSeeder.Seed(
-            //    Services.GetRequiredService<IRepository<Product>>(),
-            //    Services.GetRequiredService<IRepository<Category>>(),
-            //    Services.GetRequiredService<IRepository<Order>>(),
-            //    Services.GetRequiredService<IRepository<Customer>>(),
-            //    Services.GetRequiredService<IRepository<User>>()
-            //);
+            container.Register<EmployeeManagementViewModel>(new EmployeeManagementViewModel(
+                container.Get<IEmployeeService>(),
+                container.Get<IDialogService>(),
+                container.Get<IScheduleService>(),
+                container.Get<INotificationService>()
+            ));
 
-            LogMessage("✅ All services registered successfully with Microsoft DI");
+            container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
+
+            // ===== Set static Services property for app-wide access =====
+            Services = container;
+
+            LogMessage(" All services registered successfully");
             LogMessage("====== DATABASE INITIALIZATION END ======");
         }
         catch (Exception ex)
         {
-            LogMessage($"❌ Critical error during service registration: {ex.Message}");
-            LogMessage($"   Inner exception: {ex.InnerException?.Message}");
-            // App will continue - ensure to handle null services gracefully
+            LogMessage($" ERROR registering services: {ex.Message}");
+            LogMessage($"StackTrace: {ex.StackTrace}");
+            throw;
         }
-    }
-
-    private DatabaseConfig ParseConnectionString(string connStr)
-    {
-        var config = new DatabaseConfig();
-        var parts = connStr.Split(';');
-        foreach (var part in parts)
-        {
-            var kv = part.Split('=');
-            if (kv.Length != 2) continue;
-            var key = kv[0].Trim().ToLower();
-            var val = kv[1].Trim();
-
-            switch (key)
-            {
-                case "host": config.Host = val; break;
-                case "port": config.Port = int.TryParse(val, out int p) ? p : 5432; break;
-                case "database": config.Database = val; break;
-                case "username": 
-                case "user id": config.Username = val; break;
-                case "password": config.Password = val; break;
-                case "ssl mode": config.SslMode = val; break;
-            }
-        }
-        return config;
     }
 
     /// <summary>

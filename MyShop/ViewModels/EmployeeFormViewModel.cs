@@ -1,74 +1,84 @@
-using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MyShop.Models;
+using System;
+using System.Security.Cryptography;
+using System.Text;
 
-namespace MyShop.ViewModels;
-
-public partial class EmployeeData : ObservableObject
-{
-    [ObservableProperty]
-    private string name = string.Empty;
-
-    [ObservableProperty]
-    private string phone = string.Empty;
-
-    [ObservableProperty]
-    private int position; // 0 = Admin, 1 = Bán hàng
-
-    [ObservableProperty]
-    private int status; // 0 = Đang làm việc, 1 = Nghỉ phép
-
-    [ObservableProperty]
-    private string notes = string.Empty;
-}
+namespace MyShop.ViewModels.StaffManagement;
 
 public partial class EmployeeFormViewModel : ObservableObject
 {
-    private readonly Action onCancel;
+    [ObservableProperty] private string _firstName = "", _lastName = "", _username = "", _password = "", _phone = "", _errorMessage = "";
+    [ObservableProperty] private decimal _hourlyRate = 25000;
+    [ObservableProperty] private bool _isActive = true;
+    [ObservableProperty] private int _selectedRoleIndex = 1;
 
-    [ObservableProperty]
-    private bool isEditMode;
+    private User? _originalUser;
 
-    [ObservableProperty]
-    private string formTitle = "Thêm nhân viên mới";
-
-    [ObservableProperty]
-    private string submitButtonText = "Lưu thông tin";
-
-    [ObservableProperty]
-    private EmployeeData employeeData = new();
-
-    public EmployeeFormViewModel(bool isEditMode, EmployeeData? employee, Action onCancel)
+    public void Initialize(User? user)
     {
-        this.onCancel = onCancel;
-        IsEditMode = isEditMode;
+        _originalUser = user;
+        if (user == null) return;
 
-        if (isEditMode && employee is not null)
+        FirstName = user.FirstName ?? "";
+        LastName = user.LastName ?? "";
+        Username = user.Username ?? "";
+        Phone = user.Phone ?? "";
+        HourlyRate = user.HourlyRate;
+        IsActive = user.IsActive;
+        SelectedRoleIndex = user.Role == "1" ? 0 : 1;
+    }
+
+    public User GetUpdatedUser()
+    {
+        var user = _originalUser ?? new User();
+        user.FirstName = FirstName.Trim();
+        user.LastName = LastName.Trim();
+        user.Username = Username.Trim();
+        user.Phone = Phone.Trim();
+        user.HourlyRate = HourlyRate;
+        user.IsActive = IsActive;
+        user.Role = SelectedRoleIndex == 0 ? "1" : "2";
+
+        if (!string.IsNullOrWhiteSpace(Password))
+            user.PasswordHash = HashPassword(Password);
+
+        return user;
+    }
+
+    public bool Validate()
+    {
+        ErrorMessage = (FirstName, LastName, Username, Password, HourlyRate) switch
         {
-            FormTitle = "Chỉnh sửa thông tin nhân viên";
-            SubmitButtonText = "Cập nhật thay đổi";
-            EmployeeData = employee;
-        }
-        else
-        {
-            FormTitle = "Thêm nhân viên mới";
-            SubmitButtonText = "Lưu thông tin";
-            EmployeeData = new EmployeeData();
-        }
+            (var f, var l, _, _, _) when string.IsNullOrWhiteSpace(f) || string.IsNullOrWhiteSpace(l) => "First/Last name required",
+            (var u, _, _, _, _) when string.IsNullOrWhiteSpace(u) => "Username required",
+            (_, _, _, var p, _) when _originalUser == null && string.IsNullOrWhiteSpace(p) => "Password required for new staff",
+            (_, _, _, _, var r) when r <= 0 => "Hourly rate must be > 0",
+            _ => ""
+        };
+
+        return string.IsNullOrEmpty(ErrorMessage);
     }
 
     [RelayCommand]
-    private void Submit()
-    {
-        if (string.IsNullOrWhiteSpace(EmployeeData.Name) || string.IsNullOrWhiteSpace(EmployeeData.Phone))
-            return;
-
-        onCancel();
-    }
+    private void Save() => Validate();
 
     [RelayCommand]
-    private void Cancel()
+    private void Cancel() => Reset();
+
+    private void Reset()
     {
-        onCancel();
+        _originalUser = null;
+        FirstName = LastName = Username = Password = Phone = ErrorMessage = "";
+        HourlyRate = 25000;
+        IsActive = true;
+        SelectedRoleIndex = 1;
+    }
+
+    private string HashPassword(string password)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(bytes);
     }
 }

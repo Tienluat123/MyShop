@@ -63,7 +63,7 @@ public class CustomerService : ICustomerService
     {
         try
         {
-            return await _customerRepository.GetAll(paging);
+            return _customerRepository.GetAll(paging);
         }
         catch (Exception ex)
         {
@@ -81,7 +81,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            return await _customerRepository.GetById(id);
+            return _customerRepository.GetById(id);
         }
         catch (Exception ex)
         {
@@ -99,7 +99,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            var pagedResult = await _customerRepository.GetAll();
+            var pagedResult = _customerRepository.GetAll();
             return pagedResult.Items.FirstOrDefault(c => c.Phone == phone);
         }
         catch (Exception ex)
@@ -118,7 +118,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            var pagedResult = await _customerRepository.GetAll();
+            var pagedResult = _customerRepository.GetAll();
             return pagedResult.Items
                 .Where(c =>
                     c.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
@@ -154,7 +154,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            return await _customerRepository.Add(customer);
+            return _customerRepository.Add(customer);
         }
         catch (Exception ex)
         {
@@ -181,7 +181,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            await _customerRepository.Update(customer);
+            await _customerRepository.UpdateAsync(customer);
         }
         catch (Exception ex)
         {
@@ -199,7 +199,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            await _customerRepository.Delete(id);
+            await _customerRepository.DeleteAsync(id);
         }
         catch (Exception ex)
         {

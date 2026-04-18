@@ -17,6 +17,7 @@
                                 <ResourceDictionary Source="ms-appx:///Styles/Texts.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Styles/Navigation.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Styles/Components.xaml"/>
+
                         </ResourceDictionary.MergedDictionaries>
                 </ResourceDictionary>
         </Application.Resources>

@@ -9,6 +9,8 @@ using MyShop.Views.Pos;
 using MyShop.Views.ProductManagement;
 using MyShop.Views.Promotion;
 using MyShop.Views.StaffManagement;
+using MyShop.Di;
+using MyShop.Services;
 
 namespace MyShop.Views;
 
@@ -23,6 +25,10 @@ public sealed partial class MainPage : Page
         // ✅ Set ViewModel as DataContext
         _viewModel = new MainPageViewModel();
         this.DataContext = _viewModel;
+
+        // Setup NotificationService
+        var notificationService = ServiceContainer.Instance.Get<INotificationService>();
+        NotificationViewControl.SetNotificationService(notificationService);
 
         // Set default page
         if (_viewModel.CurrentPageType != null)

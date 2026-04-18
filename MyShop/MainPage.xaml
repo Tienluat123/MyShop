@@ -2,6 +2,8 @@
   x:Class="MyShop.Views.MainPage"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:local="using:MyShop.Views.Controls"
+  xmlns:comp="using:MyShop.Views.Components"
   RequestedTheme="Light"
   Background="#FFFFFF">
 
@@ -126,5 +128,7 @@
       </Grid>
 
     </NavigationView>
+
+    <comp:NotificationView x:Name="NotificationViewControl"/>
   </Grid>
 </Page>
