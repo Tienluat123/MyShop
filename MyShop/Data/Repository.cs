@@ -1,10 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-<<<<<<< HEAD
 using System.Linq.Expressions;
-
-=======
 using MyShop.Models;
->>>>>>> origin/feature/promotion
 namespace MyShop.Data;
 
 /// <summary>
@@ -25,24 +21,19 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     /// Lấy tất cả entities với phân trang
     /// </summary>
     public PagedResult<TEntity> GetAll(PagingRequest? paging = null)
-{
-    try
     {
-        var result = new PagedResult<TEntity>();
-        // 1. Tạo query ban đầu từ DbSet
-        var query = _dbSet.AsNoTracking().AsQueryable();
-
-        if (paging == null)
+        try
         {
-<<<<<<< HEAD
             using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
             var dbSet = context.Set<TEntity>();
             var result = new PagedResult<TEntity>();
 
-            // Nếu không có phân trang, lấy tất cả
+            // 1. Tạo query ban đầu từ DbSet
+            var query = dbSet.AsNoTracking().AsQueryable();
+
             if (paging == null)
             {
-                result.Items = dbSet.ToList();
+                result.Items = query.ToList();
                 result.Pagination = new PagingMetadata
                 {
                     PageNumber = 1,
@@ -52,73 +43,47 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
                 return result;
             }
 
-            // Validate phân trang
+            // 2. CHỖ THÊM SEARCH: Lọc dữ liệu theo SearchText
+            if (!string.IsNullOrEmpty(paging.SearchText))
+            {
+                var search = paging.SearchText.ToLower();
+
+                // Vì đây là Repository Generic, ta kiểm tra nếu là Customer thì lọc theo Name/Phone
+                if (typeof(TEntity) == typeof(Customer))
+                {
+                    query = query.Where(e =>
+                        (e as Customer).Name.ToLower().Contains(search) ||
+                        (e as Customer).Phone.Contains(search));
+                }
+                // Sau này nếu có Product, bạn có thể thêm else if ở đây
+            }
+
             paging.Validate();
 
-            // Tính toán tổng mục
-            var totalItems = dbSet.Count();
-            var totalPages = (int)Math.Ceiling((decimal)totalItems / paging.PageSize);
+            // 3. QUAN TRỌNG: Phải Count() trên cái query đã được lọc
+            var totalItems = query.Count();
 
-            // Lấy dữ liệu với phân trang
-            var items = dbSet
+            // 4. QUAN TRỌNG: Phải Skip/Take trên cái query đã được lọc
+            var items = query
                 .Skip(paging.GetSkip())
                 .Take(paging.PageSize)
                 .ToList();
 
             result.Items = items;
-=======
-            result.Items = query.ToList();
->>>>>>> origin/feature/promotion
             result.Pagination = new PagingMetadata
             {
-                PageNumber = 1,
-                PageSize = result.Items.Count,
-                TotalItems = result.Items.Count,
+                PageNumber = paging.PageNumber,
+                PageSize = paging.PageSize,
+                TotalItems = totalItems,
             };
+
             return result;
         }
-
-        // 2. CHỖ THÊM SEARCH: Lọc dữ liệu theo SearchText
-        if (!string.IsNullOrEmpty(paging.SearchText))
+        catch (Exception ex)
         {
-            var search = paging.SearchText.ToLower();
-
-            // Vì đây là Repository Generic, ta kiểm tra nếu là Customer thì lọc theo Name/Phone
-            if (typeof(TEntity) == typeof(Customer))
-            {
-                query = query.Where(e =>
-                    (e as Customer).Name.ToLower().Contains(search) ||
-                    (e as Customer).Phone.Contains(search));
-            }
-            // Sau này nếu có Product, bạn có thể thêm else if ở đây
+            throw new InvalidOperationException($"Lỗi khi lấy dữ liệu {typeof(TEntity).Name}: {ex.Message}", ex);
         }
-
-        paging.Validate();
-
-        // 3. QUAN TRỌNG: Phải Count() trên cái query đã được lọc
-        var totalItems = query.Count();
-
-        // 4. QUAN TRỌNG: Phải Skip/Take trên cái query đã được lọc
-        var items = query
-            .Skip(paging.GetSkip())
-            .Take(paging.PageSize)
-            .ToList();
-
-        result.Items = items;
-        result.Pagination = new PagingMetadata
-        {
-            PageNumber = paging.PageNumber,
-            PageSize = paging.PageSize,
-            TotalItems = totalItems,
-        };
-
-        return result;
     }
-    catch (Exception ex)
-    {
-        throw new InvalidOperationException($"Lỗi khi lấy dữ liệu {typeof(TEntity).Name}: {ex.Message}", ex);
-    }
-}
     /// <summary>
     /// Lấy entity theo ID
     /// </summary>
@@ -426,7 +391,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         try
         {
             using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            // ✅ Use ExecutionStrategy to avoid Npgsql retry strategy conflict
+            //  Use ExecutionStrategy to avoid Npgsql retry strategy conflict
             var strategy = context.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () => await context.SaveChangesAsync());
         }

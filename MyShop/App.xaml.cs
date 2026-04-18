@@ -266,10 +266,6 @@ public partial class App : Application
                 container.Get<IRepository<Category>>()
             ));
 
-            container.Register<IPromotionService>(new PromotionService(
-                container.Get<IRepository<Promotion>>()
-            ));
-
             container.Register<IScheduleService>(new ScheduleService(
                 container.Get<IRepository<WorkSchedule>>()
             ));

@@ -29,7 +29,7 @@ public partial class PromoViewModel : ObservableObject
 
     private async Task LoadActivePromotions()
     {
-        var promos = await _promoService.GetActivePromotions();
+        var promos = await _promoService.GetAllAsync();
         ActivePromotions.Clear();
         foreach (var p in promos)
         {
@@ -42,7 +42,7 @@ public partial class PromoViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(PromoCodeEntry)) return;
 
-        var promo = await _promoService.GetPromotionByCode(PromoCodeEntry);
+        var promo = await _promoService.GetByCodeAsync(PromoCodeEntry);
         if (promo != null)
         {
             PromotionSelected?.Invoke(promo);
