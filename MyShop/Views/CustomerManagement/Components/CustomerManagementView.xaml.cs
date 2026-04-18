@@ -8,14 +8,53 @@ public sealed partial class CustomerManagementView : Page
 {
     public CustomerManagementView()
     {
-        InitializeComponent();
+        this.InitializeComponent();
+        
+        // Đăng ký sự kiện Loaded: Khi giao diện vẽ xong hoàn toàn mới cho phép load data
+        this.Loaded += CustomerManagementView_Loaded;
     }
 
     private CustomerManagementViewModel? ViewModel => DataContext as CustomerManagementViewModel;
 
+    private void CustomerManagementView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        // Kiểm tra nếu ViewModel đã có (đã được set từ OnNavigatedTo)
+        // thì mới ra lệnh nạp 6 khách hàng
+        if (ViewModel != null)
+        {
+            ViewModel.LoadCustomersCommand.Execute(null);
+        }
+    }
+
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        // Nhận ViewModel từ trang cha truyền sang
         DataContext = e.Parameter as CustomerManagementViewModel;
     }
+    private async void DeleteButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+{
+    // 1. Lấy khách hàng từ dòng vừa nhấn
+    var button = (Button)sender;
+    var customer = (CustomerListItem)button.DataContext;
+
+    // 2. Tạo Dialog xác nhận
+    ContentDialog deleteDialog = new ContentDialog
+    {
+        Title = "Confirm Deletion",
+        Content = $"Are you sure you want to delete {customer.Name}? This action cannot be undone.",
+        PrimaryButtonText = "Delete",
+        CloseButtonText = "Cancel",
+        DefaultButton = ContentDialogButton.Close,
+        XamlRoot = this.XamlRoot // Bắt buộc trong WinUI 3
+    };
+
+    // 3. Nếu người dùng nhấn Delete
+    var result = await deleteDialog.ShowAsync();
+    if (result == ContentDialogResult.Primary)
+    {
+        // Gọi lệnh xóa trong ViewModel
+        ViewModel?.DeleteCustomerCommand.Execute(customer);
+    }
+}
 }

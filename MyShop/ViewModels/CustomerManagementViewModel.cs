@@ -2,14 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks; // Cần thiết cho Task
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
+using MyShop.Models; 
+using MyShop.Services;
+using MyShop.Data; 
 namespace MyShop.ViewModels;
 
 public partial class CustomerManagementViewModel : ObservableObject
 {
-    private readonly List<CustomerListItem> allCustomers;
+    private readonly ICustomerService _customerService;
+    private const int PageSize = 10;
+
     private readonly Action onAdd;
     private readonly Action onRules;
     private readonly Action<CustomerListItem> onProfile;
@@ -37,120 +42,144 @@ public partial class CustomerManagementViewModel : ObservableObject
     private string pagingSummary = "Showing 0-0 in 0 items";
 
     public CustomerManagementViewModel(
+        ICustomerService customerService,
         Action onAdd,
         Action onRules,
         Action<CustomerListItem> onProfile,
         Action<CustomerListItem> onEdit)
     {
+        _customerService = customerService; // Phải gán giá trị này thì mới dùng được service
         this.onAdd = onAdd;
         this.onRules = onRules;
         this.onProfile = onProfile;
         this.onEdit = onEdit;
 
-        allCustomers = BuildSeedData();
-        RebuildList();
+        // Gọi lệnh load lần đầu
+        //LoadCustomersCommand.Execute(null);
+
+        _customerService = customerService;
     }
+
+    // --- LOGIC CỐT LÕI ---
+
+    [RelayCommand]
+private async Task LoadCustomers()
+{
+    var request = new PagingRequest 
+    { 
+        PageNumber = CurrentPage, 
+        PageSize = PageSize,
+        SearchText = SearchText?.Trim() 
+    };
+
+    //var result = await Task.Run(() => _customerService.GetAll(request));
+    var result = _customerService.GetAll(request);
+    Console.WriteLine($"[DEBUG] Đã lấy được {result.Items.Count} khách hàng từ Database!");
+
+    DisplayCustomers.Clear();
+    foreach (var c in result.Items)
+    {
+        DisplayCustomers.Add(new CustomerListItem 
+        { 
+            Id = c.Id, 
+            Name = c.Name, 
+            Phone = c.Phone, 
+            Code = $"CUST-{c.Id:D3}",
+            Tier = "Active", 
+            Initials = string.Join("", c.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x[0])) 
+        });
+    }
+
+    // SỬA 2 DÒNG NÀY: Truy cập thông qua result.Pagination
+    TotalItems = result.Pagination.TotalItems; 
+    TotalPages = result.Pagination.TotalPages; 
+    
+    UpdatePagingSummary(result.Items.Count);
+    UpdatePageNumbers();
+}
+
+    // --- HÀM BỔ TRỢ (Giải quyết lỗi thiếu hàm) ---
+
+    private void UpdatePagingSummary(int currentItemsCount)
+    {
+        var start = TotalItems == 0 ? 0 : ((CurrentPage - 1) * PageSize) + 1;
+        var end = TotalItems == 0 ? 0 : start + currentItemsCount - 1;
+        PagingSummary = $"Showing {start}-{end} in {TotalItems} customers";
+    }
+
+    private void UpdatePageNumbers()
+    {
+        PageNumbers.Clear();
+        for (int i = 1; i <= TotalPages; i++) PageNumbers.Add(i);
+    }
+
+    // --- COMMANDS ---
 
     [RelayCommand]
     private void Search()
     {
         CurrentPage = 1;
-        RebuildList();
+        LoadCustomersCommand.Execute(null);
     }
 
+    partial void OnSearchTextChanged(string? value)
+    {
+        // Mỗi khi gõ 1 chữ, nó sẽ tự động gọi lại hàm Load (với Page 1)
+        CurrentPage = 1;
+        LoadCustomersCommand.Execute(null);
+    }
     [RelayCommand]
     private void GoToPage(int page)
     {
         if (page < 1 || page > TotalPages) return;
         CurrentPage = page;
-        RebuildList();
+        LoadCustomersCommand.Execute(null);
     }
 
     [RelayCommand]
     private void PreviousPage()
     {
-        if (CurrentPage <= 1) return;
-        CurrentPage--;
-        RebuildList();
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            LoadCustomersCommand.Execute(null);
+        }
     }
 
     [RelayCommand]
     private void NextPage()
     {
-        if (CurrentPage >= TotalPages) return;
-        CurrentPage++;
-        RebuildList();
-    }
-
-    [RelayCommand]
-    private void MapsToAdd() => onAdd();
-
-    [RelayCommand]
-    private void MapsToRules() => onRules();
-
-    [RelayCommand]
-    private void MapsToProfile()
-    {
-        if (SelectedCustomer is not null) onProfile(SelectedCustomer);
-    }
-
-    [RelayCommand]
-    private void EditCustomer(CustomerListItem customer) => onEdit(customer);
-
-    public void OpenProfile(CustomerListItem customer)
-    {
-        SelectedCustomer = customer;
-        MapsToProfile();
-    }
-
-    partial void OnSearchTextChanged(string value)
-    {
-        Search();
-    }
-
-    private void RebuildList()
-    {
-        const int pageSize = 5;
-
-        var query = SearchText?.Trim() ?? string.Empty;
-        var filtered = string.IsNullOrWhiteSpace(query)
-            ? allCustomers
-            : allCustomers.Where(c =>
-                c.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                c.Phone.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
-
-        TotalItems = filtered.Count;
-        TotalPages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)pageSize));
-
-        if (CurrentPage > TotalPages) CurrentPage = TotalPages;
-
-        var pageItems = filtered.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
-
-        DisplayCustomers.Clear();
-        foreach (var customer in pageItems)
+        if (CurrentPage < TotalPages)
         {
-            DisplayCustomers.Add(customer);
+            CurrentPage++;
+            LoadCustomersCommand.Execute(null);
         }
-
-        PageNumbers.Clear();
-        for (int i = 1; i <= TotalPages; i++) PageNumbers.Add(i);
-
-        var start = filtered.Count == 0 ? 0 : ((CurrentPage - 1) * pageSize) + 1;
-        var end = filtered.Count == 0 ? 0 : start + pageItems.Count - 1;
-        PagingSummary = $"Showing {start}-{end} in {TotalItems} customers";
     }
 
-    private static List<CustomerListItem> BuildSeedData()
+    [RelayCommand]
+    private async Task DeleteCustomer(CustomerListItem customer)
     {
-        return
-        [
-            new CustomerListItem { Id = 1, Code = "CUST-001", Name = "Nguyen Van A", Initials = "NVA", Phone = "0901234567", Tier = "Gold", Points = 1250, Visits = 25 },
-            new CustomerListItem { Id = 2, Code = "CUST-002", Name = "Tran Thi B", Initials = "TTB", Phone = "0912345678", Tier = "Silver", Points = 450, Visits = 8 },
-            new CustomerListItem { Id = 3, Code = "CUST-003", Name = "Le Van C", Initials = "LVC", Phone = "0987654321", Tier = "Regular", Points = 0, Visits = 1 },
-            new CustomerListItem { Id = 4, Code = "CUST-004", Name = "Pham Van D", Initials = "PVD", Phone = "0933445566", Tier = "Bronze", Points = 150, Visits = 3 },
-            new CustomerListItem { Id = 5, Code = "CUST-005", Name = "Hoang Thi E", Initials = "HTE", Phone = "0944556677", Tier = "Gold", Points = 2100, Visits = 40 },
-            new CustomerListItem { Id = 6, Code = "CUST-006", Name = "Vo Van F", Initials = "VVF", Phone = "0955667788", Tier = "Silver", Points = 880, Visits = 12 },
-            new CustomerListItem { Id = 7, Code = "CUST-007", Name = "Dang Thi G", Initials = "DTG", Phone = "0966778899", Tier = "Regular", Points = 50, Visits = 2 }
-        ];
+        if (customer == null) return;
+        await Task.Run(() => _customerService.Delete(customer.Id));
+        LoadCustomersCommand.Execute(null);
     }
+
+    // --- ĐIỀU HƯỚNG ---
+
+    [RelayCommand] private void MapsToAdd() => onAdd();
+    [RelayCommand] private void MapsToRules() => onRules();
+    [RelayCommand] 
+   
+    private void MapsToProfile(CustomerListItem customer) // Nhận tham số trực tiếp
+    {
+        if (customer != null) onProfile(customer);
+    }
+
+    [RelayCommand] 
+    private void EditCustomer(CustomerListItem customer) // Nhận tham số trực tiếp
+    {
+        if (customer != null) onEdit(customer);
+    }
+    
 }
+
