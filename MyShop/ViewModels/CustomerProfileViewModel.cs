@@ -122,15 +122,15 @@ public partial class CustomerProfileViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void AddNote()
+    private async void AddNote()
     {
         SelectedCustomer.Notes = "VIP customer. Prefers medium sugar and oat milk.";
         
-        var dbCustomer = _customerService.GetById(SelectedCustomer.Customer.Id);
+        var dbCustomer = await _customerService.GetById(SelectedCustomer.Customer.Id);
         if (dbCustomer != null)
         {
             dbCustomer.Notes = SelectedCustomer.Notes;
-            _customerService.Update(dbCustomer);
+            await _customerService.Update(dbCustomer);
         }
         
         OnPropertyChanged(nameof(SelectedCustomer));

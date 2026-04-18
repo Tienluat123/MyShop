@@ -23,7 +23,6 @@ public class PagingRequest
     /// <summary>
     /// Validate và điều chỉnh giá trị
     /// </summary>
-    public string? SearchText { get; set; }
     public void Validate()
     {
         if (PageNumber < 1) PageNumber = 1;

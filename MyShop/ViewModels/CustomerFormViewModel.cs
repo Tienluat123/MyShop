@@ -40,7 +40,7 @@ public partial class CustomerFormViewModel : ObservableObject
         
         // PHẢI NẠP ĐỦ THÔNG TIN Ở ĐÂY ĐỂ UI CÓ DỮ LIỆU CŨ
         // Lấy thông tin chi tiết từ Service vì CustomerListItem thường thiếu Address, Email
-        var fullInfo = _customerService.GetById(customer.Id);
+        var fullInfo = _customerService.GetById(customer.Id).GetAwaiter().GetResult();
         
         CustomerData = new CustomerInputModel
         {

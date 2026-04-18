@@ -73,7 +73,7 @@ private async Task LoadCustomers()
     };
 
     //var result = await Task.Run(() => _customerService.GetAll(request));
-    var result = _customerService.GetAll(request);
+    var result = await _customerService.GetAll(request);
     Console.WriteLine($"[DEBUG] Đã lấy được {result.Items.Count} khách hàng từ Database!");
 
     DisplayCustomers.Clear();
