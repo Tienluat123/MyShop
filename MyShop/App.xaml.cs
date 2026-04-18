@@ -312,7 +312,7 @@ public partial class App : Application
             Services = container;
 
 
-            LogMessage("✅ All services registered successfully");
+            LogMessage(" All services registered successfully");
             LogMessage("====== DATABASE INITIALIZATION END ======");
         }
         catch (Exception ex)
