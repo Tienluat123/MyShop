@@ -27,6 +27,7 @@ public sealed partial class ProductFormView : ContentDialog
         if (ViewModel?.SubmitCommand != null && ViewModel.SubmitCommand.CanExecute(null))
             ViewModel.SubmitCommand.Execute(null);
 
-        this.Hide();
+        if (ViewModel?.IsFormValid == true)
+            this.Hide();
     }
 }

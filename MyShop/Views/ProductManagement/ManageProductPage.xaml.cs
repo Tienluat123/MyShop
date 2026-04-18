@@ -1,4 +1,6 @@
 using Microsoft.UI.Xaml.Controls;
+using MyShop.Di;
+using MyShop.Services;
 using MyShop.ViewModels;
 using MyShop.Views.ProductManagement.Components;
 using System;
@@ -8,9 +10,12 @@ namespace MyShop.Views.ProductManagement;
 
 public sealed partial class ManageProductPage : Page
 {
+    private readonly IProductService _productService;
+
     public ManageProductPage()
     {
         InitializeComponent();
+        _productService = ServiceContainer.Instance.Get<IProductService>();
         Loaded += ManageProductPage_Loaded;
     }
 
@@ -25,6 +30,7 @@ public sealed partial class ManageProductPage : Page
     private void NavigateToManagement()
     {
         var vm = new ProductManagementViewModel(
+            productService: _productService,
             onAddProduct: () => ShowFormDialog(false),
             onEditProduct: product => ShowFormDialog(true, product));
 
@@ -34,7 +40,12 @@ public sealed partial class ManageProductPage : Page
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
     private async void ShowFormDialog(bool isEditMode, ProductListEntry? product = null)
     {
-        var vm = new ProductFormViewModel(isEditMode, product, onCancel: () => { });
+        var managementVm = (ProductContentFrame.Content as ProductManagementView)?.ViewModel;
+        var vm = new ProductFormViewModel(
+            isEditMode,
+            product,
+            onCancel: () => { },
+            onSaved: () => managementVm?.LoadProductsCommand.Execute(null));
         var dialog = new ProductFormView(vm)
         {
             XamlRoot = this.XamlRoot
