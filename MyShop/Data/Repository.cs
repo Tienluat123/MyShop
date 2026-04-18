@@ -3,11 +3,6 @@ using System.Linq.Expressions;
 using MyShop.Models;
 namespace MyShop.Data;
 
-/// <summary>
-/// Generic Repository implementation - cung cấp CRUD operations cho bất kỳ Entity nào
-/// Thread-safe: Uses AppDbContextFactory to create fresh context for each operation
-/// </summary>
-/// <typeparam name="TEntity">Kiểu Entity</typeparam>
 public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
 {
     private readonly AppDbContextFactory _contextFactory;
@@ -17,371 +12,234 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
     }
 
-    /// <summary>
-    /// Lấy tất cả entities với phân trang
-    /// </summary>
-    public PagedResult<TEntity> GetAll(PagingRequest? paging = null)
+
+    public async Task<TResult> ExecuteAsync<TResult>(
+        Func<AppDbContext, Task<TResult>> action,
+        string operationName = "operation")
     {
-        try
+        const int maxRetries = 3;
+        int attempt = 0;
+
+        while (attempt < maxRetries)
         {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            var result = new PagedResult<TEntity>();
-
-            // 1. Tạo query ban đầu từ DbSet
-            var query = dbSet.AsNoTracking().AsQueryable();
-
-            if (paging == null)
+            try
             {
-                result.Items = query.ToList();
-                result.Pagination = new PagingMetadata
-                {
-                    PageNumber = 1,
-                    PageSize = result.Items.Count,
-                    TotalItems = result.Items.Count,
-                };
-                return result;
+                using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
+                var strategy = context.Database.CreateExecutionStrategy();
+                return await strategy.ExecuteAsync(async () => await action(context));
             }
-
-            // 2. CHỖ THÊM SEARCH: Lọc dữ liệu theo SearchText
-            if (!string.IsNullOrEmpty(paging.SearchText))
+            catch (Exception ex)
             {
-                var search = paging.SearchText.ToLower();
+                attempt++;
 
-                // Vì đây là Repository Generic, ta kiểm tra nếu là Customer thì lọc theo Name/Phone
-                if (typeof(TEntity) == typeof(Customer))
+                // Kiểm tra lỗi có "retry được" không
+                bool isRetryableError = ex.Message.Contains("ECIRCUITBREAKER") ||
+                                       ex.Message.Contains("EMAXCONNSESSION") ||
+                                       ex.Message.Contains("too many") ||
+                                       ex.Message.Contains("authentication") ||
+                                       ex.InnerException?.Message.Contains("ECIRCUITBREAKER") == true ||
+                                       ex.InnerException?.Message.Contains("authentication") == true;
+
+                // Nếu lỗi retry được VÀ còn attempt → chờ rồi retry
+                if (isRetryableError && attempt < maxRetries)
                 {
-                    query = query.Where(e =>
-                        (e as Customer).Name.ToLower().Contains(search) ||
-                        (e as Customer).Phone.Contains(search));
+                    int delayMs = attempt * 1000; // 1s, 2s, 3s
+                    System.Diagnostics.Debug.WriteLine(
+                        $"⚠️ [{typeof(TEntity).Name}] {operationName} lỗi (attempt {attempt}/{maxRetries}). Chờ {delayMs}ms rồi retry...");
+                    await Task.Delay(delayMs);
+                    continue;
                 }
-                // Sau này nếu có Product, bạn có thể thêm else if ở đây
+
+                // Không phải retryable error hoặc hết attempts → throw
+                System.Diagnostics.Debug.WriteLine($"❌ [{typeof(TEntity).Name}] {operationName} failed: {ex.GetType().Name}: {ex.Message}");
+                if (ex.InnerException != null)
+                    System.Diagnostics.Debug.WriteLine($"   └─ Inner: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
+                throw new InvalidOperationException($"Lỗi khi thực hiện {operationName} trên {typeof(TEntity).Name}: {ex.Message}", ex);
             }
-
-            paging.Validate();
-
-            // 3. QUAN TRỌNG: Phải Count() trên cái query đã được lọc
-            var totalItems = query.Count();
-
-            // 4. QUAN TRỌNG: Phải Skip/Take trên cái query đã được lọc
-            var items = query
-                .Skip(paging.GetSkip())
-                .Take(paging.PageSize)
-                .ToList();
-
-            result.Items = items;
-            result.Pagination = new PagingMetadata
-            {
-                PageNumber = paging.PageNumber,
-                PageSize = paging.PageSize,
-                TotalItems = totalItems,
-            };
-
-            return result;
         }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi lấy dữ liệu {typeof(TEntity).Name}: {ex.Message}", ex);
-        }
+
+        throw new InvalidOperationException($"Lỗi khi thực hiện {operationName} trên {typeof(TEntity).Name}: Exceeded max retries");
     }
 
     /// <summary>
-    /// Lấy entity theo ID
+    /// Gom GetAllAsync lại - gọi GetAllAsyncWithIncludes với includes trống cho gọn
     /// </summary>
-    public TEntity? GetById(int id)
+    public async Task<PagedResult<TEntity>> GetAllAsync(
+        PagingRequest? paging = null,
+        Expression<Func<TEntity, bool>>? filter = null,
+        params string[] includes)
     {
-        if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
-
-        try
-        {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            return dbSet.Find(id);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi lấy {typeof(TEntity).Name} với ID {id}: {ex.Message}", ex);
-        }
+        return await GetAllAsyncWithIncludes(paging, filter, includes);
     }
 
     /// <summary>
-    /// Thêm entity mới
-    /// </summary>
-    public TEntity Add(TEntity entity)
-    {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
-
-        try
-        {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            dbSet.Add(entity);
-            context.SaveChanges();
-            return entity;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi thêm {typeof(TEntity).Name}: {ex.Message}", ex);
-        }
-    }
-
-    /// <summary>
-    /// Cập nhật entity
-    /// </summary>
-    public void Update(TEntity entity)
-    {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
-
-        try
-        {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            dbSet.Update(entity);
-            context.SaveChanges();
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi cập nhật {typeof(TEntity).Name}: {ex.Message}", ex);
-        }
-    }
-
-    /// <summary>
-    /// Xóa entity theo ID
-    /// </summary>
-    public void Delete(int id)
-    {
-        if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
-
-        try
-        {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            var entity = dbSet.Find(id);
-
-            if (entity == null)
-                throw new KeyNotFoundException($"{typeof(TEntity).Name} với ID {id} không tìm thấy");
-
-            dbSet.Remove(entity);
-            context.SaveChanges();
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi xóa {typeof(TEntity).Name} với ID {id}: {ex.Message}", ex);
-        }
-    }
-
-    /// <summary>
-    /// Lấy IQueryable để thực hiện LINQ queries phức tạp
-    /// </summary>
-    public IQueryable<TEntity> Query()
-    {
-        using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-        return context.Set<TEntity>().AsQueryable();
-    }
-
-    /// <summary>
-    /// Tìm entities theo predicate
-    /// </summary>
-    public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
-    {
-        using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-        return context.Set<TEntity>().Where(predicate).ToList();
-    }
-
-    /// <summary>
-    /// Lưu tất cả thay đổi vào database
-    /// </summary>
-    public void SaveChanges()
-    {
-        try
-        {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            context.SaveChanges();
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi lưu dữ liệu: {ex.Message}", ex);
-        }
-    }
-
-    // ===== ASYNC Methods (modern, scalable) =====
-    /// <summary>
-    /// Lấy tất cả entities với phân trang (Async)
-    /// </summary>
-    public async Task<PagedResult<TEntity>> GetAllAsync(PagingRequest? paging = null)
-    {
-        try
-        {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            var result = new PagedResult<TEntity>();
-
-            // Nếu không có phân trang, lấy tất cả
-            if (paging == null)
-            {
-                result.Items = await dbSet.ToListAsync();
-                result.Pagination = new PagingMetadata
-                {
-                    PageNumber = 1,
-                    PageSize = result.Items.Count,
-                    TotalItems = result.Items.Count,
-                };
-                return result;
-            }
-
-            // Validate phân trang
-            paging.Validate();
-
-            // Tính toán tổng mục
-            var totalItems = await dbSet.CountAsync();
-
-            // Lấy dữ liệu với phân trang
-            var items = await dbSet
-                .Skip(paging.GetSkip())
-                .Take(paging.PageSize)
-                .ToListAsync();
-
-            result.Items = items;
-            result.Pagination = new PagingMetadata
-            {
-                PageNumber = paging.PageNumber,
-                PageSize = paging.PageSize,
-                TotalItems = totalItems,
-            };
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi lấy dữ liệu {typeof(TEntity).Name}: {ex.Message}", ex);
-        }
-    }
-
-    /// <summary>
-    /// Thêm entity mới (Async)
+    /// Thêm entity mới - Trả về entity có kèm ID mới từ database (Async)
     /// </summary>
     public async Task<TEntity> AddAsync(TEntity entity)
     {
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
 
-        try
+        var result = await ExecuteAsync(async context =>
         {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            dbSet.Add(entity);
+            context.Add(entity);
+            await context.SaveChangesAsync();
+            return entity; // Trả về entity để có được ID mới
+        }, "AddAsync");
 
-            // Use ExecutionStrategy to avoid Npgsql retry strategy conflict
-            var strategy = context.Database.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () => await context.SaveChangesAsync());
-
-            System.Diagnostics.Debug.WriteLine($"✅ [{typeof(TEntity).Name}] AddAsync completed successfully");
-            return entity;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ [{typeof(TEntity).Name}] AddAsync failed: {ex.GetType().Name}: {ex.Message}");
-            if (ex.InnerException != null)
-                System.Diagnostics.Debug.WriteLine($"   └─ Inner: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
-            throw new InvalidOperationException($"Lỗi khi thêm {typeof(TEntity).Name}: {ex.Message}", ex);
-        }
+        System.Diagnostics.Debug.WriteLine($" [{typeof(TEntity).Name}] AddAsync completed successfully");
+        return result;
     }
 
     /// <summary>
     /// Cập nhật entity (Async)
     /// </summary>
-    public async Task UpdateAsync(TEntity entity)
+    public async Task<TEntity> UpdateAsync(TEntity entity)
     {
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
 
-        try
+        var result = await ExecuteAsync(async context =>
         {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            dbSet.Update(entity);
+            context.Update(entity);
+            await context.SaveChangesAsync();
+            return entity;
+        }, "UpdateAsync");
 
-            //  Use ExecutionStrategy to avoid Npgsql retry strategy conflict
-            var strategy = context.Database.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () => await context.SaveChangesAsync());
-
-            System.Diagnostics.Debug.WriteLine($"✅ [{typeof(TEntity).Name}] UpdateAsync completed successfully");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ [{typeof(TEntity).Name}] UpdateAsync failed: {ex.GetType().Name}: {ex.Message}");
-            if (ex.InnerException != null)
-                System.Diagnostics.Debug.WriteLine($"   └─ Inner: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
-            throw new InvalidOperationException($"Lỗi khi cập nhật {typeof(TEntity).Name}: {ex.Message}", ex);
-        }
+        System.Diagnostics.Debug.WriteLine($" [{typeof(TEntity).Name}] UpdateAsync completed successfully");
+        return result;
     }
-
-    /// <summary>
-    /// Xóa entity theo ID (Async)
-    /// </summary>
     public async Task DeleteAsync(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
 
-        try
+        await ExecuteAsync(async context =>
         {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            var dbSet = context.Set<TEntity>();
-            var entity = dbSet.Find(id);
-
+            var entity = await context.Set<TEntity>().FindAsync(id);
             if (entity == null)
                 throw new KeyNotFoundException($"{typeof(TEntity).Name} với ID {id} không tìm thấy");
 
-            dbSet.Remove(entity);
+            context.Remove(entity);
+            await context.SaveChangesAsync();
+            return true;
+        }, $"DeleteAsync(ID={id})");
 
-            //  Use ExecutionStrategy to avoid Npgsql retry strategy conflict
-            var strategy = context.Database.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () => await context.SaveChangesAsync());
-
-            System.Diagnostics.Debug.WriteLine($"✅ [{typeof(TEntity).Name}] DeleteAsync(ID={id}) completed successfully");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ [{typeof(TEntity).Name}] DeleteAsync(ID={id}) failed: {ex.GetType().Name}: {ex.Message}");
-            if (ex.InnerException != null)
-                System.Diagnostics.Debug.WriteLine($"   └─ Inner: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
-            throw new InvalidOperationException($"Lỗi khi xóa {typeof(TEntity).Name} với ID {id}: {ex.Message}", ex);
-        }
+        System.Diagnostics.Debug.WriteLine($" [{typeof(TEntity).Name}] DeleteAsync(ID={id}) completed successfully");
     }
 
-    /// <summary>
-    /// Lấy entities theo điều kiện với Include support (Async)
-    /// </summary>
-    public async Task<List<TEntity>> GetAsync(Expression<Func<TEntity, bool>>? predicate = null, params string[] includes)
+    public async Task<TEntity?> GetByIdAsync(int id)
     {
-        try
+        if (id <= 0)
+            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
+
+        return await ExecuteAsync(async context =>
         {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
+            return await context.Set<TEntity>().FindAsync(id);
+        }, $"GetByIdAsync(ID={id})");
+    }
+
+    public async Task<List<TEntity>> GetAsync(
+        Expression<Func<TEntity, bool>>? predicate = null,
+        params string[] includes)
+    {
+        return await ExecuteAsync(async context =>
+        {
             var query = context.Set<TEntity>().AsQueryable();
 
             // Add Includes
             foreach (var include in includes)
-            {
                 query = query.Include(include);
-            }
 
             // Apply predicate
             if (predicate != null)
-            {
                 query = query.Where(predicate);
-            }
 
             return await query.ToListAsync();
-        }
-        catch (Exception ex)
+        }, "GetAsync");
+    }
+
+    /// <summary>
+    /// Kiểm tra entity có tồn tại với điều kiện (Async)
+    /// </summary>
+    public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        return await ExecuteAsync(async context =>
         {
-            throw new InvalidOperationException($"Lỗi khi lấy dữ liệu {typeof(TEntity).Name}: {ex.Message}", ex);
-        }
+            return await context.Set<TEntity>().AnyAsync(predicate);
+        }, "AnyAsync");
+    }
+
+    public async Task<PagedResult<TEntity>> GetAllAsyncWithIncludes(
+        PagingRequest? paging = null,
+        Expression<Func<TEntity, bool>>? filter = null,
+        params string[] includes)
+    {
+        return await ExecuteAsync(async context =>
+        {
+            var query = context.Set<TEntity>().AsNoTracking();
+
+            // Apply Includes FIRST (before filter for better performance)
+            foreach (var include in includes)
+                query = query.Include(include);
+
+            // Apply filter if available
+            if (filter != null)
+                query = query.Where(filter);
+
+            // If no pagination, get all
+            if (paging == null)
+            {
+                var allItems = await query.ToListAsync();
+                return new PagedResult<TEntity>
+                {
+                    Items = allItems,
+                    Pagination = new PagingMetadata
+                    {
+                        PageNumber = 1,
+                        PageSize = allItems.Count,
+                        TotalItems = allItems.Count,
+                    }
+                };
+            }
+
+            // Validate pagination
+            paging.Validate();
+
+            // Count total items (MUST be after filter is applied)
+            var totalItems = await query.CountAsync();
+
+            // Get items with Skip/Take
+            var items = await query
+                .Skip(paging.GetSkip())
+                .Take(paging.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<TEntity>
+            {
+                Items = items,
+                Pagination = new PagingMetadata
+                {
+                    PageNumber = paging.PageNumber,
+                    PageSize = paging.PageSize,
+                    TotalItems = totalItems,
+                }
+            };
+        }, "GetAllAsyncWithIncludes");
+    }
+
+    /// <summary>
+    /// Đếm entities với filter (Async)
+    /// </summary>
+    public async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null)
+    {
+        return await ExecuteAsync(async context =>
+        {
+            var query = context.Set<TEntity>().AsQueryable();
+            if (predicate != null)
+                query = query.Where(predicate);
+            return await query.CountAsync();
+        }, "CountAsync");
     }
 
     /// <summary>
@@ -389,16 +247,10 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     /// </summary>
     public async Task SaveChangesAsync()
     {
-        try
+        await ExecuteAsync(async context =>
         {
-            using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
-            //  Use ExecutionStrategy to avoid Npgsql retry strategy conflict
-            var strategy = context.Database.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () => await context.SaveChangesAsync());
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi lưu dữ liệu: {ex.Message}", ex);
-        }
+            await context.SaveChangesAsync();
+            return true;
+        }, "SaveChangesAsync");
     }
 }

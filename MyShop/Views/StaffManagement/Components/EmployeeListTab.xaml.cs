@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MyShop.ViewModels.StaffManagement;
+using MyShop.Services;
 using MyShop.Di;
 using System;
 
@@ -32,41 +33,41 @@ public sealed partial class EmployeeListTab : UserControl
 
         if (ViewModel != null)
         {
-            await ViewModel.RefreshDashboardCommand.ExecuteAsync(null);
+            await ViewModel.RefreshCommand.ExecuteAsync(null);
         }
     }
 
     private void Status_Toggled(object sender, RoutedEventArgs e)
     {
-        if (sender is ToggleSwitch toggle && toggle.DataContext is UserSalaryInfo info)
+        if (sender is ToggleSwitch toggle && toggle.DataContext is UserSalaryInfo info && ViewModel != null)
         {
-            ViewModel?.UpdateUserStatusCommand.Execute(info);
+            _ = ViewModel.UpdateUserStatusAsync(info);
         }
     }
 
     private void EditButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.DataContext is UserSalaryInfo info)
+        if (sender is Button button && button.DataContext is UserSalaryInfo info && ViewModel != null)
         {
-            ViewModel?.EditEmployeeCommand.ExecuteAsync(info);
+            _ = ViewModel.EditEmployeeAsync(info);
         }
     }
 
     private void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.DataContext is UserSalaryInfo info)
+        if (sender is Button button && button.DataContext is UserSalaryInfo info && ViewModel != null)
         {
-            ViewModel?.DeleteEmployeeCommand.ExecuteAsync(info);
+            _ = ViewModel.DeleteEmployeeAsync(info);
         }
     }
 
     private void PreviousButton_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel?.PreviousPageAsyncCommand.Execute(null);
+        ViewModel?.PreviousPageCommand.Execute(null);
     }
 
     private void NextButton_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel?.NextPageAsyncCommand.Execute(null);
+        ViewModel?.NextPageCommand.Execute(null);
     }
 }

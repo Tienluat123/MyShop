@@ -240,7 +240,7 @@ public partial class ProductManagementViewModel : ObservableObject
         try
         {
             ErrorMessage = string.Empty;
-            _productService.Delete(product.Id);
+            await _productService.Delete(product.Id);
             await LoadProducts();
         }
         catch (Exception ex)

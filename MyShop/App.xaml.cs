@@ -168,43 +168,34 @@ public partial class App : Application
                     .UseNpgsql(connectionString, options =>
                     {
                         options.EnableRetryOnFailure(
-                            maxRetryCount: 3,
-                            maxRetryDelay: TimeSpan.FromSeconds(5),
-                            errorCodesToAdd: null
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorCodesToAdd: new[] { "XX000", "ECIRCUITBREAKER", "EMAXCONNSESSION" }
                         );
                     })
                     .Options;
 
                 dbContext = new AppDbContext(dbContextOptions);
 
-                //  Test connection first
-                LogMessage("🔍 Testing database connection...");
-                var canConnect = dbContext.Database.CanConnect();
-                if (canConnect)
-                {
-                    LogMessage(" Database connection successful!");
+                //  Skip synchronous CanConnect() - let migrations handle connection validation
+                LogMessage("🔍 Database context initialized (validation deferred to migrations)");
 
-                    //  Apply migrations (tạo database schema)
+                //  Apply migrations (tạo database schema)
+                try
+                {
+                    dbContext.Database.Migrate();
+                    LogMessage(" Database migrations applied successfully");
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"⚠️ Migration warning: {ex.Message}");
+                    // Fallback: create schema if migrations fail
                     try
                     {
-                        dbContext.Database.Migrate();
-                        LogMessage(" Database migrations applied successfully");
+                        dbContext.Database.EnsureCreated();
+                        LogMessage("Database schema created (fallback)");
                     }
-                    catch (Exception ex)
-                    {
-                        LogMessage($"⚠️ Migration warning: {ex.Message}");
-                        // Fallback: create schema if migrations fail
-                        try
-                        {
-                            dbContext.Database.EnsureCreated();
-                            LogMessage("Database schema created (fallback)");
-                        }
-                        catch (Exception ex2) { LogMessage($"Schema creation failed: {ex2.Message}"); }
-                    }
-                }
-                else
-                {
-                    LogMessage("⚠️ Cannot connect to database - will retry on first access");
+                    catch (Exception ex2) { LogMessage($"Schema creation failed: {ex2.Message}"); }
                 }
             }
             catch (Exception ex)

@@ -2,6 +2,7 @@ using MyShop.Data;
 using MyShop.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using System.Linq.Expressions;
 
 namespace MyShop.Services;
 
@@ -140,7 +141,7 @@ public class OrderService : IOrderService
 
         try
         {
-            return _orderRepository.GetById(id);
+            return await _orderRepository.GetByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -208,14 +209,19 @@ public class OrderService : IOrderService
     {
         try
         {
-            var sum = await _orderRepository.Query()
-                .Where(o =>
-                    o.OrderDate >= startDate &&
-                    o.OrderDate <= endDate &&
-                    o.PaymentStatus == "Paid"
-                )
-                .SumAsync(o => (decimal?)o.TotalAmount);
-            return sum ?? 0;
+            // Use ExecuteAsync to properly handle context lifetime
+            var result = await _orderRepository.ExecuteAsync(async context =>
+            {
+                var revenueSum = await context.Set<Order>()
+                    .Where(o =>
+                        o.OrderDate >= startDate &&
+                        o.OrderDate <= endDate &&
+                        o.PaymentStatus == "Paid")
+                    .SumAsync(o => (decimal?)o.TotalAmount);
+                return revenueSum ?? 0;
+            }, "GetRevenue");
+
+            return result;
         }
         catch (Exception ex)
         {
@@ -246,11 +252,11 @@ public class OrderService : IOrderService
         if (order.TotalAmount < 0)
             throw new ArgumentException("Tổng tiền không được âm", nameof(order.TotalAmount));
 
-        var customer = _customerRepository.GetById(order.CustomerId);
+        var customer = await _customerRepository.GetByIdAsync(order.CustomerId);
         if (customer == null)
             throw new InvalidOperationException($"Khách hàng với ID {order.CustomerId} không tồn tại");
 
-        var user = _userRepository.GetById(order.UserId);
+        var user = await _userRepository.GetByIdAsync(order.UserId);
         if (user == null)
             throw new InvalidOperationException($"Nhân viên với ID {order.UserId} không tồn tại");
 
@@ -368,24 +374,28 @@ public class OrderService : IOrderService
     {
         try
         {
-            var query = _orderRepository.Query();
+            // Build filter expression
+            Expression<Func<Order, bool>> filter = o => true;
 
             if (paymentStatuses != null && paymentStatuses.Count > 0)
-                query = query.Where(o => paymentStatuses.Contains(o.PaymentStatus));
+                filter = CombineFilters(filter, o => paymentStatuses.Contains(o.PaymentStatus));
 
             if (fulfillmentStatuses != null && fulfillmentStatuses.Count > 0)
-                query = query.Where(o => fulfillmentStatuses.Contains(o.FulfillmentStatus));
+                filter = CombineFilters(filter, o => fulfillmentStatuses.Contains(o.FulfillmentStatus));
 
             if (startDate.HasValue)
-                query = query.Where(o => o.OrderDate >= startDate.Value);
+            {
+                var startDateValue = startDate.Value;
+                filter = CombineFilters(filter, o => o.OrderDate >= startDateValue);
+            }
 
             if (endDate.HasValue)
             {
                 var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
-                query = query.Where(o => o.OrderDate <= endOfDay);
+                filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
-            return await query.CountAsync();
+            return await _orderRepository.CountAsync(filter);
         }
         catch (Exception ex)
         {
@@ -403,44 +413,39 @@ public class OrderService : IOrderService
 
         try
         {
-            var query = _orderRepository.Query()
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                .Include(o => o.Customer)
-                .AsQueryable();
+            // Build filter expression
+            Expression<Func<Order, bool>> filter = o => true; // Start with always true
 
             if (paymentStatuses != null && paymentStatuses.Count > 0)
-                query = query.Where(o => paymentStatuses.Contains(o.PaymentStatus));
+                filter = CombineFilters(filter, o => paymentStatuses.Contains(o.PaymentStatus));
 
             if (fulfillmentStatuses != null && fulfillmentStatuses.Count > 0)
-                query = query.Where(o => fulfillmentStatuses.Contains(o.FulfillmentStatus));
+                filter = CombineFilters(filter, o => fulfillmentStatuses.Contains(o.FulfillmentStatus));
 
             if (startDate.HasValue)
-                query = query.Where(o => o.OrderDate >= startDate.Value);
+                filter = CombineFilters(filter, o => o.OrderDate >= startDate.Value);
 
             if (endDate.HasValue)
             {
                 var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
-                query = query.Where(o => o.OrderDate <= endOfDay);
+                filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
-            if (sortDescending)
-                query = query.OrderByDescending(o => o.OrderDate);
-            else
-                query = query.OrderBy(o => o.OrderDate);
+            var result = await _orderRepository.GetAllAsyncWithIncludes(
+                paging,
+                filter,
+                "OrderDetails.Product",
+                "Customer");
 
-            var totalItems = await query.CountAsync();
-            var items = await query.Skip(paging.GetSkip()).Take(paging.PageSize).ToListAsync();
+            // Apply sorting on client side (after pagination)
+            var sortedItems = sortDescending
+                ? result.Items.OrderByDescending(o => o.OrderDate).ToList()
+                : result.Items.OrderBy(o => o.OrderDate).ToList();
 
             return new PagedResult<Order>
             {
-                Items = items,
-                Pagination = new PagingMetadata
-                {
-                    PageNumber = paging.PageNumber,
-                    PageSize = paging.PageSize,
-                    TotalItems = totalItems
-                }
+                Items = sortedItems,
+                Pagination = result.Pagination
             };
         }
         catch (Exception ex)
@@ -460,28 +465,30 @@ public class OrderService : IOrderService
 
         try
         {
-            IQueryable<Order> query = _orderRepository.Query()
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                .Include(o => o.Customer);
-
             // Active logic: NOT Cancelled, NOT Refunded, AND NOT Completed
-            query = query.Where(o => o.PaymentStatus != "Cancelled" && o.PaymentStatus != "Refunded" && o.FulfillmentStatus != "Completed");
+            Expression<Func<Order, bool>> filter = o =>
+                o.PaymentStatus != "Cancelled" &&
+                o.PaymentStatus != "Refunded" &&
+                o.FulfillmentStatus != "Completed";
 
             if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All Active")
             {
-                query = query.Where(o => o.FulfillmentStatus == statusFilter);
+                filter = CombineFilters(filter, o => o.FulfillmentStatus == statusFilter);
             }
 
-            query = query.OrderByDescending(o => o.OrderDate);
+            var result = await _orderRepository.GetAllAsyncWithIncludes(
+                paging,
+                filter,
+                "OrderDetails.Product",
+                "Customer");
 
-            var totalItems = await query.CountAsync();
-            var items = await query.Skip(paging.GetSkip()).Take(paging.PageSize).ToListAsync();
+            // Apply sorting
+            var sortedItems = result.Items.OrderByDescending(o => o.OrderDate).ToList();
 
             return new PagedResult<Order>
             {
-                Items = items,
-                Pagination = new PagingMetadata { PageNumber = paging.PageNumber, PageSize = paging.PageSize, TotalItems = totalItems }
+                Items = sortedItems,
+                Pagination = result.Pagination
             };
         }
         catch (Exception ex)
@@ -495,9 +502,10 @@ public class OrderService : IOrderService
     /// </summary>
     public async Task<int> GetActiveCount()
     {
-        return await _orderRepository.Query()
-            .Where(o => o.PaymentStatus != "Cancelled" && o.PaymentStatus != "Refunded" && o.FulfillmentStatus != "Completed")
-            .CountAsync();
+        return await _orderRepository.CountAsync(o =>
+            o.PaymentStatus != "Cancelled" &&
+            o.PaymentStatus != "Refunded" &&
+            o.FulfillmentStatus != "Completed");
     }
 
     /// <summary>
@@ -511,46 +519,50 @@ public class OrderService : IOrderService
 
         try
         {
-            IQueryable<Order> query = _orderRepository.Query()
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                .Include(o => o.Customer);
-
             // History logic: (Paid AND Completed) OR Cancelled OR Refunded
+            Expression<Func<Order, bool>> filter;
+
             if (string.IsNullOrEmpty(statusFilter) || statusFilter == "All History")
             {
-                query = query.Where(o =>
+                filter = o =>
                     (o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed") ||
                     o.PaymentStatus == "Cancelled" ||
-                    o.PaymentStatus == "Refunded");
+                    o.PaymentStatus == "Refunded";
             }
             else if (statusFilter == "Paid")
             {
-                query = query.Where(o => o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed");
+                filter = o => o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed";
             }
             else
             {
-                query = query.Where(o => o.PaymentStatus == statusFilter);
+                filter = o => o.PaymentStatus == statusFilter;
             }
 
             if (startDate.HasValue)
-                query = query.Where(o => o.OrderDate >= startDate.Value);
+            {
+                var startDateValue = startDate.Value;
+                filter = CombineFilters(filter, o => o.OrderDate >= startDateValue);
+            }
 
             if (endDate.HasValue)
             {
                 var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
-                query = query.Where(o => o.OrderDate <= endOfDay);
+                filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
-            query = query.OrderByDescending(o => o.OrderDate);
+            var result = await _orderRepository.GetAllAsyncWithIncludes(
+                paging,
+                filter,
+                "OrderDetails.Product",
+                "Customer");
 
-            var totalItems = await query.CountAsync();
-            var items = await query.Skip(paging.GetSkip()).Take(paging.PageSize).ToListAsync();
+            // Apply sorting
+            var sortedItems = result.Items.OrderByDescending(o => o.OrderDate).ToList();
 
             return new PagedResult<Order>
             {
-                Items = items,
-                Pagination = new PagingMetadata { PageNumber = paging.PageNumber, PageSize = paging.PageSize, TotalItems = totalItems }
+                Items = sortedItems,
+                Pagination = result.Pagination
             };
         }
         catch (Exception ex)
@@ -564,21 +576,38 @@ public class OrderService : IOrderService
     /// </summary>
     public async Task<int> GetHistoryCount(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var query = _orderRepository.Query()
-            .Where(o =>
-                (o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed") ||
-                o.PaymentStatus == "Cancelled" ||
-                o.PaymentStatus == "Refunded");
+        Expression<Func<Order, bool>> filter = o =>
+            (o.PaymentStatus == "Paid" && o.FulfillmentStatus == "Completed") ||
+            o.PaymentStatus == "Cancelled" ||
+            o.PaymentStatus == "Refunded";
 
         if (startDate.HasValue)
-            query = query.Where(o => o.OrderDate >= startDate.Value);
+        {
+            var startDateValue = startDate.Value;
+            filter = CombineFilters(filter, o => o.OrderDate >= startDateValue);
+        }
 
         if (endDate.HasValue)
         {
             var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
-            query = query.Where(o => o.OrderDate <= endOfDay);
+            filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
         }
 
-        return await query.CountAsync();
+        return await _orderRepository.CountAsync(filter);
+    }
+
+    /// <summary>
+    /// Helper: Combine two Expression<Func<T, bool>> using AND operator
+    /// </summary>
+    private static Expression<Func<Order, bool>> CombineFilters(
+        Expression<Func<Order, bool>> expr1,
+        Expression<Func<Order, bool>> expr2)
+    {
+        var parameter = Expression.Parameter(typeof(Order));
+        var invokedExpr = Expression.Invoke(expr2, parameter);
+        var lambdaExpr = Expression.Lambda<Func<Order, bool>>(
+            Expression.AndAlso(expr1.Body, invokedExpr),
+            parameter);
+        return lambdaExpr;
     }
 }

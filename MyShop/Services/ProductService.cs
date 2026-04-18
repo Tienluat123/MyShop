@@ -63,17 +63,19 @@ public class ProductService : IProductService
 
     /// <summary>
     /// Lấy tất cả sản phẩm (Bất đồng bộ)
+    /// ✅ BƯỚC 2: Sử dụng GetAsync với Include thay vì Query()
     /// </summary>
     public async Task<PagedResult<Product>> GetAll(PagingRequest? paging = null)
     {
         try
         {
-            var query = _productRepository.Query().Include(p => p.Category);
+            // Sử dụng GetAsync với Include để tải Category
+            var allProducts = await _productRepository.GetAsync(null, "Category");
             var result = new PagedResult<Product>();
 
             if (paging == null)
             {
-                result.Items = await query.ToListAsync();
+                result.Items = allProducts;
                 result.Pagination = new PagingMetadata
                 {
                     PageNumber = 1,
@@ -84,8 +86,11 @@ public class ProductService : IProductService
             else
             {
                 paging.Validate();
-                var totalItems = await query.CountAsync();
-                var items = await query.Skip(paging.GetSkip()).Take(paging.PageSize).ToListAsync();
+                var totalItems = allProducts.Count;
+                var items = allProducts
+                    .Skip(paging.GetSkip())
+                    .Take(paging.PageSize)
+                    .ToList();
 
                 result.Items = items;
                 result.Pagination = new PagingMetadata
@@ -113,8 +118,7 @@ public class ProductService : IProductService
 
         try
         {
-            var product = _productRepository.GetById(id);
-            return product;
+            return await _productRepository.GetByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -124,6 +128,7 @@ public class ProductService : IProductService
 
     /// <summary>
     /// Lấy sản phẩm theo category (Bất đồng bộ)
+    /// ✅ BƯỚC 2: Sử dụng GetAsync với filter server-side
     /// </summary>
     public async Task<List<Product>> GetByCategory(int categoryId)
     {
@@ -132,10 +137,9 @@ public class ProductService : IProductService
 
         try
         {
-            return await _productRepository.Query()
-                .Include(p => p.Category)
-                .Where(p => p.CategoryId == categoryId)
-                .ToListAsync();
+            return await _productRepository.GetAsync(
+                p => p.CategoryId == categoryId,
+                "Category");
         }
         catch (Exception ex)
         {
@@ -145,6 +149,7 @@ public class ProductService : IProductService
 
     /// <summary>
     /// Tìm kiếm sản phẩm (Bất đồng bộ)
+    /// ✅ BƯỚC 2: Sử dụng GetAsync với filter server-side
     /// </summary>
     public async Task<List<Product>> Search(string keyword)
     {
@@ -153,10 +158,10 @@ public class ProductService : IProductService
 
         try
         {
-            return await _productRepository.Query()
-                .Include(p => p.Category)
-                .Where(p => p.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                .ToListAsync();
+            var keywordLower = keyword.ToLower();
+            return await _productRepository.GetAsync(
+                p => p.Name.ToLower().Contains(keywordLower),
+                "Category");
         }
         catch (Exception ex)
         {
@@ -181,7 +186,7 @@ public class ProductService : IProductService
         if (product.CategoryId <= 0)
             throw new ArgumentException("Phải chọn category hợp lệ", nameof(product.CategoryId));
 
-        var category = _categoryRepository.GetById(product.CategoryId);
+        var category = await _categoryRepository.GetByIdAsync(product.CategoryId);
         if (category == null)
             throw new InvalidOperationException($"Category với ID {product.CategoryId} không tồn tại");
 

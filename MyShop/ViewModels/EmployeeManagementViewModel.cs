@@ -4,94 +4,83 @@ using System.Collections.ObjectModel;
 using MyShop.Models;
 using MyShop.Services;
 using MyShop.Views.StaffManagement.Dialogs;
+using MyShop.Data;
 using MyShop.Di;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MyShop.ViewModels.StaffManagement;
 
+/// <summary>
+/// Quản lý nhân viên - Pure UI layer (no business logic)
+/// Gọi Service để lấy dữ liệu đã tính toán và paginated từ DB
+/// </summary>
 public partial class EmployeeManagementViewModel : ObservableObject
 {
     private readonly IEmployeeService _employeeService;
     private readonly IScheduleService _scheduleService;
     private readonly INotificationService _notificationService;
-    private List<UserSalaryInfo> _allCalculatedData = new();
-
-    [ObservableProperty] private string _totalPayrollDisplay = "0 đ";
-    [ObservableProperty] private int _activeStaffCount = 0;
-    [ObservableProperty] private string _topPerformerName = "Updating...";
-    [ObservableProperty] private string _searchText = string.Empty;
-
-    [ObservableProperty] private string _selectedRole = "All Roles";
-    [ObservableProperty] private string _selectedStatus = "All Status";
-
-    // Paging properties
-    [ObservableProperty] private int _currentPageNumber = 1;
-    [ObservableProperty] private int _pageSize = 10;
-    [ObservableProperty] private int _totalPages = 1;
-    [ObservableProperty] private string _pageInfoDisplay = "Page 1 / 1";
-
-    // Sorting properties
-    [ObservableProperty] private string _sortColumnName = "TotalHours";
-    [ObservableProperty] private bool _sortAscending = false;
-    [ObservableProperty] private string _sortInfo = "TotalHours|False";
-
-    partial void OnSortColumnNameChanged(string value) => UpdateSortInfo();
-    partial void OnSortAscendingChanged(bool value) => UpdateSortInfo();
-
-    private void UpdateSortInfo()
-    {
-        SortInfo = $"{SortColumnName}|{SortAscending}";
-    }
-
-    partial void OnSearchTextChanged(string value) => ApplyFilter();
-    partial void OnSelectedRoleChanged(string value) => ApplyFilter();
-    partial void OnSelectedStatusChanged(string value) => ApplyFilter();
-
-    private void ApplyFilter()
-    {
-        var term = SearchText?.ToLower().Trim() ?? "";
-
-        var filtered = _allCalculatedData.Where(x =>
-        {
-            string searchableContent = string.Join(" ",
-                x.User.FullName ?? "",
-                x.User.Username ?? "",
-                x.User.Phone ?? "",
-                x.User.Role ?? "").ToLower();
-            bool matchesSearch = string.IsNullOrEmpty(term) || searchableContent.Contains(term);
-
-            bool matchesRole = SelectedRole == "All Roles" || string.IsNullOrEmpty(SelectedRole) ||
-                (SelectedRole == "Admin" && x.User.Role == "1") ||
-                (SelectedRole == "Sale" && x.User.Role == "2");
-
-            bool matchesStatus = SelectedStatus == "All Status" ||
-                                (SelectedStatus == "Active" ? x.User.IsActive : !x.User.IsActive);
-
-            return matchesSearch && matchesRole && matchesStatus;
-        }).ToList();
-
-        var sorted = ApplySorting(filtered);
-
-        CurrentPageNumber = 1;
-
-        TotalPages = (int)Math.Ceiling((decimal)sorted.Count / PageSize);
-        PageInfoDisplay = $"Page {CurrentPageNumber} / {TotalPages}";
-
-        var pagedList = sorted.Skip(0).Take(PageSize).ToList();
-        DisplayEmployees = new ObservableCollection<UserSalaryInfo>(pagedList);
-    }
-
-    // Danh sách chính Binding lên XAML
-    [ObservableProperty] private ObservableCollection<UserSalaryInfo> _displayEmployees = new();
-
     private readonly IDialogService _dialogService;
+    private CancellationTokenSource? _debounceToken;
 
-    public EmployeeManagementViewModel(IEmployeeService employeeService, IDialogService dialogService, IScheduleService scheduleService, INotificationService notificationService)
+    private const int PageSize = 10;
+
+    // --- DASHBOARD STATS ---
+    [ObservableProperty]
+    private string totalPayrollDisplay = "0 đ";
+
+    [ObservableProperty]
+    private int activeStaffCount = 0;
+
+    [ObservableProperty]
+    private string topPerformerName = "Updating...";
+
+    // --- SEARCH & FILTER ---
+    [ObservableProperty]
+    private string searchText = string.Empty;
+
+    [ObservableProperty]
+    private string selectedRole = "All Roles";
+
+    [ObservableProperty]
+    private string selectedStatus = "All Status";
+
+    // --- PAGING ---
+    [ObservableProperty]
+    private int currentPageNumber = 1;
+
+    [ObservableProperty]
+    private int totalPages = 1;
+
+    [ObservableProperty]
+    private string pageInfoDisplay = "Page 1 / 1";
+
+    // --- SORTING ---
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortInfo))]
+    private string sortColumnName = "TotalHours";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortInfo))]
+    private bool sortAscending = false;
+
+    // --- LOADING STATE ---
+    [ObservableProperty]
+    private bool isLoading = false;
+
+    // --- DISPLAY DATA ---
+    [ObservableProperty]
+    private ObservableCollection<UserSalaryInfo> displayEmployees = new();
+
+    public EmployeeManagementViewModel(
+        IEmployeeService employeeService,
+        IDialogService dialogService,
+        IScheduleService scheduleService,
+        INotificationService notificationService)
     {
         _employeeService = employeeService;
         _dialogService = dialogService;
@@ -100,92 +89,147 @@ public partial class EmployeeManagementViewModel : ObservableObject
 
         _scheduleService.OnScheduleChanged += async () =>
         {
-            await RefreshDashboardCommand.ExecuteAsync(null);
+            await RefreshCommand.ExecuteAsync(null);
         };
     }
 
+    // --- PROPERTY CHANGE HANDLERS ---
+
+    partial void OnCurrentPageNumberChanged(int value)
+    {
+        RefreshCommand.ExecuteAsync(null);
+    }
+
+    partial void OnSelectedRoleChanged(string value)
+    {
+        CurrentPageNumber = 1;
+        DebounceSearch();
+    }
+
+    partial void OnSelectedStatusChanged(string value)
+    {
+        CurrentPageNumber = 1;
+        DebounceSearch();
+    }
+
+    partial void OnSearchTextChanged(string value)
+    {
+        CurrentPageNumber = 1;
+        DebounceSearch();
+    }
+
+    // --- DEBOUNCE SEARCH (300ms) ---
+
+    private async void DebounceSearch()
+    {
+        _debounceToken?.Cancel();
+        _debounceToken = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(300, _debounceToken.Token);
+            await LoadEmployeesAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // User changed filter again - ignore
+        }
+    }
+
+    // --- MAIN REFRESH ---
 
     [RelayCommand]
-    public async Task RefreshDashboardAsync()
+    public async Task Refresh()
     {
-        var now = DateTime.Now;
-        var lastMonth = now.AddMonths(-1);
+        await LoadEmployeesAsync();
+    }
 
-        var currentMonthList = await _employeeService.GetEmployeesWithSalaryStatsAsync(now.Month, now.Year);
-        var lastMonthList = await _employeeService.GetEmployeesWithSalaryStatsAsync(lastMonth.Month, lastMonth.Year);
+    private async Task LoadEmployeesAsync()
+    {
+        if (IsLoading) return;
 
-        decimal grandTotal = 0;
-        var displayList = new List<UserSalaryInfo>();
-
-        double maxHours = currentMonthList.Any() ? currentMonthList.Max(u =>
-            u.WorkSchedules
-                .Where(s => s.WorkDate.Month == now.Month && s.WorkDate.Year == now.Year && s.Status == "Completed")
-                .Sum(s => s.TotalHours)) : 0;
-
-        foreach (var user in currentMonthList)
+        IsLoading = true;
+        try
         {
-            double currentHours = user.WorkSchedules
-                .Where(s => s.WorkDate.Month == now.Month && s.WorkDate.Year == now.Year && s.Status == "Completed")
-                .Sum(s => s.TotalHours);
-
-            decimal bonusRate = 1.0m;
-            if (currentHours == maxHours && currentHours > 100) bonusRate = 1.15m;
-            else if (currentHours > 100) bonusRate = 1.1m;
-
-            decimal currentSalary = user.HourlyRate * (decimal)currentHours * bonusRate;
-            grandTotal += currentSalary;
-
-            var lastMonthUser = lastMonthList.FirstOrDefault(u => u.Id == user.Id);
-            decimal lastMonthSalary = 0;
-            if (lastMonthUser != null)
+            // Build paging request with all filters
+            var request = new PagingRequest
             {
-                double prevHours = lastMonthUser.WorkSchedules
-                    .Where(s => s.WorkDate.Month == lastMonth.Month && s.WorkDate.Year == lastMonth.Year && s.Status == "Completed")
-                    .Sum(s => s.TotalHours);
-                lastMonthSalary = lastMonthUser.HourlyRate * (decimal)prevHours;
-            }
+                PageNumber = CurrentPageNumber,
+                PageSize = PageSize,
+                SearchText = SearchText?.Trim(),
+                SortColumn = SortColumnName,
+                SortAscending = SortAscending,
+                Filters = new Dictionary<string, string>
+                {
+                    { "Role", SelectedRole == "All Roles" ? "" : SelectedRole },
+                    { "Status", SelectedStatus == "All Status" ? "" : SelectedStatus }
+                }
+            };
 
-            displayList.Add(new UserSalaryInfo
-            {
-                User = user,
-                TotalHours = currentHours,
-                FinalSalary = currentSalary,
-                LastMonthSalary = lastMonthSalary,
-                BonusTag = bonusRate == 1.15m ? "TOP 1 (+15%)" : (bonusRate == 1.1m ? "+10%" : "0%"),
-                TagColor = bonusRate == 1.15m ? new SolidColorBrush(Colors.Gold) :
-                           (bonusRate == 1.1m ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.Gray))
-            });
+            // Service returns paginated + calculated data from DB
+            var pagedResult = await _employeeService.GetPagedEmployeeSalariesAsync(request);
+
+            // Bind to UI
+            DisplayEmployees = new ObservableCollection<UserSalaryInfo>(pagedResult.Items);
+            TotalPages = pagedResult.Pagination.TotalPages;
+            PageInfoDisplay = $"Page {CurrentPageNumber} / {TotalPages}";
+
+            // Calculate dashboard stats from current page data
+            CalculateDashboardStats(pagedResult.Items);
+
+            System.Diagnostics.Debug.WriteLine($"✅ Loaded {pagedResult.Items.Count} employees (Page {CurrentPageNumber}/{TotalPages})");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ LoadEmployeesAsync error: {ex.Message}");
+            _notificationService.ShowError("Lỗi khi tải dữ liệu nhân viên");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void CalculateDashboardStats(List<UserSalaryInfo> employees)
+    {
+        if (employees.Count == 0)
+        {
+            TotalPayrollDisplay = "0 đ";
+            ActiveStaffCount = 0;
+            TopPerformerName = "None";
+            return;
         }
 
-        _allCalculatedData = displayList;
-        var sortedList = ApplySorting(displayList);
+        // Total salary from current page (for dashboard display)
+        decimal totalSalary = employees.Sum(x => x.FinalSalary);
+        TotalPayrollDisplay = string.Format("{0:N0} đ", totalSalary);
 
-        TotalPages = (int)Math.Ceiling((decimal)sortedList.Count / PageSize);
-        if (CurrentPageNumber > TotalPages && TotalPages > 0)
-            CurrentPageNumber = TotalPages;
+        // Active count (from current page)
+        ActiveStaffCount = employees.Count(x => x.User.IsActive);
 
-        int skip = (CurrentPageNumber - 1) * PageSize;
-        var pagedList = sortedList.Skip(skip).Take(PageSize).ToList();
-        DisplayEmployees = new ObservableCollection<UserSalaryInfo>(pagedList);
-        PageInfoDisplay = $"Page {CurrentPageNumber} / {TotalPages}";
-
-        TotalPayrollDisplay = string.Format("{0:N0} đ", grandTotal);
-        ActiveStaffCount = currentMonthList.Count;
-
-        var topStaff = displayList.OrderByDescending(x => x.TotalHours).FirstOrDefault(x => x.TotalHours == (displayList.Max(d => d.TotalHours)) && x.TotalHours > 0);
+        // Top performer by hours
+        var topStaff = employees.OrderByDescending(x => x.TotalHours).FirstOrDefault();
         TopPerformerName = topStaff != null ? $"{topStaff.User.FullName} ({topStaff.TotalHours}h)" : "None";
     }
+
+    // --- ACTION COMMANDS ---
 
     [RelayCommand]
     public async Task UpdateUserStatusAsync(UserSalaryInfo info)
     {
         if (info?.User == null) return;
 
-        //  Dùng UpdateEmployeeAsync (async method mới)
-        await _employeeService.UpdateEmployeeAsync(info.User);
-
-        ActiveStaffCount = DisplayEmployees.Count(x => x.User.IsActive);
-        System.Diagnostics.Debug.WriteLine($"Updated status for {info.User.FullName}");
+        try
+        {
+            await _employeeService.UpdateEmployeeAsync(info.User);
+            ActiveStaffCount = DisplayEmployees.Count(x => x.User.IsActive);
+            System.Diagnostics.Debug.WriteLine($"✅ Updated status for {info.User.FullName}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Update status error: {ex.Message}");
+            _notificationService.ShowError("Lỗi khi cập nhật trạng thái");
+        }
     }
 
     [RelayCommand]
@@ -195,33 +239,20 @@ public partial class EmployeeManagementViewModel : ObservableObject
         var dialog = new EmployeeFormDialog(formViewModel);
         dialog.SetEmployee(null);
 
-
         var result = await _dialogService.ShowAsync(dialog);
 
         if (dialog.SavedUser != null)
         {
             try
             {
-                // Lấy User đã được xử lý từ Dialog
-                var newUser = dialog.SavedUser;
-
-                if (newUser != null)
-                {
-                    await _employeeService.AddEmployeeAsync(newUser);
-
-                    // Refresh lại bảng danh sách
-                    await RefreshDashboardCommand.ExecuteAsync(null);
-
-                    System.Diagnostics.Debug.WriteLine($"Thêm thành công: {newUser.FullName}");
-                    _notificationService.ShowSuccess($"Thêm nhân viên '{newUser.FullName}' thành công");
-                }
+                await _employeeService.AddEmployeeAsync(dialog.SavedUser);
+                await RefreshCommand.ExecuteAsync(null);
+                _notificationService.ShowSuccess($"Thêm nhân viên '{dialog.SavedUser.FullName}' thành công");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Lỗi khi lưu: {ex.Message}");
-                _notificationService.ShowError("Không thể thêm nhân viên. Vui lòng kiểm tra lại!");
-                // Hiển thị thông báo lỗi cho người dùng thấy
-                await _dialogService.ShowMessageAsync("Lỗi", "Không thể lưu nhân viên. Vui lòng kiểm tra lại!");
+                System.Diagnostics.Debug.WriteLine($"❌ Add error: {ex.Message}");
+                _notificationService.ShowError("Không thể thêm nhân viên");
             }
         }
     }
@@ -229,10 +260,9 @@ public partial class EmployeeManagementViewModel : ObservableObject
     [RelayCommand]
     public async Task EditEmployeeAsync(UserSalaryInfo info)
     {
-
         if (info?.User == null) return;
-        var formViewModel = new EmployeeFormViewModel();
 
+        var formViewModel = new EmployeeFormViewModel();
         var dialog = new EmployeeFormDialog(formViewModel);
         dialog.SetEmployee(info.User);
 
@@ -242,23 +272,14 @@ public partial class EmployeeManagementViewModel : ObservableObject
         {
             try
             {
-                var updatedUser = dialog.SavedUser;
-
-                if (updatedUser != null)
-                {
-                    await _employeeService.UpdateEmployeeAsync(updatedUser);
-
-                    await RefreshDashboardCommand.ExecuteAsync(null);
-
-                    System.Diagnostics.Debug.WriteLine($"Cập nhật thành công: {updatedUser.FullName}");
-                    _notificationService.ShowSuccess($"Cập nhật nhân viên '{updatedUser.FullName}' thành công");
-                }
+                await _employeeService.UpdateEmployeeAsync(dialog.SavedUser);
+                await RefreshCommand.ExecuteAsync(null);
+                _notificationService.ShowSuccess($"Cập nhật '{dialog.SavedUser.FullName}' thành công");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Lỗi khi cập nhật: {ex.Message}");
-                _notificationService.ShowError("Không thể cập nhật nhân viên. Vui lòng kiểm tra lại!");
-                await _dialogService.ShowMessageAsync("Lỗi", "Không thể cập nhật nhân viên. Vui lòng kiểm tra lại!");
+                System.Diagnostics.Debug.WriteLine($"❌ Edit error: {ex.Message}");
+                _notificationService.ShowError("Không thể cập nhật nhân viên");
             }
         }
     }
@@ -268,147 +289,69 @@ public partial class EmployeeManagementViewModel : ObservableObject
     {
         if (info?.User == null) return;
 
-        // Lấy XamlRoot an toàn từ App đang chạy
-        var xamlRoot = ((App)Application.Current).MainWindow.Content.XamlRoot;
-
-        var confirmDialog = new ContentDialog
-        {
-            Title = "Xác nhận xóa nhân viên",
-            Content = $"Dữ liệu của '{info.User.FullName}' sẽ bị xóa vĩnh viễn. Sếp có chắc chắn không?",
-            PrimaryButtonText = "Xóa ngay",
-            SecondaryButtonText = "Hủy",
-            DefaultButton = ContentDialogButton.Secondary,
-            XamlRoot = xamlRoot // Đã fix lỗi CS0120
-        };
-
-        var result = await confirmDialog.ShowAsync();
-        if (result != ContentDialogResult.Primary) return;
-
         try
         {
             await _employeeService.DeleteEmployeeAsync(info.User.Id);
-            await RefreshDashboardAsync();
-            System.Diagnostics.Debug.WriteLine($" Xoá thành công: {info.User.FullName}");
-            _notificationService.ShowSuccess($"Xóa nhân viên '{info.User.FullName}' thành công");
+            CurrentPageNumber = 1;
+            await RefreshCommand.ExecuteAsync(null);
+            _notificationService.ShowSuccess("Xóa nhân viên thành công");
         }
         catch (Exception ex)
         {
-            _notificationService.ShowError("Không thể xóa nhân viên. Vui lòng thử lại!");
-            await _dialogService.ShowMessageAsync("Lỗi", "Không thể xóa. Vui lòng thử lại!");
+            System.Diagnostics.Debug.WriteLine($" Delete error: {ex.Message}");
+            _notificationService.ShowError("Không thể xóa nhân viên");
         }
     }
 
-    [RelayCommand]
-    public void NextPageAsync()
-    {
-        if (CurrentPageNumber < TotalPages)
-        {
-            CurrentPageNumber++;
-            UpdateDisplayPage();
-        }
-    }
+    // --- PAGING COMMANDS ---
 
     [RelayCommand]
-    public void PreviousPageAsync()
+    public void PreviousPage()
     {
         if (CurrentPageNumber > 1)
-        {
             CurrentPageNumber--;
-            UpdateDisplayPage();
-        }
-    }
-
-    private void UpdateDisplayPage()
-    {
-        var sortedList = ApplySorting(_allCalculatedData);
-        int skip = (CurrentPageNumber - 1) * PageSize;
-        var pagedList = sortedList.Skip(skip).Take(PageSize).ToList();
-        DisplayEmployees = new ObservableCollection<UserSalaryInfo>(pagedList);
-        PageInfoDisplay = $"Page {CurrentPageNumber} / {TotalPages}";
     }
 
     [RelayCommand]
-    public void SortByColumn(string columnName)
+    public void NextPage()
     {
-        if (string.IsNullOrEmpty(columnName)) return;
+        if (CurrentPageNumber < TotalPages)
+            CurrentPageNumber++;
+    }
 
-        // Nếu click vào cột đã được sort, thay đổi hướng
+    // --- XAML COMPATIBILITY ---
+
+    public string SortInfo => $"{SortColumnName}|{SortAscending}";
+
+    [RelayCommand]
+    public async Task SortByColumn(string columnName)
+    {
         if (SortColumnName == columnName)
         {
             SortAscending = !SortAscending;
         }
         else
         {
-            // Cột mới -> mặc định sort descending
             SortColumnName = columnName;
             SortAscending = false;
         }
 
-        // Reset về trang 1 khi sort
         CurrentPageNumber = 1;
-        ApplyFilter();
+        // Immediate sort - no debounce needed for sorting
+        await LoadEmployeesAsync();
     }
-
-    private List<UserSalaryInfo> ApplySorting(List<UserSalaryInfo> data)
-    {
-        var sorted = SortColumnName switch
-        {
-            "FullName" => SortAscending
-                ? data.OrderBy(x => x.User.FullName).ToList()
-                : data.OrderByDescending(x => x.User.FullName).ToList(),
-
-            "Phone" => SortAscending
-                ? data.OrderBy(x => x.User.Phone).ToList()
-                : data.OrderByDescending(x => x.User.Phone).ToList(),
-
-            "Role" => SortAscending
-                ? data.OrderBy(x => x.User.Role).ToList()
-                : data.OrderByDescending(x => x.User.Role).ToList(),
-
-            "Status" => SortAscending
-                ? data.OrderBy(x => x.User.IsActive).ToList()
-                : data.OrderByDescending(x => x.User.IsActive).ToList(),
-
-            "HourlyRate" => SortAscending
-                ? data.OrderBy(x => x.User.HourlyRate).ToList()
-                : data.OrderByDescending(x => x.User.HourlyRate).ToList(),
-
-            "TotalHours" => SortAscending
-                ? data.OrderBy(x => x.TotalHours).ToList()
-                : data.OrderByDescending(x => x.TotalHours).ToList(),
-
-            "LastMonthSalary" => SortAscending
-                ? data.OrderBy(x => x.LastMonthSalary).ToList()
-                : data.OrderByDescending(x => x.LastMonthSalary).ToList(),
-
-            "FinalSalary" => SortAscending
-                ? data.OrderBy(x => x.FinalSalary).ToList()
-                : data.OrderByDescending(x => x.FinalSalary).ToList(),
-
-            _ => data
-        };
-
-        return sorted;
-    }
-
-    public string GetSortIndicator(string columnName)
-    {
-        if (SortColumnName != columnName)
-            return string.Empty;
-
-        // \uE110 for ascending, \uE1FD for descending
-        return SortAscending ? "\uE110" : "\uE1FD";
-    }
-
 }
 
-// Class chứa dữ liệu hiển thị trên bảng
+/// <summary>
+/// Model for employee salary information (used in paginated results)
+/// </summary>
 public class UserSalaryInfo
 {
     public User User { get; set; } = null!;
     public double TotalHours { get; set; }
     public decimal FinalSalary { get; set; }
-    public decimal LastMonthSalary { get; set; } // Lương tháng trước
+    public decimal LastMonthSalary { get; set; }
     public string BonusTag { get; set; } = "0%";
     public SolidColorBrush TagColor { get; set; } = null!;
 }
+

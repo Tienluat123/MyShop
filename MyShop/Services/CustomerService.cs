@@ -63,7 +63,20 @@ public class CustomerService : ICustomerService
     {
         try
         {
-            return _customerRepository.GetAll(paging);
+            // Nếu có SearchText, tạo filter expression để tìm kiếm
+            System.Linq.Expressions.Expression<Func<Customer, bool>>? filter = null;
+
+            if (!string.IsNullOrWhiteSpace(paging?.SearchText))
+            {
+                var keyword = paging.SearchText.ToLower().Trim();
+                filter = c =>
+                    c.Name.ToLower().Contains(keyword) ||
+                    c.Phone.Contains(keyword) ||
+                    (c.Email != null && c.Email.ToLower().Contains(keyword)) ||
+                    (c.Gender != null && c.Gender.ToLower().Contains(keyword));
+            }
+
+            return await _customerRepository.GetAllAsync(paging, filter);
         }
         catch (Exception ex)
         {
@@ -81,7 +94,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            return _customerRepository.GetById(id);
+            return await _customerRepository.GetByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -91,6 +104,7 @@ public class CustomerService : ICustomerService
 
     /// <summary>
     /// Tìm khách hàng theo số điện thoại (Bất đồng bộ)
+    ///  BƯỚC 2: Filter server-side thay vì client-side
     /// </summary>
     public async Task<Customer?> GetByPhone(string phone)
     {
@@ -99,8 +113,9 @@ public class CustomerService : ICustomerService
 
         try
         {
-            var pagedResult = _customerRepository.GetAll();
-            return pagedResult.Items.FirstOrDefault(c => c.Phone == phone);
+            // Sử dụng GetAsync với filter thay vì GetAllAsync mà không filter
+            var customers = await _customerRepository.GetAsync(c => c.Phone == phone);
+            return customers.FirstOrDefault();
         }
         catch (Exception ex)
         {
@@ -110,6 +125,7 @@ public class CustomerService : ICustomerService
 
     /// <summary>
     /// Tìm kiếm khách hàng (Bất đồng bộ)
+    /// ✅ BƯỚC 2: Filter server-side thay vì client-side
     /// </summary>
     public async Task<List<Customer>> Search(string keyword)
     {
@@ -118,14 +134,14 @@ public class CustomerService : ICustomerService
 
         try
         {
-            var pagedResult = _customerRepository.GetAll();
-            return pagedResult.Items
-                .Where(c =>
-                    c.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                    c.Phone.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                    (c.Email != null && c.Email.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                )
-                .ToList();
+            var keywordLower = keyword.ToLower();
+            // Sử dụng GetAsync với filter để lọc server-side
+            var customers = await _customerRepository.GetAsync(c =>
+                c.Name.ToLower().Contains(keywordLower) ||
+                c.Phone.Contains(keyword) ||
+                (c.Email != null && c.Email.ToLower().Contains(keywordLower))
+            );
+            return customers;
         }
         catch (Exception ex)
         {
@@ -154,7 +170,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            return _customerRepository.Add(customer);
+            return await _customerRepository.AddAsync(customer);
         }
         catch (Exception ex)
         {
