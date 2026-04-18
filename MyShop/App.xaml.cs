@@ -281,6 +281,14 @@ public partial class App : Application
                 container.Get<IRepository<Customer>>()
             ));
 
+            container.Register<IPromotionRepository>(new PromotionRepository(
+                contextFactory.CreateDbContext(Array.Empty<string>())
+            ));
+
+            container.Register<IPromotionService>(new PromotionService(
+                container.Get<IPromotionRepository>()
+            ));
+
             // AppConfigService — singleton, caches key-value settings in memory
             container.Register<IAppConfigService>(new AppConfigService(
                 container.Get<IRepository<AppConfig>>()
@@ -320,9 +328,6 @@ public partial class App : Application
             container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
 
             LogMessage(" All services registered successfully");
-            container.Register<IPromotionService>(new PromotionService(
-                container.Get<IPromotionRepository>()
-            ));
             // ===== Set static Services property for app-wide access =====
             Services = container;
 

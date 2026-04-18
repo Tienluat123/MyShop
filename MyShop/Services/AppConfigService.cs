@@ -23,7 +23,7 @@ public class AppConfigService : IAppConfigService
         if (_cache.TryGetValue(key, out var cached))
             return cached;
 
-        var all = await _repository.GetAll();
+        var all = await _repository.GetAllAsync();
         var entry = all.Items.FirstOrDefault(c => c.SettingKey == key);
         if (entry == null) return null;
 
@@ -38,13 +38,13 @@ public class AppConfigService : IAppConfigService
 
     public async Task SetAsync(string key, string value)
     {
-        var all = await _repository.GetAll();
+        var all = await _repository.GetAllAsync();
         var existing = all.Items.FirstOrDefault(c => c.SettingKey == key);
 
         if (existing != null)
         {
             existing.SettingValue = value;
-            await _repository.Update(existing);
+            await _repository.UpdateAsync(existing);
         }
         else
         {
@@ -53,7 +53,7 @@ public class AppConfigService : IAppConfigService
                 SettingKey = key,
                 SettingValue = value
             };
-            await _repository.Add(newEntry);
+            await _repository.AddAsync(newEntry);
         }
 
         // Update cache
@@ -62,7 +62,7 @@ public class AppConfigService : IAppConfigService
 
     public async Task<Dictionary<string, string>> GetAllAsync()
     {
-        var all = await _repository.GetAll();
+        var all = await _repository.GetAllAsync();
         return all.Items.ToDictionary(c => c.SettingKey, c => c.SettingValue);
     }
 

@@ -138,8 +138,8 @@ public class LoyaltyService : ILoyaltyService
         }
 
         // Persist to DB
-        await _customerRepo.Update(customer);
-        await _customerRepo.SaveChanges();
+        await _customerRepo.UpdateAsync(customer);
+        await _customerRepo.SaveChangesAsync();
 
         System.Diagnostics.Debug.WriteLine(
             $"[Loyalty] Earned {earnedPoints} pts. Total={customer.TotalAccumulatedPoints}, Available={customer.CurrentAvailablePoints}, Tier={customer.Tier}");
@@ -170,8 +170,8 @@ public class LoyaltyService : ILoyaltyService
 
         // Deduct points
         customer.CurrentAvailablePoints -= pointsToRedeem;
-        await _customerRepo.Update(customer);
-        await _customerRepo.SaveChanges();
+        await _customerRepo.UpdateAsync(customer);
+        await _customerRepo.SaveChangesAsync();
 
         decimal discount = pointsToRedeem * redemptionRate;
         System.Diagnostics.Debug.WriteLine(
