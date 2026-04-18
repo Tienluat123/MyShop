@@ -16,6 +16,11 @@ public class PagingRequest
     public int PageSize { get; set; } = 10;
 
     /// <summary>
+    /// Chuỗi tìm kiếm (thêm bởi teammate vào Repository.cs gốc)
+    /// </summary>
+    public string? SearchText { get; set; }
+
+    /// <summary>
     /// Validate và điều chỉnh giá trị
     /// </summary>
     public void Validate()

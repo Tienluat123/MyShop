@@ -17,17 +17,24 @@ public sealed partial class AddPromotionModal : ContentDialog
         {
             vm.CancelCommand.Execute(null);
         }
-
         this.Hide();
     }
 
     private void SaveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (this.DataContext is PromotionFormViewModel vm && vm.SubmitCommand.CanExecute(null))
+        if (this.DataContext is PromotionFormViewModel vm)
         {
-            vm.SubmitCommand.Execute(null);
-        }
+            if (vm.SubmitCommand.CanExecute(null))
+            {
+                vm.SubmitCommand.Execute(null);
+            }
 
-        this.Hide();
+            // Chỉ đóng dialog khi KHÔNG có lỗi validation và KHÔNG có lỗi hệ thống
+            if (vm.ValidationErrors.Count == 0 && string.IsNullOrEmpty(vm.ErrorMessage))
+            {
+                this.Hide();
+            }
+            // Nếu có lỗi → giữ dialog mở để user thấy lỗi và sửa
+        }
     }
 }

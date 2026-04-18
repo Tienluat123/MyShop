@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+<<<<<<< HEAD
 using System.Linq.Expressions;
 
+=======
+using MyShop.Models;
+>>>>>>> origin/feature/promotion
 namespace MyShop.Data;
 
 /// <summary>
@@ -21,9 +25,16 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     /// Lấy tất cả entities với phân trang
     /// </summary>
     public PagedResult<TEntity> GetAll(PagingRequest? paging = null)
+{
+    try
     {
-        try
+        var result = new PagedResult<TEntity>();
+        // 1. Tạo query ban đầu từ DbSet
+        var query = _dbSet.AsNoTracking().AsQueryable();
+
+        if (paging == null)
         {
+<<<<<<< HEAD
             using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
             var dbSet = context.Set<TEntity>();
             var result = new PagedResult<TEntity>();
@@ -55,21 +66,59 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
                 .ToList();
 
             result.Items = items;
+=======
+            result.Items = query.ToList();
+>>>>>>> origin/feature/promotion
             result.Pagination = new PagingMetadata
             {
-                PageNumber = paging.PageNumber,
-                PageSize = paging.PageSize,
-                TotalItems = totalItems,
+                PageNumber = 1,
+                PageSize = result.Items.Count,
+                TotalItems = result.Items.Count,
             };
-
             return result;
         }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi lấy dữ liệu {typeof(TEntity).Name}: {ex.Message}", ex);
-        }
-    }
 
+        // 2. CHỖ THÊM SEARCH: Lọc dữ liệu theo SearchText
+        if (!string.IsNullOrEmpty(paging.SearchText))
+        {
+            var search = paging.SearchText.ToLower();
+
+            // Vì đây là Repository Generic, ta kiểm tra nếu là Customer thì lọc theo Name/Phone
+            if (typeof(TEntity) == typeof(Customer))
+            {
+                query = query.Where(e =>
+                    (e as Customer).Name.ToLower().Contains(search) ||
+                    (e as Customer).Phone.Contains(search));
+            }
+            // Sau này nếu có Product, bạn có thể thêm else if ở đây
+        }
+
+        paging.Validate();
+
+        // 3. QUAN TRỌNG: Phải Count() trên cái query đã được lọc
+        var totalItems = query.Count();
+
+        // 4. QUAN TRỌNG: Phải Skip/Take trên cái query đã được lọc
+        var items = query
+            .Skip(paging.GetSkip())
+            .Take(paging.PageSize)
+            .ToList();
+
+        result.Items = items;
+        result.Pagination = new PagingMetadata
+        {
+            PageNumber = paging.PageNumber,
+            PageSize = paging.PageSize,
+            TotalItems = totalItems,
+        };
+
+        return result;
+    }
+    catch (Exception ex)
+    {
+        throw new InvalidOperationException($"Lỗi khi lấy dữ liệu {typeof(TEntity).Name}: {ex.Message}", ex);
+    }
+}
     /// <summary>
     /// Lấy entity theo ID
     /// </summary>

@@ -76,6 +76,9 @@ public partial class App : Application
     /// </summary>
     private void RegisterServices()
     {
+        // Cho phép Npgsql xử lý DateTime tự do không bắt buộc UTC
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
         var container = ServiceContainer.Instance;
 
         // Create log file to track database initialization
@@ -305,10 +308,15 @@ public partial class App : Application
 
             container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
 
+            LogMessage(" All services registered successfully");
+            container.Register<IPromotionService>(new PromotionService(
+                container.Get<IPromotionRepository>()
+            ));
             // ===== Set static Services property for app-wide access =====
             Services = container;
 
-            LogMessage(" All services registered successfully");
+
+            LogMessage("✅ All services registered successfully");
             LogMessage("====== DATABASE INITIALIZATION END ======");
         }
         catch (Exception ex)
