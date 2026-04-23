@@ -203,10 +203,31 @@ public partial class PromotionsViewModel : ObservableObject
     private string pagingSummary = "Showing 0-0 of 0 items";
 
     [ObservableProperty]
+    private string pageInfoDisplay = "Page 1 / 1";
+
+    [ObservableProperty]
     private bool isLoading = false;
 
     [ObservableProperty]
     private string? errorMessage;
+
+    // ===== Sorting properties (mirroring EmployeeManagementViewModel) =====
+    [ObservableProperty]
+    private string sortColumnName = "Code";
+
+    [ObservableProperty]
+    private bool sortAscending = true;
+
+    [ObservableProperty]
+    private string sortInfo = "Code|True";
+
+    partial void OnSortColumnNameChanged(string value) => UpdateSortInfo();
+    partial void OnSortAscendingChanged(bool value) => UpdateSortInfo();
+
+    private void UpdateSortInfo()
+    {
+        SortInfo = $"{SortColumnName}|{SortAscending}";
+    }
 
     public PromotionsViewModel(
         IPromotionService promoService,
@@ -352,7 +373,7 @@ public partial class PromotionsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Logic lọc chính - kết hợp search text + status filter
+    /// Logic lọc chính - kết hợp search text + status filter + sorting
     /// </summary>
     private void RebuildFilter()
     {
@@ -376,12 +397,80 @@ public partial class PromotionsViewModel : ObservableObject
             return matchSearch && matchStatus;
         }).ToList();
 
-        TotalItems = filtered.Count;
+        // Apply sorting before paging
+        var sorted = ApplySorting(filtered);
+
+        TotalItems = sorted.Count;
         TotalPages = Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
         if (CurrentPage > TotalPages) CurrentPage = TotalPages;
         if (CurrentPage < 1) CurrentPage = 1;
 
-        RebuildPageItems(filtered);
+        PageInfoDisplay = $"Page {CurrentPage} / {TotalPages}";
+
+        RebuildPageItems(sorted);
+    }
+
+    /// <summary>
+    /// Sort danh sách theo cột và chiều đang được chọn.
+    /// </summary>
+    private List<PromotionItem> ApplySorting(List<PromotionItem> data)
+    {
+        var sorted = SortColumnName switch
+        {
+            "Code" => SortAscending
+                ? data.OrderBy(x => x.Code).ToList()
+                : data.OrderByDescending(x => x.Code).ToList(),
+
+            "Type" => SortAscending
+                ? data.OrderBy(x => x.TypeDisplay).ToList()
+                : data.OrderByDescending(x => x.TypeDisplay).ToList(),
+
+            "Value" => SortAscending
+                ? data.OrderBy(x => x.Value).ToList()
+                : data.OrderByDescending(x => x.Value).ToList(),
+
+            "Status" => SortAscending
+                ? data.OrderBy(x => x.StatusText).ToList()
+                : data.OrderByDescending(x => x.StatusText).ToList(),
+
+            "MinOrder" => SortAscending
+                ? data.OrderBy(x => x.MinimumOrderAmount).ToList()
+                : data.OrderByDescending(x => x.MinimumOrderAmount).ToList(),
+
+            "StartDate" => SortAscending
+                ? data.OrderBy(x => x.StartDate).ToList()
+                : data.OrderByDescending(x => x.StartDate).ToList(),
+
+            "Target" => SortAscending
+                ? data.OrderBy(x => x.TargetDisplay).ToList()
+                : data.OrderByDescending(x => x.TargetDisplay).ToList(),
+
+            _ => data
+        };
+
+        return sorted;
+    }
+
+    /// <summary>
+    /// Xử lý khi user click vào header cột để sort.
+    /// </summary>
+    [RelayCommand]
+    private void SortByColumn(string columnName)
+    {
+        if (string.IsNullOrEmpty(columnName)) return;
+
+        if (SortColumnName == columnName)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortColumnName = columnName;
+            SortAscending = true;
+        }
+
+        CurrentPage = 1;
+        RebuildFilter();
     }
 
     /// <summary>
