@@ -54,13 +54,13 @@ public sealed partial class PosPage : Page
             // 2. Promotion Selection
             var promoModal = new PromoSelectionModal();
             promoModal.XamlRoot = this.XamlRoot;
-            
+
             Models.Promotion? selectedPromo = null;
             promoModal.ViewModel.PromotionSelected += (promo) =>
             {
                 selectedPromo = (Models.Promotion?)promo;
             };
-            
+
             await promoModal.ShowAsync();
             await ViewModel.ApplyPromotion(selectedPromo);
 
@@ -114,7 +114,7 @@ public sealed partial class PosPage : Page
             {
                 Product = confirmedItem.Product,
                 Quantity = confirmedItem.Quantity,
-                Options = confirmedItem.DrinkOptions
+                Options = confirmedItem.DrinkOptions ?? new DrinkOptions()
             });
         };
 

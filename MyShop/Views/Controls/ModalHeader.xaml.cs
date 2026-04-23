@@ -5,7 +5,7 @@ namespace MyShop.Views.Controls
 {
     public sealed partial class ModalHeader : UserControl
     {
-        public event RoutedEventHandler CancelClicked;
+        public event RoutedEventHandler? CancelClicked;
         // 1. Khai báo thuộc tính Title
         public string Title
         {

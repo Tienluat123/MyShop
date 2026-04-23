@@ -122,7 +122,7 @@ public partial class CustomerProfileViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async void AddNote()
+    private async Task AddNote()
     {
         SelectedCustomer.Notes = "VIP customer. Prefers medium sugar and oat milk.";
 

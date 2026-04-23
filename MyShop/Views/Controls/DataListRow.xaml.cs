@@ -31,13 +31,13 @@ public sealed partial class DataListRow : UserControl
     public static readonly DependencyProperty SubtitleProperty =
         DependencyProperty.Register(nameof(Subtitle), typeof(string), typeof(DataListRow), new PropertyMetadata(""));
 
-    public UIElement Content
+    public new UIElement Content
     {
         get => (UIElement)GetValue(ContentProperty);
         set => SetValue(ContentProperty, value);
     }
 
-    public static readonly DependencyProperty ContentProperty =
+    public static new readonly DependencyProperty ContentProperty =
         DependencyProperty.Register(nameof(Content), typeof(UIElement), typeof(DataListRow), new PropertyMetadata(null));
 
     public UIElement Actions

@@ -10,12 +10,12 @@ namespace MyShop.Converters;
 public class DateTimeToDateTimeOffsetConverter : IValueConverter
 {
     // Chuyển từ DateTime (Model) -> DateTimeOffset (UI)
-    public object Convert(object value, Type targetType, object parameter, string language)
+    public object? Convert(object value, Type targetType, object parameter, string language)
     {
         if (value is DateTime dt)
         {
             if (dt == DateTime.MinValue) return null;
-            
+
             // Đảm bảo không bị lỗi Out of Range của DateTimeOffset
             try { return new DateTimeOffset(dt); }
             catch { return DateTimeOffset.MinValue; }
@@ -24,7 +24,7 @@ public class DateTimeToDateTimeOffsetConverter : IValueConverter
     }
 
     // Chuyển từ DateTimeOffset (UI) -> DateTime (Model)
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    public object? ConvertBack(object value, Type targetType, object parameter, string language)
     {
         if (value is DateTimeOffset dto)
         {

@@ -53,7 +53,7 @@ public partial class PosViewModel : ObservableObject
     private string orderType = "Dine-in";
 
     [ObservableProperty]
-    private string tableNumber;
+    private string? tableNumber;
 
     public string TotalFormatted => $"Total: {Total:F2}";
 
@@ -79,7 +79,7 @@ public partial class PosViewModel : ObservableObject
         _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         _promoService = promoService ?? throw new ArgumentNullException(nameof(promoService));
-        
+
         // Initial data loading
         InitializeAsync();
     }
@@ -102,9 +102,9 @@ public partial class PosViewModel : ObservableObject
         await LoadCategories();
         await LoadProductsForSale();
         await LoadCurrentDraftOrder();
-        
+
         RebuildFilter();
-        
+
         // Final explicit check for command enablement
         CalculateTotals();
         PlaceOrderCommand.NotifyCanExecuteChanged();
@@ -263,7 +263,7 @@ public partial class PosViewModel : ObservableObject
             unitPrice += (param.Options.AddOns?.Count ?? 0) * 10000;
         }
 
-        var detail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od => 
+        var detail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od =>
             od.ProductId == param.Product.Id && od.Notes == notes);
         if (detail != null)
         {
@@ -316,10 +316,10 @@ public partial class PosViewModel : ObservableObject
         if (_currentDraftOrder != null) return;
 
         var result = await _orderService.GetPagedOrdersByStatuses(
-            new PagingRequest { PageNumber = 1, PageSize = 1 }, 
-            true, 
+            new PagingRequest { PageNumber = 1, PageSize = 1 },
+            true,
             paymentStatuses: new List<string> { "Draft" });
-            
+
         _currentDraftOrder = result.Items.FirstOrDefault();
 
         if (_currentDraftOrder != null)
@@ -347,10 +347,10 @@ public partial class PosViewModel : ObservableObject
         try
         {
             var result = await _orderService.GetPagedOrdersByStatuses(
-                new PagingRequest { PageNumber = 1, PageSize = 1 }, 
-                true, 
+                new PagingRequest { PageNumber = 1, PageSize = 1 },
+                true,
                 paymentStatuses: new List<string> { "Draft" });
-                
+
             _currentDraftOrder = result.Items.FirstOrDefault();
             if (_currentDraftOrder != null)
             {
@@ -385,10 +385,10 @@ public partial class PosViewModel : ObservableObject
     private async Task SaveDraftOrder()
     {
         if (_currentDraftOrder == null) return;
-        
+
         // 1. Recalculate SubTotal from OrderDetails
         _currentDraftOrder.SubTotal = _currentDraftOrder.OrderDetails.Sum(od => od.Quantity * od.UnitPrice);
-        
+
         // 2. Calculate Discount Amount
         decimal discount = 0;
         if (_currentDraftOrder.Promotion != null)
@@ -410,7 +410,7 @@ public partial class PosViewModel : ObservableObject
         var postDiscountBase = _currentDraftOrder.SubTotal - discount;
         _currentDraftOrder.TaxAmount = postDiscountBase * TAX_RATE;
         _currentDraftOrder.TotalAmount = postDiscountBase + _currentDraftOrder.TaxAmount;
-        
+
         await _orderService.Update(_currentDraftOrder);
     }
 
@@ -442,7 +442,7 @@ public partial class PosViewModel : ObservableObject
 
         var notes = SerializeOptions(item.DrinkOptions);
         var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == item.Product.Id && od.Notes == notes);
-        
+
         if (detail != null)
         {
             _currentDraftOrder.OrderDetails.Remove(detail);
@@ -479,7 +479,7 @@ public partial class PosViewModel : ObservableObject
 
         var notes = SerializeOptions(param.Item.DrinkOptions);
         var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == param.Item.Product.Id && od.Notes == notes);
-        
+
         if (detail != null)
         {
             detail.Quantity += param.Delta;
@@ -487,7 +487,7 @@ public partial class PosViewModel : ObservableObject
             {
                 _currentDraftOrder.OrderDetails.Remove(detail);
             }
-            
+
             await SaveDraftOrder();
             SyncCartFromDraft();
         }
@@ -518,7 +518,7 @@ public partial class PosViewModel : ObservableObject
             }
             _currentDraftOrder = null;
         }
-        
+
         Order.Clear();
         CalculateTotals();
     }
@@ -553,7 +553,7 @@ public partial class PosViewModel : ObservableObject
     private void CalculateTotals()
     {
         Subtotal = Order.Sum(i => i.TotalPrice);
-        
+
         decimal discount = 0;
         if (_currentDraftOrder?.Promotion != null)
         {
@@ -566,11 +566,11 @@ public partial class PosViewModel : ObservableObject
             {
                 discount = promo.DiscountValue;
             }
-            
+
             // Cap discount at subtotal
             discount = Math.Min(discount, Subtotal);
         }
-        
+
         // Cart values (Pre-discount)
         Tax = Subtotal * TAX_RATE;
         Total = Subtotal + Tax;
@@ -579,12 +579,12 @@ public partial class PosViewModel : ObservableObject
         {
             _currentDraftOrder.DiscountAmount = discount;
             _currentDraftOrder.SubTotal = Subtotal;
-            
+
             // Payment values (Post-discount)
             var postDiscountBase = Subtotal - discount;
             var paymentTax = postDiscountBase * TAX_RATE;
             var paymentTotal = postDiscountBase + paymentTax;
-            
+
             _currentDraftOrder.TaxAmount = paymentTax;
             _currentDraftOrder.TotalAmount = paymentTotal;
         }
@@ -593,10 +593,10 @@ public partial class PosViewModel : ObservableObject
     public async Task ApplyPromotion(Promotion? promo)
     {
         if (_currentDraftOrder == null) return;
-        
+
         _currentDraftOrder.PromotionId = promo?.Id;
         _currentDraftOrder.Promotion = promo;
-        
+
         CalculateTotals();
         await SaveDraftOrder();
     }
@@ -671,12 +671,12 @@ public partial class PosViewModel : ObservableObject
         _currentDraftOrder = null;
         Order.Clear();
         CalculateTotals();
-        
+
         if (completedOrder != null)
         {
             OrderFinalized?.Invoke(this, completedOrder);
         }
-        
+
         return newOrder;
     }
 }

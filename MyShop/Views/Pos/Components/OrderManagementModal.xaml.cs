@@ -46,10 +46,13 @@ public sealed partial class OrderManagementModal : ContentDialog
         }
     }
 
-    private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+    private void ScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
     {
-        var sv = (ScrollViewer)sender;
-        
+        if (sender is not ScrollViewer sv)
+        {
+            return;
+        }
+
         if (ViewModel.Filter != "Active") return;
 
         // Load more when scrolled near the end (e.g. 90% of the way down)
@@ -62,7 +65,7 @@ public sealed partial class OrderManagementModal : ContentDialog
         }
     }
 
-    private ScrollViewer GetScrollViewer(DependencyObject element)
+    private ScrollViewer? GetScrollViewer(DependencyObject element)
     {
         if (element is ScrollViewer sv) return sv;
 

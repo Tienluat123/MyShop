@@ -223,11 +223,11 @@ public partial class EmployeeManagementViewModel : ObservableObject
         {
             await _employeeService.UpdateEmployeeAsync(info.User);
             ActiveStaffCount = DisplayEmployees.Count(x => x.User.IsActive);
-            System.Diagnostics.Debug.WriteLine($"✅ Updated status for {info.User.FullName}");
+            System.Diagnostics.Debug.WriteLine($" Updated status for {info.User.FullName}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Update status error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($" Update status error: {ex.Message}");
             _notificationService.ShowError("Lỗi khi cập nhật trạng thái");
         }
     }

@@ -87,7 +87,11 @@ public partial class App : Application
             "MyShop",
             "database.log"
         );
-        Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+        var logDirectory = Path.GetDirectoryName(logPath);
+        if (!string.IsNullOrEmpty(logDirectory))
+        {
+            Directory.CreateDirectory(logDirectory);
+        }
 
         void LogMessage(string message)
         {
@@ -109,8 +113,8 @@ public partial class App : Application
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyShop", "appsettings.json") // User data
             };
 
-            DatabaseConfig dbConfig = null;
-            string foundPath = null;
+            DatabaseConfig? dbConfig = null;
+            string? foundPath = null;
 
             foreach (var path in pathsToTry)
             {
@@ -158,10 +162,15 @@ public partial class App : Application
             }
 
             // ===== Setup Database Context (PostgreSQL via Supabase) =====
+            if (dbConfig is null)
+            {
+                dbConfig = CreateDefaultConfig();
+            }
+
             var connectionString = dbConfig.GetConnectionString();
             LogMessage($"📡 Database config loaded - Host: {dbConfig.Host}, Port: {dbConfig.Port}");
 
-            AppDbContext dbContext = null;
+            AppDbContext dbContext;
             try
             {
                 var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()

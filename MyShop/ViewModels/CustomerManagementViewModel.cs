@@ -77,7 +77,7 @@ public partial class CustomerManagementViewModel : ObservableObject
         LoadCustomersCommand.ExecuteAsync(null);
     }
 
-    partial void OnSearchTextChanged(string? value)
+    partial void OnSearchTextChanged(string value)
     {
         CurrentPage = 1;
         DebounceSearch();

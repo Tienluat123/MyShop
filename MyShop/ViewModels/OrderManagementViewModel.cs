@@ -31,7 +31,7 @@ public partial class OrderManagementViewModel : ObservableObject
     private bool _hasMoreData = true;
 
     [ObservableProperty]
-    private PosOrder _selectedOrderDetails;
+    private PosOrder? _selectedOrderDetails;
 
     [ObservableProperty]
     private bool _isOrderDetailOpen;
@@ -42,7 +42,7 @@ public partial class OrderManagementViewModel : ObservableObject
 
     // Standard paging for history tab
     private const int PageSizeHistory = 10;
-    
+
     [ObservableProperty]
     private int _currentPageHistory = 1;
 
@@ -62,9 +62,9 @@ public partial class OrderManagementViewModel : ObservableObject
     private ObservableCollection<string> _statusFilterOptions = new();
 
     [ObservableProperty]
-    private string _selectedStatusFilter;
+    private string _selectedStatusFilter = string.Empty;
 
-    public Action ScrollToTopAction { get; set; }
+    public Action? ScrollToTopAction { get; set; }
 
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
@@ -73,7 +73,7 @@ public partial class OrderManagementViewModel : ObservableObject
     {
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         _productService = productService ?? throw new ArgumentNullException(nameof(productService));
-        
+
         _currentPageHistory = 1;
         InitializeFilterOptions();
         _ = LoadOrders();
@@ -89,20 +89,19 @@ public partial class OrderManagementViewModel : ObservableObject
         {
             StatusFilterOptions = new ObservableCollection<string> { "All History", "Paid", "Cancelled", "Refunded" };
         }
-        
-        _selectedStatusFilter = StatusFilterOptions.First();
-        OnPropertyChanged(nameof(SelectedStatusFilter));
+
+        SelectedStatusFilter = StatusFilterOptions.First();
     }
 
     partial void OnSelectedStatusFilterChanged(string value)
     {
         if (string.IsNullOrEmpty(value)) return;
-        
+
         _currentPage = 1;
         CurrentPageHistory = 1;
-        
+
         _ = LoadOrders();
-        
+
         if (Filter == "Active")
         {
             ScrollToTopAction?.Invoke();
@@ -113,7 +112,7 @@ public partial class OrderManagementViewModel : ObservableObject
     public async Task LoadOrders()
     {
         if (IsLoadingMore) return;
-        
+
         try
         {
             IsLoadingMore = true;
@@ -137,9 +136,9 @@ public partial class OrderManagementViewModel : ObservableObject
                 // History Paging
                 var paging = new PagingRequest { PageNumber = CurrentPageHistory, PageSize = PageSizeHistory };
                 var pagedResult = await _orderService.GetPagedHistoryOrders(
-                    paging, 
-                    SearchStartDate?.DateTime, 
-                    SearchEndDate?.DateTime, 
+                    paging,
+                    SearchStartDate?.DateTime,
+                    SearchEndDate?.DateTime,
                     SelectedStatusFilter);
 
                 var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
@@ -148,7 +147,7 @@ public partial class OrderManagementViewModel : ObservableObject
                 foreach (var o in mappedOrders) DisplayOrders.Add(o);
 
                 int historyCountFromDb = await _orderService.GetHistoryCount(
-                    SearchStartDate?.DateTime, 
+                    SearchStartDate?.DateTime,
                     SearchEndDate?.DateTime);
 
                 TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
@@ -188,7 +187,7 @@ public partial class OrderManagementViewModel : ObservableObject
             _currentPage++;
 
             var pagedResult = await _orderService.GetPagedActiveOrders(
-                new PagingRequest { PageNumber = _currentPage, PageSize = PageSize }, 
+                new PagingRequest { PageNumber = _currentPage, PageSize = PageSize },
                 SelectedStatusFilter);
 
             var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
@@ -339,7 +338,7 @@ public partial class OrderManagementViewModel : ObservableObject
 
         if (currentStatus == FulfillmentStatus.None) nextStatus = FulfillmentStatus.Preparing;
         else if (currentStatus == FulfillmentStatus.Preparing) nextStatus = FulfillmentStatus.Ready;
-        else if (currentStatus == FulfillmentStatus.Ready) 
+        else if (currentStatus == FulfillmentStatus.Ready)
         {
             if (order.PaymentStatus != PaymentStatus.Paid)
             {
@@ -379,7 +378,7 @@ public partial class OrderManagementViewModel : ObservableObject
         try
         {
             int numericId = ExtractId(order.OrderId);
-            await _orderService.UpdatePaymentStatus(numericId, "Refunded"); 
+            await _orderService.UpdatePaymentStatus(numericId, "Refunded");
             await LoadOrders();
         }
         catch (Exception) { /* Handle error */ }
@@ -418,9 +417,9 @@ public partial class OrderManagementViewModel : ObservableObject
         try
         {
             ActiveCount = await _orderService.GetActiveCount();
-            
+
             HistoryCount = await _orderService.GetHistoryCount(
-                SearchStartDate?.DateTime, 
+                SearchStartDate?.DateTime,
                 SearchEndDate?.DateTime);
         }
         catch (Exception ex)

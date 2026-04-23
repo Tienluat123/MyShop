@@ -75,7 +75,6 @@
                                  Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Width="200"
                                  VerticalAlignment="Center"
                                  Margin="0,3,0,0">
                             <TextBox.Resources>

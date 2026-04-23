@@ -26,7 +26,7 @@ public sealed partial class StaffSchedulePage : Page
     {
         if (sender is Button clickedButton && clickedButton.Tag != null)
         {
-            string target = clickedButton.Tag.ToString();
+            string target = clickedButton.Tag?.ToString() ?? string.Empty;
 
             // 1. Reset tất cả về trạng thái bình thường (Chưa chọn)
             ResetButtonStyles();

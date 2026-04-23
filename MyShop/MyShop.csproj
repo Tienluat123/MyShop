@@ -44,6 +44,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Tmds.DBus.Protocol" />
   </ItemGroup>
 
   <!-- Copy appsettings.json to output directory -->
