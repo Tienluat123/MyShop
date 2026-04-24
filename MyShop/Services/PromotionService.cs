@@ -1,5 +1,6 @@
 using MyShop.Data;
 using MyShop.Models;
+using System.Linq.Expressions;
 
 namespace MyShop.Services;
 
@@ -9,9 +10,9 @@ namespace MyShop.Services;
 public interface IPromotionService
 {
     /// <summary>
-    /// Lấy tất cả khuyến mãi
+    /// Lấy tất cả khuyến mãi với phân trang
     /// </summary>
-    Task<List<Promotion>> GetAllAsync(CancellationToken ct = default);
+    Task<PagedResult<Promotion>> GetAllAsync(PagingRequest? paging = null, CancellationToken ct = default);
 
     /// <summary>
     /// Lấy khuyến mãi theo ID
@@ -73,17 +74,87 @@ public class PromotionService : IPromotionService
     }
 
     /// <summary>
-    /// Lấy tất cả khuyến mãi
+    /// Lấy tất cả khuyến mãi với phân trang
     /// </summary>
-    public async Task<List<Promotion>> GetAllAsync(CancellationToken ct = default)
+    public async Task<PagedResult<Promotion>> GetAllAsync(PagingRequest? paging = null, CancellationToken ct = default)
     {
         try
         {
-            return (await _promoRepository.GetAllFreshAsync(null, ct)).Items;
+            Expression<Func<Promotion, bool>>? filter = null;
+
+            if (paging != null)
+            {
+                var filters = new List<Expression<Func<Promotion, bool>>>();
+
+                // SearchText
+                if (!string.IsNullOrWhiteSpace(paging.SearchText))
+                {
+                    var keyword = paging.SearchText.ToLower().Trim();
+                    filters.Add(p => p.PromoCode.ToLower().Contains(keyword));
+                }
+
+                // Status Filter from Dictionary
+                if (paging.Filters != null && paging.Filters.TryGetValue("Status", out var status) && status != "All")
+                {
+                    var now = DateTime.Now;
+                    switch (status)
+                    {
+                        case "Active":
+                            filters.Add(p => p.IsActive && now >= p.StartDate && now <= p.EndDate);
+                            break;
+                        case "Expired":
+                            filters.Add(p => now > p.EndDate);
+                            break;
+                        case "Upcoming":
+                            filters.Add(p => p.IsActive && now < p.StartDate);
+                            break;
+                        case "Inactive":
+                            filters.Add(p => !p.IsActive);
+                            break;
+                    }
+                }
+
+                // Combine filters
+                if (filters.Any())
+                {
+                    var parameter = Expression.Parameter(typeof(Promotion), "p");
+                    Expression? combined = null;
+
+                    foreach (var f in filters)
+                    {
+                        var body = new ParameterReplacer(f.Parameters[0], parameter).Visit(f.Body);
+                        combined = combined == null ? body : Expression.AndAlso(combined, body!);
+                    }
+
+                    if (combined != null)
+                    {
+                        filter = Expression.Lambda<Func<Promotion, bool>>(combined, parameter);
+                    }
+                }
+            }
+
+            return await _promoRepository.GetAllFreshAsync(paging, filter, ct == default ? CancellationToken.None : ct);
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException("Lỗi khi lấy danh sách khuyến mãi", ex);
+        }
+    }
+
+    private class ParameterReplacer : ExpressionVisitor
+    {
+        private readonly ParameterExpression _oldParameter;
+        private readonly ParameterExpression _newParameter;
+
+        public ParameterReplacer(ParameterExpression oldParameter, ParameterExpression newParameter)
+        {
+            _oldParameter = oldParameter;
+            _newParameter = newParameter;
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            return node == _oldParameter ? _newParameter : base.VisitParameter(node);
         }
     }
 
@@ -115,7 +186,8 @@ public class PromotionService : IPromotionService
 
         try
         {
-            var allPromos = (await _promoRepository.GetAllFreshAsync(null, ct)).Items;
+            var pagedResult = await _promoRepository.GetAllFreshAsync(null, null, ct);
+            var allPromos = pagedResult.Items;
             return allPromos.FirstOrDefault(p =>
                 p.PromoCode.Equals(code.Trim(), StringComparison.OrdinalIgnoreCase));
         }

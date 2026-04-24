@@ -434,6 +434,7 @@ public class OrderService : IOrderService
             var result = await _orderRepository.GetAllAsyncWithIncludes(
                 paging,
                 filter,
+                null,
                 "OrderDetails.Product",
                 "Customer");
 
@@ -479,6 +480,7 @@ public class OrderService : IOrderService
             var result = await _orderRepository.GetAllAsyncWithIncludes(
                 paging,
                 filter,
+                null,
                 "OrderDetails.Product",
                 "Customer");
 
@@ -553,6 +555,7 @@ public class OrderService : IOrderService
             var result = await _orderRepository.GetAllAsyncWithIncludes(
                 paging,
                 filter,
+                null,
                 "OrderDetails.Product",
                 "Customer");
 

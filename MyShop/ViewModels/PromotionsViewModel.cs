@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MyShop.Services;
 using MyShop.Models;
+using MyShop.Data;
 
 namespace MyShop.ViewModels;
 
@@ -155,9 +156,10 @@ public partial class PromotionItem : ObservableObject
 public partial class PromotionsViewModel : ObservableObject
 {
     private readonly IPromotionService _promoService;
+    private readonly IAppConfigService _configService;
     private readonly Action onAdd;
     private readonly Action<PromotionItem> onEdit;
-    private List<PromotionItem> _allPromotions = new();
+    private List<PromotionItem> _allPromotions = new(); // No longer used for in-memory paging, but kept if needed for other logic
 
     /// <summary>
     /// Cờ để View biết rằng đang trong quá trình cập nhật dữ liệu,
@@ -231,10 +233,12 @@ public partial class PromotionsViewModel : ObservableObject
 
     public PromotionsViewModel(
         IPromotionService promoService,
+        IAppConfigService configService,
         Action onAdd,
         Action<PromotionItem> onEdit)
     {
         _promoService = promoService ?? throw new ArgumentNullException(nameof(promoService));
+        _configService = configService ?? throw new ArgumentNullException(nameof(configService));
         this.onAdd = onAdd ?? throw new ArgumentNullException(nameof(onAdd));
         this.onEdit = onEdit ?? throw new ArgumentNullException(nameof(onEdit));
 
@@ -256,18 +260,41 @@ public partial class PromotionsViewModel : ObservableObject
             IsLoading = true;
             ErrorMessage = null;
 
-            var dbPromos = await _promoService.GetAllAsync();
-            _allPromotions.Clear();
+            // Lấy PageSize từ cấu hình nếu chưa có hoặc load lại
+            PageSize = await _configService.GetPageSizeAsync();
 
-            foreach (var p in dbPromos)
+            var request = new PagingRequest
+            {
+                PageNumber = CurrentPage,
+                PageSize = PageSize,
+                SearchText = SearchQuery?.Trim(),
+                SortColumn = SortColumnName,
+                SortAscending = SortAscending,
+                Filters = new Dictionary<string, string>
+                {
+                    { "Status", SelectedStatus }
+                }
+            };
+
+            var pagedResult = await _promoService.GetAllAsync(request);
+            
+            TotalItems = pagedResult.Pagination.TotalItems;
+            TotalPages = pagedResult.Pagination.TotalPages;
+
+            PageItems.Clear();
+            foreach (var p in pagedResult.Items)
             {
                 var item = PromotionItem.FromEntity(p);
                 item.IsActiveChanged += OnPromotionItemIsActiveChanged;
-                _allPromotions.Add(item);
+                PageItems.Add(item);
             }
 
-            CurrentPage = 1;
-            RebuildFilter();
+            PageInfoDisplay = $"Page {CurrentPage} / {TotalPages}";
+            UpdatePageNumbers();
+            
+            var start = TotalItems == 0 ? 0 : ((CurrentPage - 1) * PageSize) + 1;
+            var end = TotalItems == 0 ? 0 : Math.Min(start + PageItems.Count - 1, TotalItems);
+            PagingSummary = $"Showing {start}-{end} of {TotalItems} items";
         }
         catch (Exception ex)
         {
@@ -281,12 +308,20 @@ public partial class PromotionsViewModel : ObservableObject
         }
     }
 
+    private void UpdatePageNumbers()
+    {
+        var pageNums = new ObservableCollection<int>();
+        for (int i = 1; i <= TotalPages; i++)
+            pageNums.Add(i);
+        PageNumbers = pageNums;
+    }
+
     [RelayCommand]
-    private void FilterByStatus(string status)
+    private async Task FilterByStatus(string status)
     {
         SelectedStatus = status;
         CurrentPage = 1;
-        RebuildFilter();
+        await RefreshFromDatabaseAsync();
     }
 
     [RelayCommand]
@@ -346,9 +381,8 @@ public partial class PromotionsViewModel : ObservableObject
             entity.IsActive = newValue;
             await _promoService.UpdateAsync(entity);
 
-            // Chỉ re-filter hiển thị, KHÔNG refresh toàn bộ từ DB
-            // Điều này tránh infinite loop giữa IsActiveChanged → filter → ToggleSwitch_Toggled
-            RebuildFilter();
+            // Chỉ refresh hiển thị từ server
+            await RefreshFromDatabaseAsync();
         }
         catch (Exception ex)
         {
@@ -372,90 +406,39 @@ public partial class PromotionsViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Logic lọc chính - kết hợp search text + status filter + sorting
-    /// </summary>
-    private void RebuildFilter()
-    {
-        var query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
 
-        var filtered = _allPromotions.Where(p =>
-        {
-            bool matchSearch = string.IsNullOrEmpty(query) ||
-                               p.Code.ToLowerInvariant().Contains(query) ||
-                               p.TypeDisplay.ToLowerInvariant().Contains(query);
+    // === Paging Commands ===
 
-            bool matchStatus = SelectedStatus switch
-            {
-                "Active" => p.IsCurrentlyActive,
-                "Expired" => p.IsExpired,
-                "Upcoming" => p.IsUpcoming,
-                "Inactive" => !p.IsActive,
-                _ => true // "All"
-            };
-
-            return matchSearch && matchStatus;
-        }).ToList();
-
-        // Apply sorting before paging
-        var sorted = ApplySorting(filtered);
-
-        TotalItems = sorted.Count;
-        TotalPages = Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
-        if (CurrentPage > TotalPages) CurrentPage = TotalPages;
-        if (CurrentPage < 1) CurrentPage = 1;
-
-        PageInfoDisplay = $"Page {CurrentPage} / {TotalPages}";
-
-        RebuildPageItems(sorted);
-    }
-
-    /// <summary>
-    /// Sort danh sách theo cột và chiều đang được chọn.
-    /// </summary>
-    private List<PromotionItem> ApplySorting(List<PromotionItem> data)
-    {
-        var sorted = SortColumnName switch
-        {
-            "Code" => SortAscending
-                ? data.OrderBy(x => x.Code).ToList()
-                : data.OrderByDescending(x => x.Code).ToList(),
-
-            "Type" => SortAscending
-                ? data.OrderBy(x => x.TypeDisplay).ToList()
-                : data.OrderByDescending(x => x.TypeDisplay).ToList(),
-
-            "Value" => SortAscending
-                ? data.OrderBy(x => x.Value).ToList()
-                : data.OrderByDescending(x => x.Value).ToList(),
-
-            "Status" => SortAscending
-                ? data.OrderBy(x => x.StatusText).ToList()
-                : data.OrderByDescending(x => x.StatusText).ToList(),
-
-            "MinOrder" => SortAscending
-                ? data.OrderBy(x => x.MinimumOrderAmount).ToList()
-                : data.OrderByDescending(x => x.MinimumOrderAmount).ToList(),
-
-            "StartDate" => SortAscending
-                ? data.OrderBy(x => x.StartDate).ToList()
-                : data.OrderByDescending(x => x.StartDate).ToList(),
-
-            "Target" => SortAscending
-                ? data.OrderBy(x => x.TargetDisplay).ToList()
-                : data.OrderByDescending(x => x.TargetDisplay).ToList(),
-
-            _ => data
-        };
-
-        return sorted;
-    }
-
-    /// <summary>
-    /// Xử lý khi user click vào header cột để sort.
-    /// </summary>
     [RelayCommand]
-    private void SortByColumn(string columnName)
+    private async Task GoToPage(int page)
+    {
+        if (page < 1 || page > TotalPages) return;
+        CurrentPage = page;
+        await RefreshFromDatabaseAsync();
+    }
+
+    [RelayCommand]
+    private async Task NextPage()
+    {
+        if (CurrentPage < TotalPages)
+        {
+            CurrentPage++;
+            await RefreshFromDatabaseAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            await RefreshFromDatabaseAsync();
+        }
+    }
+
+    [RelayCommand]
+    private async Task SortByColumn(string columnName)
     {
         if (string.IsNullOrEmpty(columnName)) return;
 
@@ -470,75 +453,13 @@ public partial class PromotionsViewModel : ObservableObject
         }
 
         CurrentPage = 1;
-        RebuildFilter();
-    }
-
-    /// <summary>
-    /// GÁN MỚI toàn bộ collection thay vì Clear+Add.
-    /// Điều này khiến ItemsRepeater tạo lại toàn bộ items một lần duy nhất,
-    /// tránh lỗi "Changes in data source are not allowed during layout".
-    /// </summary>
-    private void RebuildPageItems(List<PromotionItem>? filtered = null)
-    {
-        IsUpdatingData = true;
-        try
-        {
-            var source = filtered ?? _allPromotions.ToList();
-
-            var taken = source
-                .Skip((CurrentPage - 1) * PageSize)
-                .Take(PageSize)
-                .ToList();
-
-            // Gán collection MỚI — ItemsRepeater binding sẽ nhận PropertyChanged
-            // và rebuild toàn bộ items một lần, không gây layout conflict
-            PageItems = new ObservableCollection<PromotionItem>(taken);
-
-            var pageNums = new ObservableCollection<int>();
-            for (int i = 1; i <= TotalPages; i++)
-                pageNums.Add(i);
-            PageNumbers = pageNums;
-
-            var start = source.Count == 0 ? 0 : ((CurrentPage - 1) * PageSize) + 1;
-            var end = source.Count == 0 ? 0 : Math.Min(start + taken.Count - 1, TotalItems);
-            PagingSummary = $"Showing {start}-{end} of {TotalItems} items";
-        }
-        finally
-        {
-            IsUpdatingData = false;
-        }
-    }
-
-    // === Paging Commands ===
-
-    [RelayCommand]
-    private void GoToPage(int page)
-    {
-        if (page < 1 || page > TotalPages) return;
-        CurrentPage = page;
-        RebuildFilter();
-    }
-
-    [RelayCommand]
-    private void NextPage()
-    {
-        if (CurrentPage < TotalPages)
-        {
-            CurrentPage++;
-            RebuildFilter();
-        }
-    }
-
-    [RelayCommand]
-    private void PreviousPage()
-    {
-        if (CurrentPage > 1)
-        {
-            CurrentPage--;
-            RebuildFilter();
-        }
+        await RefreshFromDatabaseAsync();
     }
 
     // Auto-rebuild khi search thay đổi
-    partial void OnSearchQueryChanged(string value) => RebuildFilter();
+    partial void OnSearchQueryChanged(string value)
+    {
+        CurrentPage = 1;
+        _ = RefreshFromDatabaseAsync();
+    }
 }

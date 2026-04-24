@@ -29,11 +29,12 @@ public sealed partial class CustomerPage : Page
 
         var customerService = ServiceContainer.Instance.Get<ICustomerService>();
         var notificationService = ServiceContainer.Instance.Get<INotificationService>();
-
+        var configService = ServiceContainer.Instance.Get<IAppConfigService>();
 
         var viewModel = new CustomerManagementViewModel(
-            customerService, // Quan trọng nhất là dòng này!
+            customerService,
             notificationService,
+            configService,
             onAdd: () => ShowFormDialog(isEditMode: false),
             onRules: NavigateToRules,
             onProfile: NavigateToProfile,

@@ -321,7 +321,8 @@ public partial class App : Application
             container.Register<EmployeeManagementViewModel>(new EmployeeManagementViewModel(
                 container.Get<IEmployeeService>(),
                 container.Get<IScheduleService>(),
-                container.Get<INotificationService>()
+                container.Get<INotificationService>(),
+                container.Get<IAppConfigService>()
             ));
 
             container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());

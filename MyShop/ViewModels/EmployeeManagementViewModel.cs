@@ -21,9 +21,12 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
     private readonly IEmployeeService _employeeService;
     private readonly IScheduleService _scheduleService;
     private readonly INotificationService _notificationService;
+    private readonly IAppConfigService _configService;
     private readonly Func<Task>? _onAddRequested;
     private readonly Func<UserSalaryInfo, Task>? _onEditRequested;
-    private const int PageSize = 10;
+
+    [ObservableProperty]
+    private int pageSize = 10;
 
     // --- DASHBOARD STATS ---
     [ObservableProperty]
@@ -76,12 +79,14 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
         IEmployeeService employeeService,
         IScheduleService scheduleService,
         INotificationService notificationService,
+        IAppConfigService configService,
         Func<Task>? onAddRequested = null,
         Func<UserSalaryInfo, Task>? onEditRequested = null)
     {
         _employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         _scheduleService = scheduleService ?? throw new ArgumentNullException(nameof(scheduleService));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+        _configService = configService ?? throw new ArgumentNullException(nameof(configService));
         _onAddRequested = onAddRequested;
         _onEditRequested = onEditRequested;
 
@@ -131,6 +136,9 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
         IsLoading = true;
         try
         {
+            // Load PageSize from config
+            PageSize = await _configService.GetPageSizeAsync();
+
             // Build paging request with all filters
             var request = new PagingRequest
             {

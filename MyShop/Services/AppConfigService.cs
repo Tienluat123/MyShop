@@ -66,6 +66,16 @@ public class AppConfigService : IAppConfigService
         return all.Items.ToDictionary(c => c.SettingKey, c => c.SettingValue);
     }
 
+    public async Task<int> GetPageSizeAsync()
+    {
+        var value = await GetAsync("ItemsPerPage", "10");
+        if (int.TryParse(value, out var pageSize))
+        {
+            return pageSize;
+        }
+        return 10;
+    }
+
     public async Task ReloadCacheAsync()
     {
         _cache.Clear();

@@ -14,6 +14,7 @@ namespace MyShop.ViewModels;
 public partial class ProductManagementViewModel : ObservableObject
 {
     private readonly IProductService _productService;
+    private readonly IAppConfigService _configService;
 
     private const string CategoryAll = "All";
     private const string CategoryCoffee = "Coffee";
@@ -32,6 +33,9 @@ public partial class ProductManagementViewModel : ObservableObject
 
     [ObservableProperty]
     private string searchText = string.Empty;
+
+    [ObservableProperty]
+    private int pageSize = 10;
 
     [ObservableProperty]
     private int currentPage = 1;
@@ -62,11 +66,12 @@ public partial class ProductManagementViewModel : ObservableObject
 
     public ProductManagementViewModel(
         IProductService productService,
+        IAppConfigService configService,
         Action onAddProduct,
         Action<ProductListEntry> onEditProduct)
     {
-
         _productService = productService;
+        _configService = configService;
 
         this.onAddProduct = onAddProduct;
         this.onEditProduct = onEditProduct;
@@ -81,59 +86,44 @@ public partial class ProductManagementViewModel : ObservableObject
         try
         {
             ErrorMessage = string.Empty;
-            const int pageSize = 3;
+            
+            // Xử lý PageSize từ cấu hình
+            PageSize = await _configService.GetPageSizeAsync();
 
-            // Load all first, then apply local filter/sort/paging to avoid double paging.
-            var result = await _productService.GetAll();
-
-            IEnumerable<Product> query = result.Items;
-
-            // FILTER CATEGORY
-            if (SelectedCategory != CategoryAll)
+            var request = new PagingRequest
             {
-                query = query.Where(p => p.Category?.Name == SelectedCategory);
-            }
-
-            // SEARCH
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                query = query.Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
-            }
-
-            // PRICE
-            if (MinPrice.HasValue)
-                query = query.Where(p => p.Price >= (decimal)MinPrice.Value);
-
-            if (MaxPrice.HasValue)
-                query = query.Where(p => p.Price <= (decimal)MaxPrice.Value);
-
-            // SORT
-            query = SortOption switch
-            {
-                "PriceAsc" => query.OrderBy(p => p.Price),
-                "PriceDesc" => query.OrderByDescending(p => p.Price),
-                _ => query.OrderBy(p => p.Name)
+                PageNumber = CurrentPage,
+                PageSize = PageSize,
+                SearchText = SearchText?.Trim(),
+                Filters = new Dictionary<string, string>
+                {
+                    { "Category", SelectedCategory },
+                    { "MinPrice", MinPrice?.ToString() ?? "" },
+                    { "MaxPrice", MaxPrice?.ToString() ?? "" }
+                },
+                SortColumn = SortOption switch
+                {
+                    "PriceAsc" => "Price",
+                    "PriceDesc" => "Price",
+                    _ => "Name"
+                },
+                SortAscending = SortOption != "PriceDesc"
             };
 
-            var list = query.ToList();
+            var result = await _productService.GetAll(request);
 
-            TotalItems = list.Count;
-            TotalPages = Math.Max(1, (int)Math.Ceiling(list.Count / (double)pageSize));
+            TotalItems = result.Pagination.TotalItems;
+            TotalPages = result.Pagination.TotalPages;
 
             if (CurrentPage > TotalPages)
                 CurrentPage = TotalPages;
-
-            var pageItems = list
-                .Skip((CurrentPage - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
 
             PageNumbers.Clear();
             for (int i = 1; i <= TotalPages; i++)
                 PageNumbers.Add(i);
 
             DisplayProducts.Clear();
-            foreach (var p in pageItems)
+            foreach (var p in result.Items)
             {
                 DisplayProducts.Add(new ProductListEntry
                 {
@@ -145,8 +135,8 @@ public partial class ProductManagementViewModel : ObservableObject
             }
 
             HasNoData = DisplayProducts.Count == 0;
-            var pageStart = TotalItems == 0 ? 0 : (CurrentPage - 1) * pageSize + 1;
-            var pageEnd = pageStart + pageItems.Count - 1;
+            var pageStart = TotalItems == 0 ? 0 : (CurrentPage - 1) * PageSize + 1;
+            var pageEnd = pageStart + DisplayProducts.Count - 1;
             PagingSummary = HasNoData
                 ? "No products found"
                 : $"Showing {pageStart}-{pageEnd} in {TotalItems} items";
