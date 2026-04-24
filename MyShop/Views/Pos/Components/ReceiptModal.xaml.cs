@@ -81,10 +81,8 @@ public sealed partial class ReceiptModal : ContentDialog
             _pdfLicenseConfigured = true;
         }
 
-        var folderPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "MyShop",
-            "Receipts");
+        var appRunFolder = AppContext.BaseDirectory;
+        var folderPath = Path.Combine(appRunFolder, "Documents", "Receipts");
         Directory.CreateDirectory(folderPath);
 
         var safeOrderId = string.Concat((_order.OrderId ?? "unknown").Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
@@ -94,7 +92,7 @@ public sealed partial class ReceiptModal : ContentDialog
         }
 
         var filePath = Path.Combine(folderPath, $"receipt-{safeOrderId}-{DateTime.Now:yyyyMMdd-HHmmss}.pdf");
-        var currency = "$";
+        var currency = "VNĐ";
 
         Document.Create(container =>
         {
@@ -137,15 +135,15 @@ public sealed partial class ReceiptModal : ContentDialog
                         {
                             table.Cell().Text(item.Product.Name);
                             table.Cell().AlignRight().Text(item.Quantity.ToString());
-                            table.Cell().AlignRight().Text($"{currency}{item.TotalPrice:F2}");
+                            table.Cell().AlignRight().Text($"{item.TotalPrice:F2}{currency}");
                         }
                     });
 
                     col.Item().PaddingTop(12).AlignRight().Column(summary =>
                     {
-                        summary.Item().Text($"Subtotal: {currency}{_order.Subtotal:F2}");
-                        summary.Item().Text($"Tax: {currency}{_order.Tax:F2}");
-                        summary.Item().Text($"Total: {currency}{_order.Total:F2}").SemiBold().FontSize(13);
+                        summary.Item().Text($"Subtotal: {_order.Subtotal:F2}{currency}");
+                        summary.Item().Text($"Tax: {_order.Tax:F2}{currency}");
+                        summary.Item().Text($"Total: {_order.Total:F2}{currency}").SemiBold().FontSize(13);
                     });
                 });
 

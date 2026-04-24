@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MyShop.Data;
@@ -57,7 +58,7 @@ public partial class ProductFormViewModel : ObservableObject
         productRepository = container.Get<IRepository<Product>>();
         categoryRepository = container.Get<IRepository<Category>>();
 
-        LoadCategoriesFromRepository();
+        _ = LoadCategoriesFromRepository(); // Fire and forget for initialization
 
         IsEditMode = isEditMode;
         if (isEditMode && product is not null)
@@ -86,9 +87,9 @@ public partial class ProductFormViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Submit()
+    private async Task Submit()
     {
-        SaveProduct();
+        await SaveProduct();
     }
 
     [RelayCommand]
@@ -117,76 +118,6 @@ public partial class ProductFormViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SaveProduct()
-    {
-        try
-        {
-            var (isValid, errorMessage) = ValidateFormData();
-            IsFormValid = isValid;
-            ValidationMessage = errorMessage;
-
-            if (!isValid)
-            {
-                return;
-            }
-
-            var categoryName = ProductData.Category.Trim();
-            var category = categoryRepository.GetAll().Items
-                .FirstOrDefault(c => c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
-
-            if (category is null)
-            {
-                category = categoryRepository.Add(new Category
-                {
-                    Name = categoryName
-                });
-            }
-
-            if (!decimal.TryParse(ProductData.SellingPrice, NumberStyles.Number, CultureInfo.CurrentCulture, out var sellingPrice))
-            {
-                IsFormValid = false;
-                ValidationMessage = "Selling price is invalid.";
-                return;
-            }
-
-            if (IsEditMode && editingProduct is not null)
-            {
-                var existing = productRepository.GetById(editingProduct.Id);
-                if (existing is null)
-                {
-                    IsFormValid = false;
-                    ValidationMessage = "Product not found for update.";
-                    return;
-                }
-
-                existing.Name = ProductData.Name.Trim();
-                existing.CategoryId = category.Id;
-                existing.Price = sellingPrice;
-                existing.ImagePath = string.IsNullOrWhiteSpace(ProductData.ImageUrl) ? existing.ImagePath : ProductData.ImageUrl;
-                productService.Update(existing);
-            }
-            else
-            {
-                productService.Add(new Product
-                {
-                    Name = ProductData.Name.Trim(),
-                    CategoryId = category.Id,
-                    Price = sellingPrice,
-                    ImagePath = string.IsNullOrWhiteSpace(ProductData.ImageUrl) ? null : ProductData.ImageUrl
-                });
-            }
-
-            onSaved();
-            onCancel();
-        }
-        catch (Exception ex)
-        {
-            IsFormValid = false;
-            ValidationMessage = $"Save failed: {ex.Message}";
-        }
-    }
-
-    [RelayCommand]
     private void ValidateProductForm()
     {
         var (isValid, errorMessage) = ValidateFormData();
@@ -204,6 +135,76 @@ public partial class ProductFormViewModel : ObservableObject
         ProductData.ImageUrl = filePath;
         ValidationMessage = "Image path is generated. Integrate file picker to store real file content.";
         OnPropertyChanged(nameof(ProductData));
+    }
+
+    private async Task SaveProduct()
+    {
+        try
+        {
+            var (isValid, errorMessage) = ValidateFormData();
+            IsFormValid = isValid;
+            ValidationMessage = errorMessage;
+
+            if (!isValid)
+            {
+                return;
+            }
+
+            var categoryName = ProductData.Category.Trim();
+            var categoryResult = await categoryRepository.GetAllAsync(null, null);
+            var category = categoryResult.Items
+                .FirstOrDefault(c => c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+
+            if (category is null)
+            {
+                category = await categoryRepository.AddAsync(new Category
+                {
+                    Name = categoryName
+                });
+            }
+
+            if (!decimal.TryParse(ProductData.SellingPrice, NumberStyles.Number, CultureInfo.CurrentCulture, out var sellingPrice))
+            {
+                IsFormValid = false;
+                ValidationMessage = "Selling price is invalid.";
+                return;
+            }
+
+            if (IsEditMode && editingProduct is not null)
+            {
+                var existing = await productRepository.GetByIdAsync(editingProduct.Id);
+                if (existing is null)
+                {
+                    IsFormValid = false;
+                    ValidationMessage = "Product not found for update.";
+                    return;
+                }
+
+                existing.Name = ProductData.Name.Trim();
+                existing.CategoryId = category.Id;
+                existing.Price = sellingPrice;
+                existing.ImagePath = string.IsNullOrWhiteSpace(ProductData.ImageUrl) ? existing.ImagePath : ProductData.ImageUrl;
+                await productService.Update(existing);
+            }
+            else
+            {
+                await productService.Add(new Product
+                {
+                    Name = ProductData.Name.Trim(),
+                    CategoryId = category.Id,
+                    Price = sellingPrice,
+                    ImagePath = string.IsNullOrWhiteSpace(ProductData.ImageUrl) ? null : ProductData.ImageUrl
+                });
+            }
+
+            onSaved();
+            onCancel();
+        }
+        catch (Exception ex)
+        {
+            IsFormValid = false;
+            ValidationMessage = $"Save failed: {ex.Message}";
+        }
     }
 
     private (bool IsValid, string ErrorMessage) ValidateFormData()
@@ -246,29 +247,45 @@ public partial class ProductFormViewModel : ObservableObject
         return (true, string.Empty);
     }
 
-    private void LoadCategoriesFromRepository()
+    private async Task LoadCategoriesFromRepository()
     {
-        Categories.Clear();
-
-        var allCategories = categoryRepository.GetAll().Items
-            .Where(c => !string.IsNullOrWhiteSpace(c.Name))
-            .Select(c => c.Name)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(name => name)
-            .ToList();
-
-        if (allCategories.Count == 0)
+        try
         {
-            Categories.Add("Coffee");
-            Categories.Add("Tea");
-            Categories.Add("Smoothies");
-            Categories.Add("Pastries");
-            return;
+            Categories.Clear();
+
+            var result = await categoryRepository.GetAllAsync(null, null);
+            var allCategories = result.Items
+                .Where(c => !string.IsNullOrWhiteSpace(c.Name))
+                .Select(c => c.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name)
+                .ToList();
+
+            if (allCategories.Count == 0)
+            {
+                Categories.Add("Coffee");
+                Categories.Add("Tea");
+                Categories.Add("Smoothies");
+                Categories.Add("Pastries");
+                return;
+            }
+
+            foreach (var category in allCategories)
+            {
+                Categories.Add(category);
+            }
         }
-
-        foreach (var category in allCategories)
+        catch (Exception ex)
         {
-            Categories.Add(category);
+            System.Diagnostics.Debug.WriteLine($"Error loading categories: {ex.Message}");
+            // Add default categories on error
+            if (Categories.Count == 0)
+            {
+                Categories.Add("Coffee");
+                Categories.Add("Tea");
+                Categories.Add("Smoothies");
+                Categories.Add("Pastries");
+            }
         }
     }
 }

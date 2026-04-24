@@ -87,7 +87,11 @@ public partial class App : Application
             "MyShop",
             "database.log"
         );
-        Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+        var logDirectory = Path.GetDirectoryName(logPath);
+        if (!string.IsNullOrEmpty(logDirectory))
+        {
+            Directory.CreateDirectory(logDirectory);
+        }
 
         void LogMessage(string message)
         {
@@ -109,8 +113,8 @@ public partial class App : Application
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyShop", "appsettings.json") // User data
             };
 
-            DatabaseConfig dbConfig = null;
-            string foundPath = null;
+            DatabaseConfig? dbConfig = null;
+            string? foundPath = null;
 
             foreach (var path in pathsToTry)
             {
@@ -158,53 +162,49 @@ public partial class App : Application
             }
 
             // ===== Setup Database Context (PostgreSQL via Supabase) =====
+            if (dbConfig is null)
+            {
+                dbConfig = CreateDefaultConfig();
+            }
+
             var connectionString = dbConfig.GetConnectionString();
             LogMessage($"📡 Database config loaded - Host: {dbConfig.Host}, Port: {dbConfig.Port}");
 
-            AppDbContext dbContext = null;
+            AppDbContext dbContext;
             try
             {
                 var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                     .UseNpgsql(connectionString, options =>
                     {
                         options.EnableRetryOnFailure(
-                            maxRetryCount: 3,
-                            maxRetryDelay: TimeSpan.FromSeconds(5),
-                            errorCodesToAdd: null
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorCodesToAdd: new[] { "XX000", "ECIRCUITBREAKER", "EMAXCONNSESSION" }
                         );
                     })
                     .Options;
 
                 dbContext = new AppDbContext(dbContextOptions);
 
-                //  Test connection first
-                LogMessage("🔍 Testing database connection...");
-                var canConnect = dbContext.Database.CanConnect();
-                if (canConnect)
-                {
-                    LogMessage(" Database connection successful!");
+                //  Skip synchronous CanConnect() - let migrations handle connection validation
+                LogMessage("🔍 Database context initialized (validation deferred to migrations)");
 
-                    //  Apply migrations (tạo database schema)
+                //  Apply migrations (tạo database schema)
+                try
+                {
+                    dbContext.Database.Migrate();
+                    LogMessage(" Database migrations applied successfully");
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"⚠️ Migration warning: {ex.Message}");
+                    // Fallback: create schema if migrations fail
                     try
                     {
-                        dbContext.Database.Migrate();
-                        LogMessage(" Database migrations applied successfully");
+                        dbContext.Database.EnsureCreated();
+                        LogMessage("Database schema created (fallback)");
                     }
-                    catch (Exception ex)
-                    {
-                        LogMessage($"⚠️ Migration warning: {ex.Message}");
-                        // Fallback: create schema if migrations fail
-                        try
-                        {
-                            dbContext.Database.EnsureCreated();
-                            LogMessage("Database schema created (fallback)");
-                        }
-                        catch (Exception ex2) { LogMessage($"Schema creation failed: {ex2.Message}"); }
-                    }
-                }
-                else
-                {
-                    LogMessage("⚠️ Cannot connect to database - will retry on first access");
+                    catch (Exception ex2) { LogMessage($"Schema creation failed: {ex2.Message}"); }
                 }
             }
             catch (Exception ex)
@@ -320,7 +320,6 @@ public partial class App : Application
 
             container.Register<EmployeeManagementViewModel>(new EmployeeManagementViewModel(
                 container.Get<IEmployeeService>(),
-                container.Get<IDialogService>(),
                 container.Get<IScheduleService>(),
                 container.Get<INotificationService>()
             ));
@@ -350,12 +349,12 @@ public partial class App : Application
     {
         return new DatabaseConfig
         {
-            Host = "db.YOUR_PROJECT_ID.supabase.co",
-            Database = "postgres",
+            Host = "localhost",
+            Database = "myshop",
             Username = "postgres",
-            Password = "your_password",
+            Password = "mpa113dn",
             Port = 5432,
-            SslMode = "Require"
+            SslMode = "Disable"
         };
     }
 

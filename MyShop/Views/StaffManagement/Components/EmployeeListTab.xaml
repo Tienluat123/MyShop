@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:MyShop.ViewModels.StaffManagement"
+    xmlns:services="using:MyShop.Services"
     xmlns:converters="using:MyShop.Converters"
     mc:Ignorable="d">
 
@@ -13,6 +14,34 @@
         <converters:RoleToDisplayConverter x:Key="RoleToDisplayConverter"/>
         <converters:CurrencyConverter x:Key="CurrencyConverter"/>
         <converters:SortIndicatorConverter x:Key="SortIndicatorConverter"/>
+
+        <!-- Style for sort header buttons - keeps color consistent on press/hover -->
+        <Style x:Key="SortHeaderButtonStyle"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="Gray"/>
+            <Setter Property="Padding"
+                    Value="0"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Background="{TemplateBinding Background}">
+                            <ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}"
+                                VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid Padding="0"
@@ -276,12 +305,9 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Column 0: EMPLOYEE -->
-                            <Button Background="Transparent"
-                                    Padding="0"
-                                    BorderThickness="0"
+                            <Button Style="{StaticResource SortHeaderButtonStyle}"
                                     Command="{x:Bind ViewModel.SortByColumnCommand}"
-                                    CommandParameter="FullName"
-                                    Foreground="Gray">
+                                    CommandParameter="FullName">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="4">
                                     <TextBlock Text="EMPLOYEE"
@@ -295,12 +321,9 @@
 
                             <!-- Column 1: CONTACT -->
                             <Button Grid.Column="1"
-                                    Background="Transparent"
-                                    Padding="0"
-                                    BorderThickness="0"
+                                    Style="{StaticResource SortHeaderButtonStyle}"
                                     Command="{x:Bind ViewModel.SortByColumnCommand}"
-                                    CommandParameter="Phone"
-                                    Foreground="Gray">
+                                    CommandParameter="Phone">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="4">
                                     <TextBlock Text="CONTACT"
@@ -314,12 +337,9 @@
 
                             <!-- Column 2: ROLE -->
                             <Button Grid.Column="2"
-                                    Background="Transparent"
-                                    Padding="0"
-                                    BorderThickness="0"
+                                    Style="{StaticResource SortHeaderButtonStyle}"
                                     Command="{x:Bind ViewModel.SortByColumnCommand}"
-                                    CommandParameter="Role"
-                                    Foreground="Gray">
+                                    CommandParameter="Role">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="4">
                                     <TextBlock Text="ROLE"
@@ -333,13 +353,10 @@
 
                             <!-- Column 3: STATUS -->
                             <Button Grid.Column="3"
-                                    Background="Transparent"
-                                    Padding="0"
-                                    BorderThickness="0"
+                                    Style="{StaticResource SortHeaderButtonStyle}"
                                     HorizontalAlignment="Center"
                                     Command="{x:Bind ViewModel.SortByColumnCommand}"
-                                    CommandParameter="Status"
-                                    Foreground="Gray">
+                                    CommandParameter="Status">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="4">
                                     <TextBlock Text="STATUS"
@@ -353,13 +370,10 @@
 
                             <!-- Column 4: RATE -->
                             <Button Grid.Column="4"
-                                    Background="Transparent"
-                                    Padding="0"
-                                    BorderThickness="0"
+                                    Style="{StaticResource SortHeaderButtonStyle}"
                                     HorizontalAlignment="Right"
                                     Command="{x:Bind ViewModel.SortByColumnCommand}"
-                                    CommandParameter="HourlyRate"
-                                    Foreground="Gray">
+                                    CommandParameter="HourlyRate">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="4">
                                     <TextBlock Text="RATE"
@@ -373,13 +387,10 @@
 
                             <!-- Column 5: HRS -->
                             <Button Grid.Column="5"
-                                    Background="Transparent"
-                                    Padding="0"
-                                    BorderThickness="0"
+                                    Style="{StaticResource SortHeaderButtonStyle}"
                                     HorizontalAlignment="Center"
                                     Command="{x:Bind ViewModel.SortByColumnCommand}"
-                                    CommandParameter="TotalHours"
-                                    Foreground="Gray">
+                                    CommandParameter="TotalHours">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="4">
                                     <TextBlock Text="HRS"
@@ -393,13 +404,10 @@
 
                             <!-- Column 6: PREV. -->
                             <Button Grid.Column="6"
-                                    Background="Transparent"
-                                    Padding="0"
-                                    BorderThickness="0"
+                                    Style="{StaticResource SortHeaderButtonStyle}"
                                     HorizontalAlignment="Right"
                                     Command="{x:Bind ViewModel.SortByColumnCommand}"
-                                    CommandParameter="LastMonthSalary"
-                                    Foreground="Gray">
+                                    CommandParameter="LastMonthSalary">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="4">
                                     <TextBlock Text="PREV."
@@ -413,13 +421,10 @@
 
                             <!-- Column 7: NET SALARY -->
                             <Button Grid.Column="7"
-                                    Background="Transparent"
-                                    Padding="0"
-                                    BorderThickness="0"
+                                    Style="{StaticResource SortHeaderButtonStyle}"
                                     HorizontalAlignment="Right"
                                     Command="{x:Bind ViewModel.SortByColumnCommand}"
-                                    CommandParameter="FinalSalary"
-                                    Foreground="Gray">
+                                    CommandParameter="FinalSalary">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="4">
                                     <TextBlock Text="NET SALARY"

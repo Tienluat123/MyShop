@@ -47,6 +47,7 @@
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="QuestPDF" />
+    <PackageReference Include="Tmds.DBus.Protocol" />
   </ItemGroup>
 
   <!-- Copy appsettings.json to output directory -->

@@ -1,69 +1,138 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using MyShop.Models;
+using MyShop.Services;
 
 namespace MyShop.ViewModels;
 
-public sealed class CustomerProfileViewModel : BaseViewModel
+public partial class CustomerProfileViewModel : ObservableObject
 {
-    private readonly Action onBack;
+    private readonly ICustomerService _customerService;
+    private readonly IOrderService _orderService;
+    private readonly Action _onBack;
+
+    // 1. CHỈ KHAI BÁO BIẾN CÓ [ObservableProperty]. 
+    // Thư viện sẽ tự tạo ra SelectedCustomer (viết hoa) cho bạn.
+    [ObservableProperty]
+    private CustomerDetail selectedCustomer = new();
+
+    [ObservableProperty]
     private int activeTab;
 
-    public CustomerProfileViewModel(CustomerListItem selectedCustomer, Action onBack)
+    [ObservableProperty]
+    private bool isLoading;
+
+    public CustomerProfileViewModel(
+        CustomerListItem selectedCustomerItem,
+        ICustomerService customerService,
+        IOrderService orderService,
+        Action onBack)
     {
-        this.onBack = onBack;
+        _customerService = customerService;
+        _orderService = orderService;
+        _onBack = onBack;
 
-        SelectedCustomer = new CustomerDetail
-        {
-            Customer = selectedCustomer,
-            Email = "vana@example.com",
-            Birthday = new DateTime(1990, 5, 15, 0, 0, 0, DateTimeKind.Local),
-            Address = "123 Le Loi, District 1, HCMC",
-            TotalSpent = 450.50m,
-            Notes = string.Empty,
-            Orders =
-            [
-                new OrderHistoryItem { OrderId = "ORD-9921", Date = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Local), Items = "Caramel Latte, Croissant", Amount = 9.25m },
-                new OrderHistoryItem { OrderId = "ORD-9845", Date = new DateTime(2024, 2, 25, 0, 0, 0, DateTimeKind.Local), Items = "Matcha Latte, Blueberry Muffin", Amount = 8.50m },
-                new OrderHistoryItem { OrderId = "ORD-9712", Date = new DateTime(2024, 2, 18, 0, 0, 0, DateTimeKind.Local), Items = "Flat White", Amount = 4.50m }
-            ],
-            PointLogs =
-            [
-                new PointLogItem { Title = "Order #ORD-9921", Date = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Local), DeltaPoints = 50 },
-                new PointLogItem { Title = "Redeemed for Discount", Date = new DateTime(2024, 2, 28, 0, 0, 0, DateTimeKind.Local), DeltaPoints = -200 },
-                new PointLogItem { Title = "Order #ORD-9845", Date = new DateTime(2024, 2, 25, 0, 0, 0, DateTimeKind.Local), DeltaPoints = 45 }
-            ]
-        };
+        // Gán giá trị vào Property viết hoa để kích hoạt thông báo UI
+        SelectedCustomer.Customer = selectedCustomerItem;
 
-        AddNoteCommand = new RelayCommand(AddNote);
-        RefreshDataCommand = new RelayCommand(() => { });
-        BackCommand = new RelayCommand(() => this.onBack());
+
     }
-
-    public CustomerDetail SelectedCustomer { get; }
-
-    public int ActiveTab
+    [RelayCommand]
+    public async Task LoadInitialData() // Đổi tên cho rõ nghĩa
     {
-        get => activeTab;
-        set
+        await LoadAllData();
+    }
+    // 2. DÙNG [RelayCommand] cho nút Back để đồng bộ với bộ Toolkit
+    [RelayCommand]
+    private void GoBack() => _onBack?.Invoke();
+
+    private async Task LoadAllData()
+    {
+        IsLoading = true;
+        try
         {
-            if (activeTab != value)
-            {
-                activeTab = value;
-                OnPropertyChanged();
-            }
+            await Task.WhenAll(
+                LoadProfileDetails(),
+                LoadOrderHistory(),
+                LoadLoyaltyPoints()
+            );
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading profile: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 
-    public RelayCommand AddNoteCommand { get; }
-    public RelayCommand RefreshDataCommand { get; }
-    public RelayCommand BackCommand { get; }
-
-    private void AddNote()
+    [RelayCommand]
+    private async Task LoadProfileDetails()
     {
-        if (string.IsNullOrWhiteSpace(SelectedCustomer.Notes))
+        var dbCustomer = await Task.Run(() => _customerService.GetById(SelectedCustomer.Customer.Id));
+        if (dbCustomer != null)
         {
-            SelectedCustomer.Notes = "VIP customer. Prefers medium sugar and oat milk.";
+            SelectedCustomer.Email = dbCustomer.Email ?? "N/A";
+            SelectedCustomer.Address = dbCustomer.Address ?? "No address provided";
+            SelectedCustomer.Birthday = dbCustomer.Birthday ?? DateTime.MinValue;
+            SelectedCustomer.Notes = dbCustomer.Notes ?? "";
+            SelectedCustomer.TotalSpent = (decimal)dbCustomer.TotalSpent;
+
             OnPropertyChanged(nameof(SelectedCustomer));
         }
+    }
+
+    [RelayCommand]
+    private async Task LoadOrderHistory()
+    {
+        var orders = await Task.Run(() => _orderService.GetByCustomerId(SelectedCustomer.Customer.Id));
+        Console.WriteLine($"[DEBUG] Khách hàng ID {SelectedCustomer.Customer.Id} có {orders.Count()} đơn hàng.");
+        SelectedCustomer.Orders.Clear();
+        foreach (var order in orders.OrderByDescending(o => o.OrderDate))
+        {
+            SelectedCustomer.Orders.Add(new OrderHistoryItem
+            {
+                OrderId = $"ORD-{order.Id}",
+                Date = order.OrderDate,
+                Amount = (decimal)order.TotalAmount,
+                Items = "View in detail..."
+            });
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadLoyaltyPoints()
+    {
+        SelectedCustomer.PointLogs.Clear();
+        // Giả lập log điểm dựa trên đơn hàng hiện có
+        foreach (var order in SelectedCustomer.Orders.Take(5))
+        {
+            SelectedCustomer.PointLogs.Add(new PointLogItem
+            {
+                Title = $"Earned from {order.OrderId}",
+                Date = order.Date,
+                DeltaPoints = (int)(order.Amount / 10)
+            });
+        }
+    }
+
+    [RelayCommand]
+    private async Task AddNote()
+    {
+        SelectedCustomer.Notes = "VIP customer. Prefers medium sugar and oat milk.";
+
+        var dbCustomer = await _customerService.GetById(SelectedCustomer.Customer.Id);
+        if (dbCustomer != null)
+        {
+            dbCustomer.Notes = SelectedCustomer.Notes;
+            await _customerService.Update(dbCustomer);
+        }
+
+        OnPropertyChanged(nameof(SelectedCustomer));
     }
 }

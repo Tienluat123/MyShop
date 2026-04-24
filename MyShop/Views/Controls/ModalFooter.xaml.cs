@@ -39,8 +39,8 @@ public sealed partial class ModalFooter : UserControl
     // 2. TẠO CÁC CÁP KẾT NỐI (EVENTS) ĐỂ BÁO RA NGOÀI
     // ==========================================
 
-    public event RoutedEventHandler CancelClicked;
-    public event RoutedEventHandler SubmitClicked;
+    public event RoutedEventHandler? CancelClicked;
+    public event RoutedEventHandler? SubmitClicked;
 
 
     // ==========================================

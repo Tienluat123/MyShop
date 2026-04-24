@@ -38,7 +38,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-            var result = _categoryRepository.GetAll();
+            var result = await _categoryRepository.GetAllAsync(null, null);
             return result.Items;
         }
         catch (Exception ex)
@@ -57,7 +57,7 @@ public class CategoryService : ICategoryService
 
         try
         {
-            return _categoryRepository.GetById(id);
+            return await _categoryRepository.GetByIdAsync(id);
         }
         catch (Exception ex)
         {

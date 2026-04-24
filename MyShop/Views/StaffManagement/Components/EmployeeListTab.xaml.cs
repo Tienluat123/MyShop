@@ -1,13 +1,17 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MyShop.ViewModels.StaffManagement;
+using MyShop.Services;
 using MyShop.Di;
 using System;
+using System.Threading.Tasks;
 
 namespace MyShop.Views.StaffManagement.Components;
 
 public sealed partial class EmployeeListTab : UserControl
 {
+    private EmployeeFormDialogHandler? _dialogHandler;
+
     public EmployeeManagementViewModel? ViewModel
     {
         get => (EmployeeManagementViewModel?)GetValue(ViewModelProperty);
@@ -27,46 +31,81 @@ public sealed partial class EmployeeListTab : UserControl
     {
         if (ViewModel == null)
         {
-            ViewModel = ServiceContainer.Instance.Get<EmployeeManagementViewModel>();
+            var employeeService = ServiceContainer.Instance.Get<IEmployeeService>();
+            var scheduleService = ServiceContainer.Instance.Get<IScheduleService>();
+            var notificationService = ServiceContainer.Instance.Get<INotificationService>();
+            var dialogService = ServiceContainer.Instance.Get<IDialogService>();
+
+            _dialogHandler = new EmployeeFormDialogHandler(
+                employeeService,
+                dialogService,
+                notificationService);
+
+            ViewModel = new EmployeeManagementViewModel(
+                employeeService,
+                scheduleService,
+                notificationService,
+                onAddRequested: ShowAddEmployeeDialogAsync,
+                onEditRequested: ShowEditEmployeeDialogAsync);
         }
 
         if (ViewModel != null)
         {
-            await ViewModel.RefreshDashboardCommand.ExecuteAsync(null);
+            await ViewModel.RefreshCommand.ExecuteAsync(null);
         }
+    }
+
+    private async Task ShowAddEmployeeDialogAsync()
+    {
+        if (ViewModel is null || _dialogHandler is null)
+        {
+            return;
+        }
+
+        await _dialogHandler.HandleAddAsync(() => ViewModel.RefreshCommand.ExecuteAsync(null));
+    }
+
+    private async Task ShowEditEmployeeDialogAsync(UserSalaryInfo info)
+    {
+        if (ViewModel is null || _dialogHandler is null)
+        {
+            return;
+        }
+
+        await _dialogHandler.HandleEditAsync(info, () => ViewModel.RefreshCommand.ExecuteAsync(null));
     }
 
     private void Status_Toggled(object sender, RoutedEventArgs e)
     {
-        if (sender is ToggleSwitch toggle && toggle.DataContext is UserSalaryInfo info)
+        if (sender is ToggleSwitch toggle && toggle.DataContext is UserSalaryInfo info && ViewModel != null)
         {
-            ViewModel?.UpdateUserStatusCommand.Execute(info);
+            _ = ViewModel.UpdateUserStatusAsync(info);
         }
     }
 
     private void EditButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.DataContext is UserSalaryInfo info)
+        if (sender is Button button && button.DataContext is UserSalaryInfo info && ViewModel != null)
         {
-            ViewModel?.EditEmployeeCommand.ExecuteAsync(info);
+            _ = ViewModel.EditEmployeeAsync(info);
         }
     }
 
     private void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.DataContext is UserSalaryInfo info)
+        if (sender is Button button && button.DataContext is UserSalaryInfo info && ViewModel != null)
         {
-            ViewModel?.DeleteEmployeeCommand.ExecuteAsync(info);
+            _ = ViewModel.DeleteEmployeeAsync(info);
         }
     }
 
     private void PreviousButton_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel?.PreviousPageAsyncCommand.Execute(null);
+        ViewModel?.PreviousPageCommand.Execute(null);
     }
 
     private void NextButton_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel?.NextPageAsyncCommand.Execute(null);
+        ViewModel?.NextPageCommand.Execute(null);
     }
 }
