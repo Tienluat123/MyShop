@@ -127,4 +127,12 @@ public sealed partial class PosPage : Page
         modal.XamlRoot = this.XamlRoot;
         await modal.ShowAsync();
     }
+
+    /// <summary>
+    /// Đăng xuất và quay lại trang Login
+    /// </summary>
+    private void LogoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.Frame?.Navigate(typeof(LoginPage));
+    }
 }

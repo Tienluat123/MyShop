@@ -59,10 +59,9 @@ public partial class App : Application
 
         if (rootFrame.Content == null)
         {
-            // When the navigation stack isn't restored navigate to the first page,
-            // configuring the new page by passing required information as a navigation
-            // parameter
-            rootFrame.Navigate(typeof(MainPage), args.Arguments);
+            // Điều hướng đến LoginPage trước, sau khi đăng nhập thành công
+            // mới vào MainPage (Admin) hoặc PosPage (Sale)
+            rootFrame.Navigate(typeof(Views.LoginPage), args.Arguments);
         }
 
         MainWindow.SetWindowIcon();
@@ -248,6 +247,9 @@ public partial class App : Application
             var notificationService = new NotificationService();
             container.Register<INotificationService>(notificationService);
 
+            var sessionService = new SessionService();
+            container.Register<ISessionService>(sessionService);
+
             container.Register<IProductService>(new ProductService(
                 container.Get<IRepository<Product>>(),
                 container.Get<IRepository<Category>>()
@@ -293,6 +295,9 @@ public partial class App : Application
             container.Register<IAppConfigService>(new AppConfigService(
                 container.Get<IRepository<AppConfig>>()
             ));
+
+            // AuthService — xác thực đăng nhập
+            container.Register<IAuthService>(new AuthService(contextFactory));
 
             // WeeklyRosterViewModel requires both ScheduleService and EmployeeService
             container.Register<WeeklyRosterViewModel>(new WeeklyRosterViewModel(
