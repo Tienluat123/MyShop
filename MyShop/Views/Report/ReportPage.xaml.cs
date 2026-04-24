@@ -27,6 +27,13 @@ public sealed partial class ReportPage : Page
         RenderRevenueChart();
     }
 
+    private void FilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Re-render charts based on new filters
+        RenderSalesTrend();
+        RenderRevenueChart();
+    }
+
     private void RenderSalesTrend()
     {
         var trend = ViewModel.SalesTrend;

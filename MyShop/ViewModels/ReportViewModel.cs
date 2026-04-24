@@ -7,6 +7,12 @@ public partial class ReportViewModel : ObservableObject
 {
     public ReportViewModel()
     {
+        // Default filters
+        StartDate = DateTime.Now.AddDays(-30);
+        EndDate = DateTime.Now;
+        Periods = new ObservableCollection<string> { "Ngày", "Tuần", "Tháng", "Năm" };
+        SelectedPeriod = "Ngày";
+
         // Mock Statistics
         ProductsCount = 1250;
         OrdersCount = 450;
@@ -54,6 +60,17 @@ public partial class ReportViewModel : ObservableObject
 
     [ObservableProperty]
     private int outOfStockCount;
+
+    [ObservableProperty]
+    private DateTime startDate;
+
+    [ObservableProperty]
+    private DateTime endDate;
+
+    [ObservableProperty]
+    private string selectedPeriod = "";
+
+    public ObservableCollection<string> Periods { get; }
 
     public ObservableCollection<TrendPoint> SalesTrend { get; }
     public ObservableCollection<TrendPoint> RevenueData { get; }
