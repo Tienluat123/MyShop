@@ -1,5 +1,7 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using MyShop.Di;
+using MyShop.Services;
 using MyShop.ViewModels;
 
 namespace MyShop.Views.CustomerManagement.Components;
@@ -7,10 +9,12 @@ namespace MyShop.Views.CustomerManagement.Components;
 public sealed partial class CustomerManagementView : Page
 {
     private bool _isStatusUpdating = false;
+    private readonly IDialogService _dialogService;
 
     public CustomerManagementView()
     {
         this.InitializeComponent();
+        _dialogService = ServiceContainer.Instance.Get<IDialogService>();
 
         // Đăng ký sự kiện Loaded: Khi giao diện vẽ xong hoàn toàn mới cho phép load data
         this.Loaded += CustomerManagementView_Loaded;
@@ -24,7 +28,7 @@ public sealed partial class CustomerManagementView : Page
         // thì mới ra lệnh nạp 6 khách hàng
         if (ViewModel != null)
         {
-            ViewModel.LoadCustomersCommand.Execute(null);
+            ViewModel.RefreshCommand.Execute(null);
         }
     }
 
@@ -52,7 +56,7 @@ public sealed partial class CustomerManagementView : Page
         };
 
         // 3. Nếu người dùng nhấn Delete
-        var result = await deleteDialog.ShowAsync();
+        var result = await _dialogService.ShowAsync(deleteDialog, this.XamlRoot);
         if (result == ContentDialogResult.Primary)
         {
             // Gọi lệnh xóa trong ViewModel
@@ -64,7 +68,7 @@ public sealed partial class CustomerManagementView : Page
     {
         var button = (Button)sender;
         var customer = (CustomerListItem)button.DataContext;
-        ViewModel?.MapsToProfileCommand.Execute(customer);
+        ViewModel?.NavigateToProfileCommand.Execute(customer);
     }
 
     private void EditButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -98,9 +102,9 @@ public sealed partial class CustomerManagementView : Page
             if (customer != null)
             {
                 customer.Status = toggleSwitch.IsOn ? "Active" : "Inactive";
-                if (ViewModel?.LoadCustomersCommand.CanExecute(null) ?? false)
+                if (ViewModel?.RefreshCommand.CanExecute(null) ?? false)
                 {
-                    ViewModel.LoadCustomersCommand.Execute(null);
+                    ViewModel.RefreshCommand.Execute(null);
                 }
             }
         }

@@ -3,62 +3,26 @@ using MyShop.Models;
 
 namespace MyShop.Services;
 
-/// <summary>
-/// Interface cho Customer Service
-/// </summary>
 public interface ICustomerService
 {
-    /// <summary>
-    /// Lấy tất cả khách hàng
-    /// </summary>
     Task<PagedResult<Customer>> GetAll(PagingRequest? paging = null);
-
-    /// <summary>
-    /// Lấy khách hàng theo ID
-    /// </summary>
     Task<Customer?> GetById(int id);
-
-    /// <summary>
-    /// Tìm khách hàng theo số điện thoại
-    /// </summary>
     Task<Customer?> GetByPhone(string phone);
 
-    /// <summary>
-    /// Tìm kiếm khách hàng
-    /// </summary>
     Task<List<Customer>> Search(string keyword);
-
-    /// <summary>
-    /// Thêm khách hàng mới
-    /// </summary>
     Task<Customer> Add(Customer customer);
-
-    /// <summary>
-    /// Cập nhật khách hàng
-    /// </summary>
     Task Update(Customer customer);
 
-    /// <summary>
-    /// Xóa khách hàng
-    /// </summary>
     Task Delete(int id);
 }
-
-/// <summary>
-/// Customer Service Implementation
-/// </summary>
 public class CustomerService : ICustomerService
 {
-    private readonly IRepository<Customer> _customerRepository;
+    private readonly IRepository<Customer> _repo;
 
-    public CustomerService(IRepository<Customer> customerRepository)
+    public CustomerService(IRepository<Customer> repo)
     {
-        _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
+        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
     }
-
-    /// <summary>
-    /// Lấy tất cả khách hàng (Bất đồng bộ)
-    /// </summary>
     public async Task<PagedResult<Customer>> GetAll(PagingRequest? paging = null)
     {
         try
@@ -76,7 +40,7 @@ public class CustomerService : ICustomerService
                     (c.Gender != null && c.Gender.ToLower().Contains(keyword));
             }
 
-            return await _customerRepository.GetAllAsync(paging, filter);
+            return await _repo.GetAllAsync(paging, filter);
         }
         catch (Exception ex)
         {
@@ -94,7 +58,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            return await _customerRepository.GetByIdAsync(id);
+            return await _repo.GetByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -114,7 +78,7 @@ public class CustomerService : ICustomerService
         try
         {
             // Sử dụng GetAsync với filter thay vì GetAllAsync mà không filter
-            var customers = await _customerRepository.GetAsync(c => c.Phone == phone);
+            var customers = await _repo.GetAsync(c => c.Phone == phone);
             return customers.FirstOrDefault();
         }
         catch (Exception ex)
@@ -125,7 +89,7 @@ public class CustomerService : ICustomerService
 
     /// <summary>
     /// Tìm kiếm khách hàng (Bất đồng bộ)
-    /// ✅ BƯỚC 2: Filter server-side thay vì client-side
+    /// BƯỚC 2: Filter server-side thay vì client-side
     /// </summary>
     public async Task<List<Customer>> Search(string keyword)
     {
@@ -136,7 +100,7 @@ public class CustomerService : ICustomerService
         {
             var keywordLower = keyword.ToLower();
             // Sử dụng GetAsync với filter để lọc server-side
-            var customers = await _customerRepository.GetAsync(c =>
+            var customers = await _repo.GetAsync(c =>
                 c.Name.ToLower().Contains(keywordLower) ||
                 c.Phone.Contains(keyword) ||
                 (c.Email != null && c.Email.ToLower().Contains(keywordLower))
@@ -170,7 +134,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            return await _customerRepository.AddAsync(customer);
+            return await _repo.AddAsync(customer);
         }
         catch (Exception ex)
         {
@@ -197,7 +161,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            await _customerRepository.UpdateAsync(customer);
+            await _repo.UpdateAsync(customer);
         }
         catch (Exception ex)
         {
@@ -215,7 +179,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            await _customerRepository.DeleteAsync(id);
+            await _repo.DeleteAsync(id);
         }
         catch (Exception ex)
         {

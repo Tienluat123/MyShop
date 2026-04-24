@@ -320,7 +320,6 @@ public partial class App : Application
 
             container.Register<EmployeeManagementViewModel>(new EmployeeManagementViewModel(
                 container.Get<IEmployeeService>(),
-                container.Get<IDialogService>(),
                 container.Get<IScheduleService>(),
                 container.Get<INotificationService>()
             ));

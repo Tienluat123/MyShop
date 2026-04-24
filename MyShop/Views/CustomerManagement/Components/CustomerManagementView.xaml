@@ -37,8 +37,8 @@
                 </Grid.ColumnDefinitions>
 
                 <Button Grid.Column="1"
-                        Command="{x:Bind ViewModel.MapsToAddCommand}"
-                        Background="#BB4D00"
+                        Command="{x:Bind ViewModel.AddCustomerCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
                         Foreground="White"
                         CornerRadius="12"
                         Padding="14,8"

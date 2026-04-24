@@ -9,10 +9,6 @@ namespace MyShop.Services;
 
 public interface IEmployeeService
 {
-    /// <summary>
-    /// Server-side paginated employee salary data with filtering, sorting, and bonus calculation
-    /// All calculations (TotalHours, FinalSalary, Bonus) done at DB level
-    /// </summary>
     Task<PagedResult<UserSalaryInfo>> GetPagedEmployeeSalariesAsync(PagingRequest request);
 
     Task<List<User>> GetActiveEmployeesAsync();
@@ -44,9 +40,9 @@ public class EmployeeService : IEmployeeService
     /// <summary>
     /// Get paginated employee salaries with all calculations done at DB level
     /// </summary>
-    public async Task<PagedResult<UserSalaryInfo>> GetPagedEmployeeSalariesAsync(PagingRequest request)
+    public async Task<PagedResult<UserSalaryInfo>> GetPagedEmployeeSalariesAsync(PagingRequest? paging = null)
     {
-        request.Validate();
+        paging?.Validate();
 
         using var context = _contextFactory.CreateDbContext();
         var now = DateTime.Now;
@@ -92,9 +88,9 @@ public class EmployeeService : IEmployeeService
             });
 
         // Apply search filter
-        if (!string.IsNullOrEmpty(request.SearchText))
+        if (!string.IsNullOrEmpty(paging?.SearchText))
         {
-            var searchLower = request.SearchText.ToLower();
+            var searchLower = paging.SearchText.ToLower();
             baseQuery = baseQuery.Where(x =>
                 (x.User.FirstName ?? "").ToLower().Contains(searchLower) ||
                 (x.User.LastName ?? "").ToLower().Contains(searchLower) ||
@@ -103,9 +99,9 @@ public class EmployeeService : IEmployeeService
         }
 
         // Apply role filter
-        if (request.Filters?.ContainsKey("Role") == true && !string.IsNullOrEmpty(request.Filters["Role"]))
+        if (paging?.Filters?.ContainsKey("Role") == true && !string.IsNullOrEmpty(paging.Filters["Role"]))
         {
-            var roleFilter = request.Filters["Role"];
+            var roleFilter = paging.Filters["Role"];
             if (roleFilter == "Admin")
                 baseQuery = baseQuery.Where(x => x.User.Role == "1");
             else if (roleFilter == "Sale")
@@ -113,9 +109,9 @@ public class EmployeeService : IEmployeeService
         }
 
         // Apply status filter
-        if (request.Filters?.ContainsKey("Status") == true && !string.IsNullOrEmpty(request.Filters["Status"]))
+        if (paging?.Filters?.ContainsKey("Status") == true && !string.IsNullOrEmpty(paging.Filters["Status"]))
         {
-            var statusFilter = request.Filters["Status"];
+            var statusFilter = paging.Filters["Status"];
             if (statusFilter == "Active")
                 baseQuery = baseQuery.Where(x => x.User.IsActive);
             else if (statusFilter == "Inactive")
@@ -127,47 +123,47 @@ public class EmployeeService : IEmployeeService
 
         // Apply sorting - comprehensive support for all columns
         var sortedQuery = baseQuery;
-        if (!string.IsNullOrEmpty(request.SortColumn))
+        if (!string.IsNullOrEmpty(paging?.SortColumn))
         {
-            sortedQuery = request.SortColumn switch
+            sortedQuery = paging.SortColumn switch
             {
                 // Employee name column - sort by FirstName (FullName is computed and not in DB)
-                "FullName" => request.SortAscending
+                "FullName" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.FirstName).ThenBy(x => x.User.LastName)
                     : baseQuery.OrderByDescending(x => x.User.FirstName).ThenByDescending(x => x.User.LastName),
 
                 // Contact / Phone column
-                "Phone" => request.SortAscending
+                "Phone" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.Phone)
                     : baseQuery.OrderByDescending(x => x.User.Phone),
 
                 // Role column - sort by role code (1=Admin, 2=Sale)
-                "Role" => request.SortAscending
+                "Role" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.Role)
                     : baseQuery.OrderByDescending(x => x.User.Role),
 
                 // Status column - sort by IsActive boolean
-                "Status" => request.SortAscending
+                "Status" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.IsActive)
                     : baseQuery.OrderByDescending(x => x.User.IsActive),
 
                 // Hourly Rate column
-                "HourlyRate" => request.SortAscending
+                "HourlyRate" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.HourlyRate)
                     : baseQuery.OrderByDescending(x => x.User.HourlyRate),
 
                 // Total Hours column - current month hours
-                "TotalHours" => request.SortAscending
+                "TotalHours" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.CurrentHours)
                     : baseQuery.OrderByDescending(x => x.CurrentHours),
 
                 // Last Month Salary column - sort by previous month calculation
-                "LastMonthSalary" => request.SortAscending
+                "LastMonthSalary" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.HourlyRate * (decimal)x.LastMonthHours)
                     : baseQuery.OrderByDescending(x => x.User.HourlyRate * (decimal)x.LastMonthHours),
 
                 // Final Salary column - sort by current salary with bonus calculation
-                "FinalSalary" => request.SortAscending
+                "FinalSalary" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.HourlyRate * (decimal)x.CurrentHours)
                     : baseQuery.OrderByDescending(x => x.User.HourlyRate * (decimal)x.CurrentHours),
 
@@ -182,8 +178,8 @@ public class EmployeeService : IEmployeeService
 
         // Apply pagination at DB level
         var pagedData = await sortedQuery
-            .Skip(request.GetSkip())
-            .Take(request.PageSize)
+            .Skip(paging.GetSkip())
+            .Take(paging.PageSize)
             .ToListAsync();
 
         // Transform to UserSalaryInfo with bonus calculation
@@ -217,8 +213,8 @@ public class EmployeeService : IEmployeeService
             Items = result,
             Pagination = new PagingMetadata
             {
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
+                PageNumber = paging.PageNumber,
+                PageSize = paging.PageSize,
                 TotalItems = totalCount
             }
         };

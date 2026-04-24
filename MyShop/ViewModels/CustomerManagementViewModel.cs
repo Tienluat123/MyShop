@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -12,16 +11,16 @@ using MyShop.Data;
 
 namespace MyShop.ViewModels;
 
-public partial class CustomerManagementViewModel : ObservableObject
+public partial class CustomerManagementViewModel : ListManagementViewModelBase
 {
     private readonly ICustomerService _customerService;
+    private readonly INotificationService _notificationService;
     private const int PageSize = 10;
-    private CancellationTokenSource? _searchDebounceToken;
 
-    private readonly Action onAdd;
-    private readonly Action onRules;
-    private readonly Action<CustomerListItem> onProfile;
-    private readonly Action<CustomerListItem> onEdit;
+    private readonly Action _onAdd;
+    private readonly Action _onRules;
+    private readonly Action<CustomerListItem> _onProfile;
+    private readonly Action<CustomerListItem> _onEdit;
 
     public ObservableCollection<CustomerListItem> DisplayCustomers { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
@@ -51,62 +50,46 @@ public partial class CustomerManagementViewModel : ObservableObject
     private bool isLoading = false;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortInfo))]
     private string sortColumn = "Name";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortInfo))]
     private bool sortAscending = true;
 
     public CustomerManagementViewModel(
         ICustomerService customerService,
+        INotificationService notificationService,
         Action onAdd,
         Action onRules,
         Action<CustomerListItem> onProfile,
         Action<CustomerListItem> onEdit)
     {
-        _customerService = customerService;
-        this.onAdd = onAdd;
-        this.onRules = onRules;
-        this.onProfile = onProfile;
-        this.onEdit = onEdit;
+        _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
+        _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+        _onAdd = onAdd ?? throw new ArgumentNullException(nameof(onAdd));
+        _onRules = onRules ?? throw new ArgumentNullException(nameof(onRules));
+        _onProfile = onProfile ?? throw new ArgumentNullException(nameof(onProfile));
+        _onEdit = onEdit ?? throw new ArgumentNullException(nameof(onEdit));
     }
 
     // --- PROPERTY CHANGE HANDLERS ---
 
     partial void OnCurrentPageChanged(int value)
     {
-        LoadCustomersCommand.ExecuteAsync(null);
+        RefreshCommand.ExecuteAsync(null);
     }
 
     partial void OnSearchTextChanged(string value)
     {
         CurrentPage = 1;
-        DebounceSearch();
-    }
-
-    // --- DEBOUNCE SEARCH ---
-
-    private async void DebounceSearch()
-    {
-        // Hủy request tìm kiếm trước đó
-        _searchDebounceToken?.Cancel();
-        _searchDebounceToken = new CancellationTokenSource();
-
-        try
-        {
-            // Chờ 300ms trước khi query
-            await Task.Delay(300, _searchDebounceToken.Token);
-            await LoadCustomersAsync();
-        }
-        catch (OperationCanceledException)
-        {
-            // Người dùng đã gõ tiếp → ignore request này
-        }
+        RunDebounced(LoadCustomersAsync);
     }
 
     // --- MAIN LOAD LOGIC ---
 
     [RelayCommand]
-    private async Task LoadCustomers()
+    private async Task Refresh()
     {
         await LoadCustomersAsync();
     }
@@ -128,7 +111,6 @@ public partial class CustomerManagementViewModel : ObservableObject
             };
 
             var result = await _customerService.GetAll(request);
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] Loaded {result.Items.Count} customers (Page {CurrentPage})");
 
             DisplayCustomers.Clear();
             foreach (var c in result.Items)
@@ -159,7 +141,8 @@ public partial class CustomerManagementViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ LoadCustomersAsync error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LoadCustomersAsync error: {ex.Message}");
+            _notificationService.ShowError("Không thể tải danh sách khách hàng");
         }
         finally
         {
@@ -171,15 +154,13 @@ public partial class CustomerManagementViewModel : ObservableObject
 
     private void UpdatePagingSummary(int currentItemsCount)
     {
-        if (TotalItems == 0)
-        {
-            PagingSummary = "No customers found";
-            return;
-        }
-
-        var start = ((CurrentPage - 1) * PageSize) + 1;
-        var end = start + currentItemsCount - 1;
-        PagingSummary = $"Showing {start}-{end} of {TotalItems} customers";
+        PagingSummary = BuildPagingSummary(
+            CurrentPage,
+            PageSize,
+            TotalItems,
+            currentItemsCount,
+            "No customers found",
+            "customers");
     }
 
     private void UpdatePageNumbers()
@@ -188,7 +169,7 @@ public partial class CustomerManagementViewModel : ObservableObject
         for (int i = 1; i <= TotalPages; i++)
             PageNumbers.Add(i);
 
-        PageInfoDisplay = $"Page {CurrentPage} / {TotalPages}";
+        PageInfoDisplay = BuildPageInfoDisplay(CurrentPage, TotalPages);
     }
 
     // --- PAGING COMMANDS ---
@@ -226,33 +207,56 @@ public partial class CustomerManagementViewModel : ObservableObject
             await _customerService.Delete(customer.Id);
             CurrentPage = 1;
             await LoadCustomersAsync();
+            _notificationService.ShowSuccess($"Đã xóa khách hàng '{customer.Name}'");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Delete error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($" Delete error: {ex.Message}");
+            _notificationService.ShowError("Không thể xóa khách hàng");
         }
+    }
+
+    public string SortInfo => $"{SortColumn}|{SortAscending}";
+
+    [RelayCommand]
+    private async Task SortByColumn(string columnName)
+    {
+        if (string.IsNullOrWhiteSpace(columnName)) return;
+
+        if (SortColumn == columnName)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortColumn = columnName;
+            SortAscending = true;
+        }
+
+        CurrentPage = 1;
+        await LoadCustomersAsync();
     }
 
     // --- NAVIGATION COMMANDS ---
 
     [RelayCommand]
-    private void MapsToAdd() => onAdd();
+    private void AddCustomer() => _onAdd();
 
     [RelayCommand]
-    private void MapsToRules() => onRules();
+    private void NavigateToRules() => _onRules();
 
     [RelayCommand]
-    private void MapsToProfile(CustomerListItem customer)
+    private void NavigateToProfile(CustomerListItem customer)
     {
         if (customer != null)
-            onProfile(customer);
+            _onProfile(customer);
     }
 
     [RelayCommand]
     private void EditCustomer(CustomerListItem customer)
     {
         if (customer != null)
-            onEdit(customer);
+            _onEdit(customer);
     }
 }
 
