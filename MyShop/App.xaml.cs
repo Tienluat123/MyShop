@@ -326,6 +326,8 @@ public partial class App : Application
 
             container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
 
+            container.Register<ReportViewModel>(new ReportViewModel());
+
             LogMessage(" All services registered successfully");
             // ===== Set static Services property for app-wide access =====
             Services = container;
