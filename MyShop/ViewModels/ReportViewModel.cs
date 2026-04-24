@@ -10,8 +10,8 @@ public partial class ReportViewModel : ObservableObject
         // Default filters
         StartDate = DateTime.Now.AddDays(-30);
         EndDate = DateTime.Now;
-        Periods = new ObservableCollection<string> { "Ngày", "Tuần", "Tháng", "Năm" };
-        SelectedPeriod = "Ngày";
+        Periods = new ObservableCollection<string> { "Day", "Week", "Month", "Year" };
+        SelectedPeriod = "Day";
 
         // Mock Statistics
         ProductsCount = 1250;
