@@ -12,6 +12,7 @@ public interface ICustomerService
     Task<List<Customer>> Search(string keyword);
     Task<Customer> Add(Customer customer);
     Task Update(Customer customer);
+    Task UpdateStatus(int customerId, string status);
 
     Task Delete(int id);
 }
@@ -166,6 +167,43 @@ public class CustomerService : ICustomerService
         catch (Exception ex)
         {
             throw new InvalidOperationException("Lỗi khi cập nhật khách hàng", ex);
+        }
+    }
+
+    /// <summary>
+    /// Cập nhật trạng thái khách hàng (Active/Inactive)
+    /// </summary>
+    public async Task UpdateStatus(int customerId, string status)
+    {
+        if (customerId <= 0)
+            throw new ArgumentException("ID khách hàng không hợp lệ", nameof(customerId));
+
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Trạng thái không hợp lệ", nameof(status));
+
+        var normalizedStatus = status.Trim();
+        if (!normalizedStatus.Equals("Active", StringComparison.OrdinalIgnoreCase) &&
+            !normalizedStatus.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Trạng thái chỉ được là Active hoặc Inactive", nameof(status));
+        }
+
+        normalizedStatus = normalizedStatus.Equals("Active", StringComparison.OrdinalIgnoreCase)
+            ? "Active"
+            : "Inactive";
+
+        try
+        {
+            var customer = await _repo.GetByIdAsync(customerId);
+            if (customer == null)
+                throw new KeyNotFoundException($"Không tìm thấy khách hàng với ID {customerId}");
+
+            customer.Status = normalizedStatus;
+            await _repo.UpdateAsync(customer);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Lỗi khi cập nhật trạng thái khách hàng ID {customerId}", ex);
         }
     }
 
