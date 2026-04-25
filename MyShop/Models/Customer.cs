@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyShop.Models;
 
@@ -19,10 +20,12 @@ public partial class Customer : ObservableObject
     public string? Notes { get; set; }
 
     /// <summary>All-time accumulated points — used to determine Tier.</summary>
+    [Column("TotalAccumulatedPoints")]
     [ObservableProperty]
     private int _totalAccumulatedPoints;
 
     /// <summary>Points currently available for redemption.</summary>
+    [Column("CurrentAvailablePoints")]
     [ObservableProperty]
     private int _currentAvailablePoints;
 
@@ -32,9 +35,11 @@ public partial class Customer : ObservableObject
 
     public string Status { get; set; } = "Active"; // Active / Inactive
 
+    [Column("TotalVisits")]
     [ObservableProperty]
     private int _totalVisits;
 
+    [Column("TotalSpent")]
     [ObservableProperty]
     private double _totalSpent;
 

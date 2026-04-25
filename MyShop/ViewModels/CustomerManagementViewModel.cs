@@ -258,5 +258,27 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
         if (customer != null)
             _onEdit(customer);
     }
+
+    public async Task UpdateCustomerStatusAsync(CustomerListItem customer, bool isActive)
+    {
+        if (customer == null)
+            return;
+
+        var oldStatus = customer.Status;
+        var newStatus = isActive ? "Active" : "Inactive";
+
+        try
+        {
+            await _customerService.UpdateStatus(customer.Id, newStatus);
+            customer.Status = newStatus;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"UpdateCustomerStatusAsync error: {ex.Message}");
+            _notificationService.ShowError("Không thể cập nhật trạng thái khách hàng");
+            customer.Status = oldStatus;
+            await LoadCustomersAsync();
+        }
+    }
 }
 
