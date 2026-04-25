@@ -16,8 +16,6 @@ public partial class ReportViewModel : ObservableObject
         // Mock Statistics
         ProductsCount = 1250;
         OrdersCount = 450;
-        LowStockCount = 12;
-        OutOfStockCount = 5;
 
         // Mock Sales Trend Data (Line Chart)
         SalesTrend = new ObservableCollection<TrendPoint>
@@ -54,12 +52,6 @@ public partial class ReportViewModel : ObservableObject
 
     [ObservableProperty]
     private int ordersCount;
-
-    [ObservableProperty]
-    private int lowStockCount;
-
-    [ObservableProperty]
-    private int outOfStockCount;
 
     [ObservableProperty]
     private DateTime startDate;
