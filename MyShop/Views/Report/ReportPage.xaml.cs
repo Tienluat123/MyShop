@@ -29,6 +29,18 @@ public sealed partial class ReportPage : Page
 
     private void FilterButton_Click(object sender, RoutedEventArgs e)
     {
+        // Sync dates based on granularity
+        if (ViewModel.SelectedPeriod == "Month")
+        {
+            ViewModel.StartDate = new DateTime(ViewModel.StartYear, ViewModel.StartMonth, 1);
+            ViewModel.EndDate = new DateTime(ViewModel.EndYear, ViewModel.EndMonth, 1).AddMonths(1).AddDays(-1);
+        }
+        else if (ViewModel.SelectedPeriod == "Year")
+        {
+            ViewModel.StartDate = new DateTime(ViewModel.StartYear, 1, 1);
+            ViewModel.EndDate = new DateTime(ViewModel.EndYear, 12, 31);
+        }
+
         // Re-render charts based on new filters
         RenderSalesTrend();
         RenderRevenueChart();

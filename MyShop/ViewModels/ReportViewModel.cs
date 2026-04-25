@@ -13,6 +13,16 @@ public partial class ReportViewModel : ObservableObject
         Periods = new ObservableCollection<string> { "Day", "Week", "Month", "Year" };
         SelectedPeriod = "Day";
 
+        // Initialize Year/Month lists
+        for (int i = 2020; i <= DateTime.Now.Year; i++) Years.Add(i);
+        for (int i = 1; i <= 12; i++) Months.Add(i);
+
+        StartYear = EndYear = DateTime.Now.Year;
+        StartMonth = 1;
+        EndMonth = DateTime.Now.Month;
+
+        UpdateVisibility();
+
         // Mock Statistics
         ProductsCount = 1250;
         OrdersCount = 450;
@@ -54,13 +64,37 @@ public partial class ReportViewModel : ObservableObject
     private int ordersCount;
 
     [ObservableProperty]
+    private string selectedPeriod;
+
+    partial void OnSelectedPeriodChanged(string value)
+    {
+        UpdateVisibility();
+    }
+
+    [ObservableProperty] private bool isDayWeekVisible;
+    [ObservableProperty] private bool isMonthVisible;
+    [ObservableProperty] private bool isYearVisible;
+
+    [ObservableProperty] private int startMonth;
+    [ObservableProperty] private int startYear;
+    [ObservableProperty] private int endMonth;
+    [ObservableProperty] private int endYear;
+
+    public ObservableCollection<int> Years { get; } = new();
+    public ObservableCollection<int> Months { get; } = new();
+
+    private void UpdateVisibility()
+    {
+        IsDayWeekVisible = SelectedPeriod == "Day" || SelectedPeriod == "Week";
+        IsMonthVisible = SelectedPeriod == "Month";
+        IsYearVisible = SelectedPeriod == "Year";
+    }
+
+    [ObservableProperty]
     private DateTime startDate;
 
     [ObservableProperty]
     private DateTime endDate;
-
-    [ObservableProperty]
-    private string selectedPeriod = "";
 
     public ObservableCollection<string> Periods { get; }
 
