@@ -115,8 +115,9 @@
                   Padding="8"
                   Visibility="{x:Bind NavView.IsPaneOpen, Mode=OneWay}"
                   Click="LogoutButton_Click">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBlock Text="Đăng xuất" 
+            <StackPanel Orientation="Horizontal"
+                Spacing="8">
+              <TextBlock Text="Đăng xuất"
                          VerticalAlignment="Center"
                          Style="{StaticResource CaptionTextStyle}"
                          Foreground="#EF4444"/>

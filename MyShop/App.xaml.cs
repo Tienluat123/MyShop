@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Uno.Resizetizer;
 using MyShop.Views;
@@ -10,6 +9,7 @@ using MyShop.Models;
 using MyShop.ViewModels;
 using MyShop.ViewModels.StaffManagement;
 using Microsoft.EntityFrameworkCore;
+using MyShop.Views.AppConfig;
 
 namespace MyShop;
 
@@ -21,6 +21,7 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         this.InitializeComponent();
     }
 
@@ -29,145 +30,126 @@ public partial class App : Application
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
 
-    // ✅ Make MainWindow public for DialogService to access XamlRoot
+    // Make MainWindow public for DialogService to access XamlRoot
     public Window? MainWindow { get; private set; }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         MainWindow = new Window();
 #if DEBUG
         MainWindow.UseStudio();
 #endif
 
-        // Setup Dependency Injection trước khi tạo UI
-        RegisterServices();
+        var configService = RegisterStartupConfigServices();
 
-        // DialogService ready - XamlRoot được set tự động từ constructor
+        var isDatabaseReady = await InitializeDatabaseConnection(configService);
+        if (!isDatabaseReady)
+        {
+            ShowDatabaseConfigPage();
+            MainWindow.SetWindowIcon();
+            MainWindow.Activate();
+            return;
+        }
 
-        // Do not repeat app initialization when the Window already has content,
-        // just ensure that the window is active
+        RegisterServices(configService);
+
         if (MainWindow.Content is not Frame rootFrame)
         {
-            // Create a Frame to act as the navigation context and navigate to the first page
             rootFrame = new Frame();
-
-            // Place the frame in the current Window
             MainWindow.Content = rootFrame;
-
             rootFrame.NavigationFailed += OnNavigationFailed;
         }
 
         if (rootFrame.Content == null)
         {
-            // Điều hướng đến LoginPage trước, sau khi đăng nhập thành công
-            // mới vào MainPage (Admin) hoặc PosPage (Sale)
-            rootFrame.Navigate(typeof(Views.LoginPage), args.Arguments);
+            ShowLoginPage(args.Arguments);
         }
 
         MainWindow.SetWindowIcon();
-        // Ensure the current window is active
         MainWindow.Activate();
+    }
+
+    private IConfigService RegisterStartupConfigServices()
+    {
+        var container = ServiceContainer.Instance;
+        container.Clear();
+
+        var configService = new ConfigService();
+        container.Register<IConfigService>(configService);
+        container.Register<DatabaseConfigViewModel>(new DatabaseConfigViewModel(configService));
+
+        Services = container;
+        return configService;
+    }
+
+    private async Task<bool> InitializeDatabaseConnection(IConfigService configService)
+    {
+        try
+        {
+            if (!configService.HasSavedConfig())
+                return false;
+
+            var testResult = await configService.TestSavedConfigAsync();
+            return testResult.Success;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    internal void ShowDatabaseConfigPage()
+    {
+        var page = new DatabaseConfigPage();
+        page.ConfigurationSaved += DatabaseConfigPage_ConfigurationSaved;
+        MainWindow!.Content = page;
+    }
+
+    private async void DatabaseConfigPage_ConfigurationSaved(object? sender, EventArgs e)
+    {
+        if (sender is DatabaseConfigPage page)
+            page.ConfigurationSaved -= DatabaseConfigPage_ConfigurationSaved;
+
+        var configService = ServiceContainer.Instance.Get<IConfigService>();
+        var isReady = await InitializeDatabaseConnection(configService);
+        if (!isReady)
+            return;
+
+        RegisterServices(configService);
+        ShowLoginPage(string.Empty);
+    }
+
+    private void ShowLoginPage(string? arguments)
+    {
+        if (MainWindow!.Content is not Frame rootFrame)
+        {
+            rootFrame = new Frame();
+            rootFrame.NavigationFailed += OnNavigationFailed;
+            MainWindow.Content = rootFrame;
+        }
+
+        if (rootFrame.Content?.GetType() != typeof(Views.LoginPage))
+        {
+            rootFrame.Navigate(typeof(Views.LoginPage), arguments ?? string.Empty);
+        }
     }
 
     /// <summary>
     /// Register tất cả services vào Dependency Injection Container
     /// Gọi trong OnLaunched trước khi initialize UI
     /// </summary>
-    private void RegisterServices()
+    private void RegisterServices(IConfigService? startupConfigService = null)
     {
-        // Cho phép Npgsql xử lý DateTime tự do không bắt buộc UTC
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
         var container = ServiceContainer.Instance;
-
-        // Create log file to track database initialization
-        var logPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "MyShop",
-            "database.log"
-        );
-        var logDirectory = Path.GetDirectoryName(logPath);
-        if (!string.IsNullOrEmpty(logDirectory))
-        {
-            Directory.CreateDirectory(logDirectory);
-        }
-
-        void LogMessage(string message)
-        {
-            System.Diagnostics.Debug.WriteLine(message);
-            try { File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}\n"); }
-            catch { }
-        }
+        container.Clear();
 
         try
         {
-            LogMessage("====== DATABASE INITIALIZATION START ======");
+            var configService = startupConfigService ?? new ConfigService();
+            container.Register<IConfigService>(configService);
 
-            // ===== Load Database Configuration from appsettings.json =====
-            // Try multiple paths for configuration file
-            var pathsToTry = new[]
-            {
-                Path.Combine(AppContext.BaseDirectory, "appsettings.json"), // Same dir as executable
-                Path.Combine(AppContext.BaseDirectory, "..", "..", "appsettings.json"), // Project root (debug)
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyShop", "appsettings.json") // User data
-            };
-
-            DatabaseConfig? dbConfig = null;
-            string? foundPath = null;
-
-            foreach (var path in pathsToTry)
-            {
-                var fullPath = Path.GetFullPath(path);
-                LogMessage($"🔍 Looking for config at: {fullPath}");
-
-                if (File.Exists(fullPath))
-                {
-                    foundPath = fullPath;
-                    break;
-                }
-            }
-
-            if (foundPath != null)
-            {
-                try
-                {
-                    var json = File.ReadAllText(foundPath);
-                    using (var doc = JsonDocument.Parse(json))
-                    {
-                        var dbElement = doc.RootElement.GetProperty("Database");
-                        dbConfig = new DatabaseConfig
-                        {
-                            Host = dbElement.GetProperty("Host").GetString() ?? "localhost",
-                            Database = dbElement.GetProperty("Database").GetString() ?? "postgres",
-                            Username = dbElement.GetProperty("Username").GetString() ?? "postgres",
-                            Password = dbElement.GetProperty("Password").GetString() ?? "password",
-                            Port = dbElement.GetProperty("Port").GetInt32(),
-                            SslMode = dbElement.GetProperty("SslMode").GetString() ?? "Require"
-                        };
-                    }
-                    LogMessage($" Loaded config from: {foundPath}");
-                    LogMessage($"   Host: {dbConfig.Host}:{dbConfig.Port}, DB: {dbConfig.Database}, User: {dbConfig.Username}");
-                }
-                catch (Exception ex)
-                {
-                    LogMessage($" Failed to parse appsettings.json from {foundPath}: {ex.Message}");
-                    dbConfig = CreateDefaultConfig();
-                }
-            }
-            else
-            {
-                LogMessage($"⚠️ appsettings.json not found in any location. Using default config.");
-                dbConfig = CreateDefaultConfig();
-            }
-
-            // ===== Setup Database Context (PostgreSQL via Supabase) =====
-            if (dbConfig is null)
-            {
-                dbConfig = CreateDefaultConfig();
-            }
-
-            var connectionString = dbConfig.GetConnectionString();
-            LogMessage($"📡 Database config loaded - Host: {dbConfig.Host}, Port: {dbConfig.Port}");
+            var dbConfig = configService.LoadAsync().GetAwaiter().GetResult();
+            var connectionString = dbConfig.ToConnectionString();
 
             AppDbContext dbContext;
             try
@@ -185,34 +167,21 @@ public partial class App : Application
 
                 dbContext = new AppDbContext(dbContextOptions);
 
-                //  Skip synchronous CanConnect() - let migrations handle connection validation
-                LogMessage("🔍 Database context initialized (validation deferred to migrations)");
-
-                //  Apply migrations (tạo database schema)
                 try
                 {
                     dbContext.Database.Migrate();
-                    LogMessage(" Database migrations applied successfully");
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    LogMessage($"⚠️ Migration warning: {ex.Message}");
-                    // Fallback: create schema if migrations fail
                     try
                     {
                         dbContext.Database.EnsureCreated();
-                        LogMessage("Database schema created (fallback)");
                     }
-                    catch (Exception ex2) { LogMessage($"Schema creation failed: {ex2.Message}"); }
+                    catch (Exception) { }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogMessage($" Database initialization error: {ex.Message}");
-                LogMessage($"   Inner exception: {ex.InnerException?.Message}");
-                LogMessage("   App will continue - ensure Supabase is accessible");
-
-                // Create DbContext anyway - connection will be attempted on first use
                 var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                     .UseNpgsql(connectionString, options =>
                     {
@@ -223,9 +192,7 @@ public partial class App : Application
                 dbContext = new AppDbContext(dbContextOptions);
             }
 
-            // ===== Register Data Access Layer (Repositories) =====
-            // Each Repository operation gets fresh DbContext instance
-            var contextFactory = new AppDbContextFactory();
+            var contextFactory = new AppDbContextFactory(configService);
             container.Register<AppDbContextFactory>(contextFactory);
 
             container.Register<IRepository<Product>>(new Repository<Product>(contextFactory));
@@ -240,7 +207,6 @@ public partial class App : Application
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(contextFactory));
             container.Register<IRepository<LoyaltyTierConfig>>(new Repository<LoyaltyTierConfig>(contextFactory));
 
-            // ===== Register Business Logic Layer (Services) =====
             var dialogService = new DialogService();
             container.Register<IDialogService>(dialogService);
 
@@ -291,22 +257,18 @@ public partial class App : Application
                 container.Get<IPromotionRepository>()
             ));
 
-            // AppConfigService — singleton, caches key-value settings in memory
             container.Register<IAppConfigService>(new AppConfigService(
                 container.Get<IRepository<AppConfig>>()
             ));
 
-            // AuthService — xác thực đăng nhập
             container.Register<IAuthService>(new AuthService(contextFactory));
 
-            // WeeklyRosterViewModel requires both ScheduleService and EmployeeService
             container.Register<WeeklyRosterViewModel>(new WeeklyRosterViewModel(
                 container.Get<IScheduleService>(),
                 container.Get<IEmployeeService>(),
                 container.Get<INotificationService>()
             ));
 
-            // ===== Register ViewModels =====
             container.Register<PosViewModel>(new PosViewModel(
                 container.Get<IProductService>(),
                 container.Get<ICategoryService>(),
@@ -316,6 +278,10 @@ public partial class App : Application
 
             container.Register<ConfigViewModel>(new ConfigViewModel(
                 container.Get<IAppConfigService>()
+            ));
+
+            container.Register<DatabaseConfigViewModel>(new DatabaseConfigViewModel(
+                container.Get<IConfigService>()
             ));
 
             container.Register<OrderManagementViewModel>(new OrderManagementViewModel(
@@ -332,36 +298,12 @@ public partial class App : Application
 
             container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
 
-            LogMessage(" All services registered successfully");
-            // ===== Set static Services property for app-wide access =====
             Services = container;
-
-
-            LogMessage(" All services registered successfully");
-            LogMessage("====== DATABASE INITIALIZATION END ======");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            LogMessage($" ERROR registering services: {ex.Message}");
-            LogMessage($"StackTrace: {ex.StackTrace}");
             throw;
         }
-    }
-
-    /// <summary>
-    /// Tạo mặc định DatabaseConfig khi không đọc được appsettings.json
-    /// </summary>
-    private DatabaseConfig CreateDefaultConfig()
-    {
-        return new DatabaseConfig
-        {
-            Host = "localhost",
-            Database = "myshop",
-            Username = "postgres",
-            Password = "mpa113dn",
-            Port = 5432,
-            SslMode = "Disable"
-        };
     }
 
     /// <summary>
@@ -407,33 +349,6 @@ public partial class App : Application
             builder.AddFilter("Uno", LogLevel.Warning);
             builder.AddFilter("Windows", LogLevel.Warning);
             builder.AddFilter("Microsoft", LogLevel.Warning);
-
-            // Generic Xaml events
-            // builder.AddFilter("Microsoft.UI.Xaml", LogLevel.Debug );
-            // builder.AddFilter("Microsoft.UI.Xaml.VisualStateGroup", LogLevel.Debug );
-            // builder.AddFilter("Microsoft.UI.Xaml.StateTriggerBase", LogLevel.Debug );
-            // builder.AddFilter("Microsoft.UI.Xaml.UIElement", LogLevel.Debug );
-            // builder.AddFilter("Microsoft.UI.Xaml.FrameworkElement", LogLevel.Trace );
-
-            // Layouter specific messages
-            // builder.AddFilter("Microsoft.UI.Xaml.Controls", LogLevel.Debug );
-            // builder.AddFilter("Microsoft.UI.Xaml.Controls.Layouter", LogLevel.Debug );
-            // builder.AddFilter("Microsoft.UI.Xaml.Controls.Panel", LogLevel.Debug );
-
-            // builder.AddFilter("Windows.Storage", LogLevel.Debug );
-
-            // Binding related messages
-            // builder.AddFilter("Microsoft.UI.Xaml.Data", LogLevel.Debug );
-            // builder.AddFilter("Microsoft.UI.Xaml.Data", LogLevel.Debug );
-
-            // Binder memory references tracking
-            // builder.AddFilter("Uno.UI.DataBinding.BinderReferenceHolder", LogLevel.Debug );
-
-            // DevServer and HotReload related
-            // builder.AddFilter("Uno.UI.RemoteControl", LogLevel.Information);
-
-            // Debug JS interop
-            // builder.AddFilter("Uno.Foundation.WebAssemblyRuntime", LogLevel.Debug );
         });
 
         global::Uno.Extensions.LogExtensionPoint.AmbientLoggerFactory = factory;

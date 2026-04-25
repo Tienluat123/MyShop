@@ -14,24 +14,21 @@
         <converters:BoolToSymbolConverter x:Key="BoolToSymbolConverter"/>
     </Page.Resources>
 
-    <!-- Layout chính: 2 cột — trái trang trí, phải form -->
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- ===== CỘT TRÁI: hình trang trí gradient tím =====-->
         <Grid Grid.Column="0" x:Name="LeftPanel">
             <Grid.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#F2A65A" Offset="0.0"/>
-                    <GradientStop Color="#9B6FE8" Offset="0.5"/>
-                    <GradientStop Color="#7B4FD4" Offset="1.0"/>
+                    <GradientStop Color="#FDBA74" Offset="0.0"/>
+                    <GradientStop Color="#F97316" Offset="0.5"/>
+                    <GradientStop Color="#EA580C" Offset="1.0"/>
                 </LinearGradientBrush>
             </Grid.Background>
 
-            <!-- Blob trang trí (giả lập bằng Ellipse bo góc) -->
             <Ellipse
                 Width="320" Height="320"
                 Margin="-100,80,0,0"
@@ -39,8 +36,8 @@
                 Opacity="0.45">
                 <Ellipse.Fill>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#C084FC" Offset="0"/>
-                        <GradientStop Color="#7C3AED" Offset="1"/>
+                        <GradientStop Color="#FDBA74" Offset="0"/>
+                        <GradientStop Color="#EA580C" Offset="1"/>
                     </LinearGradientBrush>
                 </Ellipse.Fill>
             </Ellipse>
@@ -52,13 +49,12 @@
                 Opacity="0.35">
                 <Ellipse.Fill>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#F97316" Offset="0"/>
-                        <GradientStop Color="#EC4899" Offset="1"/>
+                        <GradientStop Color="#FB923C" Offset="0"/>
+                        <GradientStop Color="#C2410C" Offset="1"/>
                     </LinearGradientBrush>
                 </Ellipse.Fill>
             </Ellipse>
 
-            <!-- Chữ chào mừng -->
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -78,7 +74,6 @@
             </StackPanel>
         </Grid>
 
-        <!-- ===== CỘT PHẢI: Form đăng nhập ===== -->
         <Grid Grid.Column="1" Background="White">
             <StackPanel
                 HorizontalAlignment="Center"
@@ -86,7 +81,6 @@
                 Width="360"
                 Spacing="0">
 
-                <!-- Tiêu đề -->
                 <TextBlock
                     Text="Đăng Nhập"
                     FontSize="30"
@@ -100,7 +94,6 @@
                     Foreground="#6B7280"
                     Margin="0,0,0,28"/>
 
-                <!-- Label: Tên đăng nhập -->
                 <TextBlock
                     Text="Tên đăng nhập"
                     FontSize="13"
@@ -108,7 +101,6 @@
                     Foreground="#374151"
                     Margin="0,0,0,6"/>
 
-                <!-- Input: Tên đăng nhập -->
                 <TextBox
                     x:Name="UsernameBox"
                     PlaceholderText="Nhập tên đăng nhập..."
@@ -120,7 +112,6 @@
                     BorderThickness="1.5"
                     Margin="0,0,0,18"/>
 
-                <!-- Label: Mật khẩu -->
                 <TextBlock
                     Text="Mật khẩu"
                     FontSize="13"
@@ -128,7 +119,6 @@
                     Foreground="#374151"
                     Margin="0,0,0,6"/>
 
-                <!-- Input: Mật khẩu (Wrap in Grid to add Custom Reveal Button) -->
                 <Grid Margin="0,0,0,8">
                     <PasswordBox
                         x:Name="PasswordBox"
@@ -141,7 +131,6 @@
                         PasswordRevealMode="{Binding IsPasswordVisible, Mode=OneWay, Converter={StaticResource BoolToPasswordRevealModeConverter}}"
                         PasswordChanged="PasswordBox_PasswordChanged"/>
 
-                    <!-- Nút con mắt tùy chỉnh -->
                     <Button
                         Command="{Binding TogglePasswordCommand}"
                         HorizontalAlignment="Right"
@@ -158,7 +147,6 @@
                     </Button>
                 </Grid>
 
-                <!-- Thông báo lỗi -->
                 <TextBlock
                     x:Name="ErrorLabel"
                     Text="{Binding ErrorMessage, Mode=OneWay}"
@@ -168,7 +156,6 @@
                     TextWrapping="Wrap"
                     Visibility="{Binding ErrorMessage, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='NotNull'}"/>
 
-                <!-- Nút Đăng nhập -->
                 <Button
                     x:Name="LoginBtn"
                     Content="Đăng nhập"
@@ -181,8 +168,8 @@
                     Margin="0,0,0,0">
                     <Button.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                            <GradientStop Color="#9B6FE8" Offset="0"/>
-                            <GradientStop Color="#7B4FD4" Offset="1"/>
+                            <GradientStop Color="#FB923C" Offset="0"/>
+                            <GradientStop Color="#EA580C" Offset="1"/>
                         </LinearGradientBrush>
                     </Button.Background>
                     <Button.Foreground>
@@ -190,13 +177,28 @@
                     </Button.Foreground>
                 </Button>
 
-                <!-- Loading indicator -->
+                <Button
+                    Click="ConfigDatabase_Click"
+                    Background="Transparent"
+                    Foreground="#6B7280"
+                    BorderBrush="#D1D5DB"
+                    BorderThickness="1.5"
+                    CornerRadius="8"
+                    Padding="16,8"
+                    HorizontalAlignment="Center"
+                    Margin="0,16,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="Setting" Foreground="#6B7280" />
+                        <TextBlock Text="Cấu hình Database" FontSize="13" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+
                 <ProgressRing
                     IsActive="{Binding IsLoading, Mode=OneWay}"
                     Margin="0,14,0,0"
                     HorizontalAlignment="Center"
                     Width="32" Height="32"
-                    Foreground="#7B4FD4"/>
+                    Foreground="#EA580C"/>
 
             </StackPanel>
         </Grid>

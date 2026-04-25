@@ -37,25 +37,20 @@ public class EmployeeService : IEmployeeService
             .ToListAsync();
     }
 
-    /// <summary>
-    /// Get paginated employee salaries with all calculations done at DB level
-    /// </summary>
     public async Task<PagedResult<UserSalaryInfo>> GetPagedEmployeeSalariesAsync(PagingRequest? paging = null)
     {
-        paging?.Validate();
+        paging ??= new PagingRequest();
+        paging.Validate();
 
         using var context = _contextFactory.CreateDbContext();
         var now = DateTime.Now;
         var lastMonth = now.AddMonths(-1);
 
-        // Helper expression to calculate hours from ShiftName (since TotalHours is a computed property, can't be translated to SQL)
-        // Morning = 6h, Afternoon = 6h, Evening = 6h
         Func<WorkSchedule, double> getShiftHours = s => s.ShiftName == "Morning" ? 6.0
                                                       : s.ShiftName == "Afternoon" ? 6.0
                                                       : s.ShiftName == "Evening" ? 6.0
                                                       : 0;
 
-        // Get MAX hours for current month (for bonus calculation)
         var maxCurrentHours = await context.WorkSchedules
             .Where(s => s.WorkDate.Month == now.Month && s.WorkDate.Year == now.Year && s.Status == "Completed")
             .GroupBy(_ => 1)
@@ -65,20 +60,17 @@ public class EmployeeService : IEmployeeService
                                    : 0))
             .FirstOrDefaultAsync();
 
-        // Build base query with salary calculations
         var baseQuery = context.Users
             .Where(u => u.IsActive)
             .Select(u => new
             {
                 User = u,
-                // Current month total hours - calculate from ShiftName (not the computed property)
                 CurrentHours = u.WorkSchedules
                     .Where(s => s.WorkDate.Month == now.Month && s.WorkDate.Year == now.Year && s.Status == "Completed")
                     .Sum(s => s.ShiftName == "Morning" ? 6.0
                             : s.ShiftName == "Afternoon" ? 6.0
                             : s.ShiftName == "Evening" ? 6.0
                             : 0),
-                // Last month total hours for comparison
                 LastMonthHours = u.WorkSchedules
                     .Where(s => s.WorkDate.Month == lastMonth.Month && s.WorkDate.Year == lastMonth.Year && s.Status == "Completed")
                     .Sum(s => s.ShiftName == "Morning" ? 6.0
@@ -87,8 +79,7 @@ public class EmployeeService : IEmployeeService
                             : 0)
             });
 
-        // Apply search filter
-        if (!string.IsNullOrEmpty(paging?.SearchText))
+        if (!string.IsNullOrEmpty(paging.SearchText))
         {
             var searchLower = paging.SearchText.ToLower();
             baseQuery = baseQuery.Where(x =>
@@ -98,8 +89,7 @@ public class EmployeeService : IEmployeeService
                 (x.User.Phone ?? "").ToLower().Contains(searchLower));
         }
 
-        // Apply role filter
-        if (paging?.Filters?.ContainsKey("Role") == true && !string.IsNullOrEmpty(paging.Filters["Role"]))
+        if (paging.Filters?.ContainsKey("Role") == true && !string.IsNullOrEmpty(paging.Filters["Role"]))
         {
             var roleFilter = paging.Filters["Role"];
             if (roleFilter == "Admin")
@@ -108,8 +98,7 @@ public class EmployeeService : IEmployeeService
                 baseQuery = baseQuery.Where(x => x.User.Role == "2");
         }
 
-        // Apply status filter
-        if (paging?.Filters?.ContainsKey("Status") == true && !string.IsNullOrEmpty(paging.Filters["Status"]))
+        if (paging.Filters?.ContainsKey("Status") == true && !string.IsNullOrEmpty(paging.Filters["Status"]))
         {
             var statusFilter = paging.Filters["Status"];
             if (statusFilter == "Active")
@@ -118,56 +107,45 @@ public class EmployeeService : IEmployeeService
                 baseQuery = baseQuery.Where(x => !x.User.IsActive);
         }
 
-        // Get total count before pagination
         var totalCount = await baseQuery.CountAsync();
 
-        // Apply sorting - comprehensive support for all columns
         var sortedQuery = baseQuery;
-        if (!string.IsNullOrEmpty(paging?.SortColumn))
+        if (!string.IsNullOrEmpty(paging.SortColumn))
         {
             sortedQuery = paging.SortColumn switch
             {
-                // Employee name column - sort by FirstName (FullName is computed and not in DB)
                 "FullName" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.FirstName).ThenBy(x => x.User.LastName)
                     : baseQuery.OrderByDescending(x => x.User.FirstName).ThenByDescending(x => x.User.LastName),
 
-                // Contact / Phone column
                 "Phone" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.Phone)
                     : baseQuery.OrderByDescending(x => x.User.Phone),
 
-                // Role column - sort by role code (1=Admin, 2=Sale)
                 "Role" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.Role)
                     : baseQuery.OrderByDescending(x => x.User.Role),
 
-                // Status column - sort by IsActive boolean
                 "Status" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.IsActive)
                     : baseQuery.OrderByDescending(x => x.User.IsActive),
 
-                // Hourly Rate column
                 "HourlyRate" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.HourlyRate)
                     : baseQuery.OrderByDescending(x => x.User.HourlyRate),
 
-                // Total Hours column - current month hours
                 "TotalHours" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.CurrentHours)
                     : baseQuery.OrderByDescending(x => x.CurrentHours),
 
-                // Last Month Salary column - sort by previous month calculation
                 "LastMonthSalary" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.HourlyRate * (decimal)x.LastMonthHours)
                     : baseQuery.OrderByDescending(x => x.User.HourlyRate * (decimal)x.LastMonthHours),
 
-                // Final Salary column - sort by current salary with bonus calculation
                 "FinalSalary" => paging.SortAscending
                     ? baseQuery.OrderBy(x => x.User.HourlyRate * (decimal)x.CurrentHours)
                     : baseQuery.OrderByDescending(x => x.User.HourlyRate * (decimal)x.CurrentHours),
 
-                // Default: sort by TotalHours descending
                 _ => baseQuery.OrderByDescending(x => x.CurrentHours)
             };
         }
@@ -176,19 +154,16 @@ public class EmployeeService : IEmployeeService
             sortedQuery = baseQuery.OrderByDescending(x => x.CurrentHours);
         }
 
-        // Apply pagination at DB level
         var pagedData = await sortedQuery
             .Skip(paging.GetSkip())
             .Take(paging.PageSize)
             .ToListAsync();
 
-        // Transform to UserSalaryInfo with bonus calculation
         var result = pagedData.Select(x =>
         {
             double currentHours = x.CurrentHours;
             double lastMonthHours = x.LastMonthHours;
 
-            // Calculate bonus rate
             decimal bonusRate = 1.0m;
             if (currentHours == maxCurrentHours && currentHours > 100) bonusRate = 1.15m;
             else if (currentHours > 100) bonusRate = 1.1m;

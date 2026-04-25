@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MyShop.Views.AppConfig.DatabaseConfigPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:MyShop.Converters"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FDBA74" Offset="0.0"/>
+                <GradientStop Color="#F97316" Offset="0.5"/>
+                <GradientStop Color="#EA580C" Offset="1.0"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Ellipse Width="450" Height="450" Margin="-150,-100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0.35">
+            <Ellipse.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#FDBA74" Offset="0"/>
+                    <GradientStop Color="#EA580C" Offset="1"/>
+                </LinearGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+        <Ellipse Width="350" Height="350" Margin="0,0,-100,-100" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.25">
+            <Ellipse.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#FB923C" Offset="0"/>
+                    <GradientStop Color="#C2410C" Offset="1"/>
+                </LinearGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24">
+                <Border Background="White"
+                        Padding="36,40"
+                        CornerRadius="16"
+                        Width="460"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1">
+                    <StackPanel Spacing="0">
+                        
+                        <StackPanel Spacing="8" Margin="0,0,0,28" HorizontalAlignment="Center">
+                            <Viewbox Width="40" Height="40" Margin="0,0,0,8">
+                                <SymbolIcon Symbol="Setting" Foreground="#EA580C"/>
+                            </Viewbox>
+                            <TextBlock Text="Cấu hình Database" FontSize="26" FontWeight="Bold" Foreground="#1A1A2E" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Thiết lập kết nối PostgreSQL cho ứng dụng" FontSize="14" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <InfoBar IsOpen="{Binding IsInfoBarOpen, Mode=TwoWay}"
+                                 Title="{Binding InfoTitle}"
+                                 Message="{Binding InfoMessage}"
+                                 Severity="{Binding InfoSeverity}"
+                                 IsClosable="True"
+                                 Margin="0,0,0,20"/>
+
+                        <StackPanel Spacing="16">
+                            
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="5*"/>
+                                    <ColumnDefinition Width="3*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Server" FontSize="13" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,6"/>
+                                    <TextBox Text="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             PlaceholderText="localhost" Padding="12,10" CornerRadius="8" BorderThickness="1.5" BorderBrush="#D1D5DB" FontSize="14"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Port" FontSize="13" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,6"/>
+                                    <NumberBox Value="{Binding Port, Mode=TwoWay}"
+                                               Minimum="1" Maximum="65535" SpinButtonPlacementMode="Compact"
+                                               Padding="12,10" CornerRadius="8" BorderThickness="1.5" BorderBrush="#D1D5DB" FontSize="14"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel>
+                                <TextBlock Text="Database Name" FontSize="13" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,6"/>
+                                <TextBox Text="{Binding DatabaseName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         PlaceholderText="myshop" Padding="12,10" CornerRadius="8" BorderThickness="1.5" BorderBrush="#D1D5DB" FontSize="14"/>
+                            </StackPanel>
+
+                            <StackPanel>
+                                <TextBlock Text="Username" FontSize="13" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,6"/>
+                                <TextBox Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         PlaceholderText="postgres" Padding="12,10" CornerRadius="8" BorderThickness="1.5" BorderBrush="#D1D5DB" FontSize="14"/>
+                            </StackPanel>
+
+                            <StackPanel>
+                                <TextBlock Text="Password" FontSize="13" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,6"/>
+                                <PasswordBox x:Name="PasswordInput" PasswordChanged="PasswordInput_PasswordChanged"
+                                             PlaceholderText="Nhập mật khẩu..." Padding="12,10" CornerRadius="8" BorderThickness="1.5" BorderBrush="#D1D5DB" FontSize="14"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,20,0,0" HorizontalAlignment="Center">
+                                
+                                <Button Command="{Binding TestConnectionCommand}"
+                                        Background="Transparent"
+                                        Foreground="#EA580C"
+                                        BorderBrush="#EA580C"
+                                        BorderThickness="1.5"
+                                        CornerRadius="8"
+                                        Padding="16,12">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <SymbolIcon Symbol="Link" Foreground="#EA580C"/>
+                                        <TextBlock Text="Test" FontSize="14" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Command="{Binding SaveConfigCommand}"
+                                        CornerRadius="8"
+                                        Padding="24,12"
+                                        BorderThickness="0">
+                                    <Button.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#FB923C" Offset="0"/>
+                                            <GradientStop Color="#EA580C" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                    <Button.Foreground>
+                                        <SolidColorBrush Color="White"/>
+                                    </Button.Foreground>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <SymbolIcon Symbol="Save" />
+                                        <TextBlock Text="Lưu Cấu Hình" FontSize="14" FontWeight="SemiBold"/>
+                                        <ProgressRing IsActive="{Binding IsTestingConnection}" Width="16" Height="16" Margin="4,0,0,0"
+                                                      Visibility="{Binding IsTestingConnection, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                      Foreground="White"/>
+                                    </StackPanel>
+                                </Button>
+
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>
