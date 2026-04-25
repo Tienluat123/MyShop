@@ -30,6 +30,16 @@ public sealed partial class MainPage : Page
         var notificationService = ServiceContainer.Instance.Get<INotificationService>();
         NotificationViewControl.SetNotificationService(notificationService);
 
+        // Lấy thông tin User từ Session để hiển thị
+        var session = ServiceContainer.Instance.Get<ISessionService>();
+        var user = session.CurrentUser;
+
+        if (user != null)
+        {
+            ProfileNameText.Text = $"{user.FirstName} {user.LastName}";
+            ProfileRoleText.Text = user.Role == "1" ? "Quản trị viên" : "Nhân viên bán hàng";
+        }
+
         // Set default page
         if (_viewModel.CurrentPageType != null)
         {
@@ -69,5 +79,13 @@ public sealed partial class MainPage : Page
             // Navigate frame
             ContentFrame.Navigate(pageType);
         }
+    }
+
+    /// <summary>
+    /// Đăng xuất và quay lại trang Login
+    /// </summary>
+    private void LogoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.Frame?.Navigate(typeof(LoginPage));
     }
 }

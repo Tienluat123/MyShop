@@ -1,4 +1,4 @@
-﻿<Page
+<Page
   x:Class="MyShop.Views.MainPage"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -97,24 +97,34 @@
           <StackPanel Grid.Column="2"
                       VerticalAlignment="Center"
                       Visibility="{x:Bind NavView.IsPaneOpen, Mode=OneWay}">
-            <TextBlock Text="Nguyễn Văn An"
+            <TextBlock x:Name="ProfileNameText"
+                       Text="Nguyễn Văn An"
                        Style="{StaticResource BodyTextStyle}"
                        FontWeight="Bold"/>
             <Border Style="{StaticResource RoleTagStyle}">
-              <TextBlock Text="Admin"
+              <TextBlock x:Name="ProfileRoleText"
+                         Text="Admin"
                          Style="{StaticResource CaptionTextStyle}"/>
             </Border>
           </StackPanel>
 
           <Button Grid.Column="3"
+                  ToolTipService.ToolTip="Đăng xuất"
                   Background="Transparent"
                   BorderThickness="0"
                   Padding="8"
-                  Visibility="{x:Bind NavView.IsPaneOpen, Mode=OneWay}">
-            <FontIcon Glyph="&#xE711;"
-                      FontFamily="Segoe MDL2 Assets"
-                      Foreground="#6B7280"
-                      FontSize="14"/>
+                  Visibility="{x:Bind NavView.IsPaneOpen, Mode=OneWay}"
+                  Click="LogoutButton_Click">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="Đăng xuất" 
+                         VerticalAlignment="Center"
+                         Style="{StaticResource CaptionTextStyle}"
+                         Foreground="#EF4444"/>
+              <FontIcon Glyph="&#xE7E8;"
+                        FontFamily="Segoe MDL2 Assets"
+                        Foreground="#EF4444"
+                        FontSize="16"/>
+            </StackPanel>
           </Button>
         </Grid>
       </NavigationView.PaneFooter>
