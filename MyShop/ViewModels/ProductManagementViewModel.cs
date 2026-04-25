@@ -1,5 +1,6 @@
 using MyShop.Models;
 using MyShop.Services;
+using MyShop.Services.ExcelImport;
 using MyShop.Data;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace MyShop.ViewModels;
 public partial class ProductManagementViewModel : ObservableObject
 {
     private readonly IProductService _productService;
+    private readonly IExcelCatalogImportService _excelCatalogImportService;
 
     private const string CategoryAll = "All";
     private const string CategoryCoffee = "Coffee";
@@ -62,11 +64,13 @@ public partial class ProductManagementViewModel : ObservableObject
 
     public ProductManagementViewModel(
         IProductService productService,
+        IExcelCatalogImportService excelCatalogImportService,
         Action onAddProduct,
         Action<ProductListEntry> onEditProduct)
     {
 
         _productService = productService;
+        _excelCatalogImportService = excelCatalogImportService;
 
         this.onAddProduct = onAddProduct;
         this.onEditProduct = onEditProduct;
@@ -224,6 +228,34 @@ public partial class ProductManagementViewModel : ObservableObject
     private void AddProduct()
     {
         onAddProduct();
+    }
+
+    [RelayCommand]
+    private async Task ImportFromExcel(string filePath)
+    {
+        try
+        {
+            ErrorMessage = string.Empty;
+
+            var importResult = await _excelCatalogImportService.ImportAsync(filePath);
+            if (!importResult.Success)
+            {
+                var topErrors = importResult.Errors
+                    .Take(5)
+                    .Select(e => e.ToString());
+
+                ErrorMessage = string.Join(Environment.NewLine, topErrors);
+                return;
+            }
+
+            ErrorMessage = importResult.Summary;
+            CurrentPage = 1;
+            await LoadProducts();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to import from Excel: {ex.Message}";
+        }
     }
 
     [RelayCommand]

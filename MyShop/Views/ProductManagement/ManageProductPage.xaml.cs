@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml.Controls;
 using MyShop.Di;
 using MyShop.Services;
+using MyShop.Services.ExcelImport;
 using MyShop.ViewModels;
 using MyShop.Views.ProductManagement.Components;
 using System;
@@ -11,11 +12,13 @@ namespace MyShop.Views.ProductManagement;
 public sealed partial class ManageProductPage : Page
 {
     private readonly IProductService _productService;
+    private readonly IExcelCatalogImportService _excelCatalogImportService;
 
     public ManageProductPage()
     {
         InitializeComponent();
         _productService = ServiceContainer.Instance.Get<IProductService>();
+        _excelCatalogImportService = ServiceContainer.Instance.Get<IExcelCatalogImportService>();
         Loaded += ManageProductPage_Loaded;
     }
 
@@ -31,6 +34,7 @@ public sealed partial class ManageProductPage : Page
     {
         var vm = new ProductManagementViewModel(
             productService: _productService,
+            excelCatalogImportService: _excelCatalogImportService,
             onAddProduct: () => ShowFormDialog(false),
             onEditProduct: product => ShowFormDialog(true, product));
 

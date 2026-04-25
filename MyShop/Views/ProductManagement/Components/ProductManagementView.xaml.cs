@@ -63,4 +63,42 @@ public sealed partial class ProductManagementView : Page
             ViewModel.DeleteProductCommand.Execute(product);
         }
     }
+
+    private async void ImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel == null)
+        {
+            return;
+        }
+
+        var pathTextBox = new TextBox
+        {
+            PlaceholderText = "D:\\data\\catalog-phase1.xlsx"
+        };
+
+        var dialog = new ContentDialog
+        {
+            XamlRoot = this.XamlRoot,
+            Title = "Import Product Catalog",
+            Content = pathTextBox,
+            PrimaryButtonText = "Import",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary)
+        {
+            return;
+        }
+
+        var filePath = pathTextBox.Text?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            ViewModel.ErrorMessage = "Please provide a valid .xlsx file path.";
+            return;
+        }
+
+        await ViewModel.ImportFromExcelCommand.ExecuteAsync(filePath);
+    }
 }

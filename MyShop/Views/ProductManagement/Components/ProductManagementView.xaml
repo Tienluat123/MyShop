@@ -59,11 +59,12 @@
                                         BorderBrush="#D97706"
                                         Foreground="#D97706"
                                         CornerRadius="12"
-                                        Padding="14,8">
+                                    Padding="14,8"
+                                    Click="ImportButton_Click">
                                     <StackPanel Orientation="Horizontal"
                                                 Spacing="8">
                                         <FontIcon Glyph="&#xE898;"/>
-                                        <TextBlock Text="Import Excel/Access"
+                                        <TextBlock Text="Import Excel"
                                                    FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </Button>
