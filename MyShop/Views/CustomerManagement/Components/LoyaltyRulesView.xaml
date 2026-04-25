@@ -2,7 +2,6 @@
     x:Class="MyShop.Views.CustomerManagement.Components.LoyaltyRulesView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:MyShop.Converters"
     Background="#F3F4F6">
 
     <Grid>
@@ -11,7 +10,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- ===== HEADER ===== -->
         <Border Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="24,14">
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <Button Command="{Binding BackCommand}" Background="Transparent" BorderThickness="0" Padding="0">
@@ -24,25 +22,27 @@
             </StackPanel>
         </Border>
 
-        <!-- ===== MAIN CONTENT ===== -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,24">
-            <StackPanel HorizontalAlignment="Center" Spacing="16" Width="760">
+        <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Width="760" MaxWidth="760">
+            <Border CornerRadius="24" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" Padding="30,28,30,0">
+                <Border.Shadow>
+                    <ThemeShadow />
+                </Border.Shadow>
+                <Border.Translation>0,0,16</Border.Translation>
 
-                <!-- STATUS MESSAGE BANNER -->
-                <TextBlock Foreground="#DC2626" FontSize="14" FontWeight="SemiBold"
-                           Text="{Binding StatusMessage}"
-                           Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='NotNull'}" 
-                           HorizontalAlignment="Center" Margin="0,0,0,8" />
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                <!-- === Section 1: Points Calculation === -->
-                <Border Background="#FFFFFF" CornerRadius="24" BorderBrush="#E5E7EB" BorderThickness="1" Padding="30,28">
-                    <StackPanel Spacing="16">
+                    <StackPanel Spacing="12">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <Rectangle Width="3" Height="24" Fill="#BB4D00" RadiusX="1.5" RadiusY="1.5" />
-                            <TextBlock Text="POINTS CALCULATION" FontSize="22" FontWeight="Black" Foreground="#0F172A" />
+                            <TextBlock Text="POINTS CALCULATION" FontSize="30" FontWeight="Black" Foreground="#0F172A" />
                         </StackPanel>
 
-                        <!-- Points Earning Rate -->
                         <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="16" Padding="18">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -52,70 +52,25 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Points Earning Rate" Foreground="#BB4D00" FontSize="18" FontWeight="Bold" />
-                                    <TextBlock Text="Customer earns 1 point for every X VND spent" Foreground="#D97706" FontSize="12" />
+                                <StackPanel>
+                                    <TextBlock Text="Points Earning Rate" Foreground="#BB4D00" FontSize="24" FontWeight="Bold" />
+                                    <TextBlock Text="Customer earns X points for every Y amount spent" Foreground="#D97706" FontSize="12" />
                                 </StackPanel>
 
-                                <TextBlock Grid.Column="1" Text="1 point per" VerticalAlignment="Center" Foreground="#D97706" FontWeight="SemiBold" Margin="0,0,8,0" />
-                                <TextBox Grid.Column="2" Width="140" Height="40"
-                                         Text="{Binding PointsPerVnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                         CornerRadius="10" BorderBrush="#FCD34D" />
-                                <TextBlock Grid.Column="3" Text="VND" VerticalAlignment="Center" Foreground="#D97706" FontWeight="SemiBold" Margin="8,0,0,0" />
-                            </Grid>
-                        </Border>
-
-                        <!-- Redemption Rate -->
-                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="16" Padding="18">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Redemption Rate" Foreground="#1D4ED8" FontSize="18" FontWeight="Bold" />
-                                    <TextBlock Text="How much VND per point when redeeming" Foreground="#3B82F6" FontSize="12" />
-                                </StackPanel>
-
-                                <TextBlock Grid.Column="1" Text="1 point =" VerticalAlignment="Center" Foreground="#3B82F6" FontWeight="SemiBold" Margin="0,0,8,0" />
-                                <TextBox Grid.Column="2" Width="140" Height="40"
-                                         Text="{Binding RedemptionRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                         CornerRadius="10" BorderBrush="#93C5FD" />
-                                <TextBlock Grid.Column="3" Text="VND" VerticalAlignment="Center" Foreground="#3B82F6" FontWeight="SemiBold" Margin="8,0,0,0" />
+                                <TextBox Grid.Column="1" Width="70" Height="40" Text="{Binding PointsRate, Mode=TwoWay}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="12" BorderBrush="#FCD34D" />
+                                <TextBlock Grid.Column="2" Text="/" Foreground="#D97706" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Margin="12,0" />
+                                <TextBox Grid.Column="3" Width="92" Height="40" Text="{Binding MoneyUnit, Mode=TwoWay}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="12" BorderBrush="#FCD34D" />
                             </Grid>
                         </Border>
                     </StackPanel>
-                </Border>
 
-                <!-- === Section 2: Tier Thresholds === -->
-                <Border Background="#FFFFFF" CornerRadius="24" BorderBrush="#E5E7EB" BorderThickness="1" Padding="30,28">
-                    <StackPanel Spacing="12">
+                    <StackPanel Grid.Row="1" Margin="0,24,0,0" Spacing="12">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <Rectangle Width="3" Height="24" Fill="#BB4D00" RadiusX="1.5" RadiusY="1.5" />
-                            <TextBlock Text="TIER THRESHOLDS" FontSize="22" FontWeight="Black" Foreground="#0F172A" />
+                            <TextBlock Text="TIER THRESHOLDS" FontSize="30" FontWeight="Black" Foreground="#0F172A" />
                         </StackPanel>
 
-                        <TextBlock Text="Configure multiplier for each loyalty tier. Higher tiers earn more points per VND."
-                                   Foreground="#94A3B8" FontSize="13" Margin="13,0,0,8" />
-
-                        <Grid Margin="14,0,14,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="120" />
-                                <ColumnDefinition Width="120" />
-                                <ColumnDefinition Width="50" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="2" Text="MIN POINTS" Foreground="#9CA3AF" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" />
-                            <TextBlock Grid.Column="3" Text="MULTIPLIER" Foreground="#9CA3AF" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" />
-                        </Grid>
-
-                        <ItemsControl ItemsSource="{Binding TierThresholds}">
+                        <ItemsControl ItemsSource="{Binding TierThresholdsCollection}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="#F8FAFC" CornerRadius="12" Padding="14" Margin="0,0,0,10">
@@ -123,115 +78,36 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="120" />
-                                                <ColumnDefinition Width="120" />
-                                                <ColumnDefinition Width="50" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- Tier Badge -->
                                             <Border Width="40" Height="40" CornerRadius="20" Background="#FFFFFF">
                                                 <FontIcon Glyph="&#xE7C1;" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
-
-                                            <!-- Tier Name -->
-
-
-                                            <!-- Min Points Input -->
-                                            <TextBox Grid.Column="2" Height="40"
-                                                     Text="{Binding MinPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                     HorizontalContentAlignment="Center" CornerRadius="10"
-                                                     BorderBrush="#E2E8F0" />
-
-                                            <!-- Multiplier Input -->
-                                            <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
-                                                <TextBox Width="70" Height="40"
-                                                         Text="{Binding Multiplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                         HorizontalContentAlignment="Center" CornerRadius="10"
-                                                         BorderBrush="#E2E8F0" />
-                                            </StackPanel>
-
-                                            <!-- Tier Key -->
-
+                                            <TextBlock Grid.Column="1" Text="{Binding TierName}" VerticalAlignment="Center" Margin="10,0,0,0" FontWeight="Bold" Foreground="#334155" />
+                                            <TextBox Grid.Column="2" Width="78" Height="40" Text="{Binding Points, Mode=TwoWay}" HorizontalContentAlignment="Center" CornerRadius="10" BorderBrush="#E2E8F0" />
+                                            <TextBlock Grid.Column="3" Text="POINTS" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#CBD5E1" FontWeight="Bold" FontSize="11" />
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
-                </Border>
 
-                <!-- === Section 3: Preview Calculator === -->
-                <Border Background="#FFFFFF" CornerRadius="24" BorderBrush="#E5E7EB" BorderThickness="1" Padding="30,28">
-                    <StackPanel Spacing="16">
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Rectangle Width="3" Height="24" Fill="#065F46" RadiusX="1.5" RadiusY="1.5" />
-                            <TextBlock Text="PREVIEW CALCULATOR" FontSize="22" FontWeight="Black" Foreground="#0F172A" />
-                        </StackPanel>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="Order amount:" VerticalAlignment="Center" Foreground="#475569" FontWeight="SemiBold" Margin="0,0,10,0" />
-                            <TextBox Grid.Column="1" Width="140" Height="40"
-                                     Text="{Binding PreviewOrderAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                     CornerRadius="10" BorderBrush="#D1D5DB" />
-                            <TextBlock Grid.Column="2" Margin="12,0,0,0" Text="VND" VerticalAlignment="Center" Foreground="#9CA3AF" />
-                            <Button Grid.Column="3" Command="{Binding CalculatePreviewCommand}"
-                                    Background="#F3F4F6" BorderBrush="#E5E7EB" CornerRadius="10" Padding="16,8">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon Glyph="&#xE9F5;" FontSize="14" Foreground="#64748B" />
-                                    <TextBlock Text="Preview" Foreground="#64748B" FontWeight="SemiBold" />
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-
-                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="12" Padding="16">
-                            <TextBlock Text="{Binding PreviewResult}" Foreground="#166534" FontFamily="Consolas" FontSize="14" />
-                        </Border>
-                    </StackPanel>
-                </Border>
-
-                <!-- === Section 4: Save Footer === -->
-                <Border Background="#F8FAFC" CornerRadius="24" BorderBrush="#E5E7EB" BorderThickness="1" Padding="30,20">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Foreground="#64748B" FontSize="12" Text="Changes are saved to the database immediately." VerticalAlignment="Center"/>
-
-                        <Button Grid.Column="1" Command="{Binding SaveRulesCommand}"
-                                Background="#BB4D00" Foreground="White" CornerRadius="12" Padding="32,12">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon Glyph="&#xE74E;" FontSize="14" />
-                                <TextBlock Text="SAVE RULES" FontWeight="Bold" />
-                            </StackPanel>
+                    <Border Grid.Row="3" Margin="-30,24,-30,0" Padding="30,24" Background="#F8FAFC" CornerRadius="0,0,24,24">
+                        <Button Command="{Binding SaveRulesCommand}"
+                                HorizontalAlignment="Right"
+                                Background="#BB4D00"
+                                Foreground="White"
+                                BorderBrush="#BB4D00"
+                                CornerRadius="12"
+                                Padding="36,12">
+                            <TextBlock Text="SAVE RULES" FontWeight="Bold" />
                         </Button>
-                    </Grid>
-                </Border>
-
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- ===== LOADING OVERLAY ===== -->
-        <Border Grid.RowSpan="2" Background="#80000000"
-                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-                <ProgressRing IsActive="True" Width="48" Height="48" Foreground="White" />
-                <TextBlock Text="Loading configuration..." Foreground="White" FontWeight="SemiBold" />
-            </StackPanel>
-        </Border>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
-
-    <Page.Resources>
-        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-    </Page.Resources>
 </Page>

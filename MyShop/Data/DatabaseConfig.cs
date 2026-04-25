@@ -17,13 +17,11 @@ public class DatabaseConfig
     /// </summary>
     public string GetConnectionString()
     {
-        // Connection string tối ưu cho Supabase
+        // Connection pooler format for Supabase
         return $"Host={Host};Port={Port};Database={Database};Username={Username};Password={Password};" +
-               $"SslMode={SslMode};" +
-               $"Pooling=true;" +
-               $"Maximum Pool Size=8;" +
-               $"Minimum Pool Size=0;" +
-               $"Connection Idle Lifetime=30;" +
-               $"Command Timeout=30;";
+               $"SSL Mode={SslMode};" +
+               $"Trust Server Certificate=false;" +
+               $"Connection Idle Lifetime=300;" +
+               $"Pooling=true;";
     }
 }

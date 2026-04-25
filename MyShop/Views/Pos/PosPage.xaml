@@ -19,8 +19,8 @@
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter"/>
         <converters:CategoryBrushConverter
             x:Key="CategoryBackgroundConverter"
-            ActiveBrush="{StaticResource Warning}"
-            InactiveBrush="{StaticResource TransparentBrush}"/>
+            ActiveBrush="{StaticResource BrandPrimary}"
+            InactiveBrush="{StaticResource Warning}"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 
         <converters:EqualityToBrushConverter
@@ -42,7 +42,7 @@
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
 
         <Style x:Key="CategoryButtonStyle"
-                TargetType="Button">
+               TargetType="Button">
             <Setter Property="CornerRadius"
                     Value="{StaticResource RadiusXLarge}"/>
             <Setter Property="Padding"
@@ -101,7 +101,7 @@
         </Style>
 
         <Style x:Key="OrderTypeButtonStyle"
-                TargetType="Button">
+               TargetType="Button">
             <Setter Property="CornerRadius"
                     Value="{StaticResource RadiusSmall}"/>
             <Setter Property="Height"
@@ -121,6 +121,9 @@
         </Style>
     </Page.Resources>
 
+    <Page.DataContext>
+        <viewmodels:PosViewModel x:Name="ViewModel"/>
+    </Page.DataContext>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -155,7 +158,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal"
-                        Spacing="12">
+                            Spacing="12">
                     <Border
                         Width="36"
                         Height="36"
@@ -169,16 +172,19 @@
                             Data="{StaticResource IconCoffee}"
                             Stretch="Uniform"
                             Stroke="White"
+                            StrokeEndLineCap="Round"
+                            StrokeStartLineCap="Round"
                             StrokeThickness="2"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock
+                            Style="{StaticResource BodyTextStyle}"
                             FontWeight="Bold"
                             LineHeight="14"
-                            Style="{StaticResource BodyTextStyle}"
                             Text="MyShop"/>
-                        <TextBlock Style="{StaticResource CaptionMutedTextStyle}"
-                                Text="Point of Sale"/>
+                        <TextBlock
+                            Style="{StaticResource CaptionMutedTextStyle}"
+                            Text="Point of Sale"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -194,11 +200,11 @@
                         CornerRadius="11"
                         Style="{StaticResource AppOutlineButtonStyle}">
                         <StackPanel Orientation="Horizontal"
-                                Spacing="8">
+                                    Spacing="8">
                             <FontIcon
+                                Style="{StaticResource IconSubtitleStyle}"
                                 Foreground="{StaticResource TextMuted}"
-                                Glyph="&#xE8A5;"
-                                Style="{StaticResource IconSubtitleStyle}"/>
+                                Glyph="&#xE8A5;"/>
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontWeight="{StaticResource FontWeightBold}"
@@ -224,20 +230,17 @@
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"
-                                    Spacing="8"/>
+                                        Spacing="8"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button
-                                Background="{Binding IsActive, Converter={StaticResource CategoryBackgroundConverter}}"
                                 Command="{Binding DataContext.SetCategoryCommand, ElementName=PageRoot}"
                                 CommandParameter="{Binding}"
                                 Style="{StaticResource CategoryButtonStyle}">
-
                                 <StackPanel Orientation="Horizontal"
-                                        Spacing="8">
-
+                                            Spacing="8">
                                     <Path
                                         Width="18"
                                         Height="18"
@@ -246,13 +249,14 @@
                                         Fill="Transparent"
                                         Stretch="Uniform"
                                         Stroke="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                                        StrokeEndLineCap="Round"
+                                        StrokeStartLineCap="Round"
                                         StrokeThickness="1"/>
 
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
                                         Text="{Binding Name}"/>
-
                                 </StackPanel>
                             </Button>
                         </DataTemplate>
@@ -276,20 +280,20 @@
                     <FontIcon
                         Margin="14,0,0,0"
                         HorizontalAlignment="Left"
+                        Style="{StaticResource IconSubtitleStyle}"
                         Foreground="{StaticResource TextMuted}"
-                        Glyph="&#xE721;"
-                        Style="{StaticResource IconSubtitleStyle}"/>
+                        Glyph="&#xE721;"/>
                 </Grid>
             </Grid>
 
             <!--  Products Grid  -->
             <ScrollViewer Grid.Row="3"
-                    Padding="24,8">
+                          Padding="24,8">
                 <ItemsRepeater ItemsSource="{Binding FilteredProducts}">
                     <ItemsRepeater.Layout>
                         <UniformGridLayout
                             ItemsStretch="Fill"
-                            MaximumRowsOrColumns="3"
+                            MaximumRowsOrColumns="5"
                             MinColumnSpacing="12"
                             MinItemWidth="150"
                             MinRowSpacing="12"
@@ -326,20 +330,18 @@
                                                 Glyph="&#xEB9F;"/>
                                         </Border>
 
-                                        <StackPanel
-                                            Grid.Row="1"
-                                            Padding="12,10"
-                                            VerticalAlignment="Center">
+                                        <StackPanel Grid.Row="1"
+                                                    Padding="12,10">
                                             <TextBlock
                                                 FontWeight="SemiBold"
+                                                Style="{StaticResource BodyTextStyle}"
                                                 MaxLines="1"
-                                                Style="{StaticResource SubtitleTextStyle}"
                                                 Text="{Binding Name}"
                                                 TextTrimming="CharacterEllipsis"/>
                                             <TextBlock
                                                 FontWeight="Bold"
                                                 Foreground="{StaticResource BrandPrimary}"
-                                                Text="{Binding Price, Converter={StaticResource CurrencyConverter}}"/>
+                                                Text="{Binding DisplayPrice}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -372,11 +374,11 @@
                 BorderBrush="{StaticResource SurfaceAlt}"
                 BorderThickness="0,0,0,1">
                 <StackPanel Orientation="Horizontal"
-                        Spacing="8">
+                            Spacing="8">
                     <FontIcon
+                        Style="{StaticResource IconSubtitleStyle}"
                         Foreground="{StaticResource IconSelectedBgBrush}"
-                        Glyph="&#xE7BF;"
-                        Style="{StaticResource IconSubtitleStyle}"/>
+                        Glyph="&#xE7BF;"/>
                     <TextBlock
                         VerticalAlignment="Center"
                         FontWeight="Bold"
@@ -392,11 +394,11 @@
                     CornerRadius="8"
                     Style="{StaticResource AppSecondaryButtonStyle}">
                     <StackPanel Orientation="Horizontal"
-                            Spacing="6">
+                                Spacing="6">
                         <FontIcon
+                            Style="{StaticResource IconCaptionStyle}"
                             Foreground="{StaticResource ErrorStrong}"
-                            Glyph="&#xE74D;"
-                            Style="{StaticResource IconCaptionStyle}"/>
+                            Glyph="&#xE74D;"/>
                         <TextBlock
                             FontSize="{StaticResource FontCaption}"
                             FontWeight="Black"
@@ -431,9 +433,9 @@
                                 Background="{StaticResource SurfaceAlt}"
                                 CornerRadius="12">
                                 <FontIcon
+                                    Style="{StaticResource IconTitleStyle}"
                                     Foreground="{StaticResource Gray200}"
-                                    Glyph="&#xEB9F;"
-                                    Style="{StaticResource IconTitleStyle}"/>
+                                    Glyph="&#xEB9F;"/>
                             </Border>
 
                             <StackPanel
@@ -442,15 +444,15 @@
                                 VerticalAlignment="Top">
                                 <TextBlock
                                     FontWeight="SemiBold"
-                                    MaxLines="2"
                                     Style="{StaticResource BodyTextStyle}"
+                                    MaxLines="2"
                                     Text="{Binding Product.Name}"
                                     TextWrapping="Wrap"/>
 
                                 <!--  Customization Tags  -->
                                 <StackPanel Margin="0,4,0,0"
-                                        Visibility="{Binding DrinkOptions, Converter={StaticResource NullToVisibilityConverter}}">
-                                    <WrapPanel>
+                                            Visibility="{Binding DrinkOptions, Converter={StaticResource NullToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal">
                                         <Border
                                             Margin="0,0,4,4"
                                             Padding="6,2"
@@ -487,7 +489,7 @@
                                         <ItemsControl ItemsSource="{Binding DrinkOptions.AddOns}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
-                                                    <WrapPanel/>
+                                                    <StackPanel Orientation="Horizontal"/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
@@ -506,7 +508,7 @@
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
-                                    </WrapPanel>
+                                    </StackPanel>
                                     <TextBlock
                                         FontStyle="Italic"
                                         Style="{StaticResource CaptionMutedTextStyle}"
@@ -530,11 +532,14 @@
                                                 Padding="0"
                                                 Background="Transparent"
                                                 BorderThickness="0"
-                                                Command="{Binding DataContext.DecreaseQuantityCommand, ElementName=PageRoot}"
-                                                CommandParameter="{Binding}"
+                                                Command="{Binding DataContext.UpdateQuantityCommand, ElementName=PageRoot}"
                                                 Style="{StaticResource AppIconButtonStyle}">
-                                                <FontIcon Glyph="&#xE738;"
-                                                        Style="{StaticResource IconCaptionStyle}"/>
+                                                <Button.CommandParameter>
+                                                    <models:UpdateQtyParams Delta="-1"
+                                                                            Item="{Binding}"/>
+                                                </Button.CommandParameter>
+                                                <FontIcon Style="{StaticResource IconCaptionStyle}"
+                                                          Glyph="&#xE738;"/>
                                             </Button>
                                             <TextBlock
                                                 Width="24"
@@ -549,11 +554,14 @@
                                                 Padding="0"
                                                 Background="Transparent"
                                                 BorderThickness="0"
-                                                Command="{Binding DataContext.IncreaseQuantityCommand, ElementName=PageRoot}"
-                                                CommandParameter="{Binding}"
+                                                Command="{Binding DataContext.UpdateQuantityCommand, ElementName=PageRoot}"
                                                 Style="{StaticResource AppIconButtonStyle}">
-                                                <FontIcon Glyph="&#xE710;"
-                                                        Style="{StaticResource IconCaptionStyle}"/>
+                                                <Button.CommandParameter>
+                                                    <models:UpdateQtyParams Delta="1"
+                                                                            Item="{Binding}"/>
+                                                </Button.CommandParameter>
+                                                <FontIcon Style="{StaticResource IconCaptionStyle}"
+                                                          Glyph="&#xE710;"/>
                                             </Button>
                                         </StackPanel>
                                     </Grid>
@@ -564,13 +572,11 @@
                                         Padding="0"
                                         Background="Transparent"
                                         BorderThickness="0"
-                                        Command="{Binding DataContext.EditItemCommand, ElementName=PageRoot}"
-                                        CommandParameter="{Binding}"
                                         Foreground="{StaticResource TextMuted}"
-                                        Style="{StaticResource AppIconButtonStyle}"
-                                        ToolTipService.ToolTip="Edit">
-                                        <FontIcon Glyph="&#xE70F;"
-                                                Style="{StaticResource IconBodyStyle}"/>
+                                        ToolTipService.ToolTip="Edit"
+                                        Style="{StaticResource AppIconButtonStyle}">
+                                        <FontIcon Style="{StaticResource IconBodyStyle}"
+                                                  Glyph="&#xE70F;"/>
                                     </Button>
                                     <Button
                                         Width="28"
@@ -581,10 +587,10 @@
                                         Command="{Binding DataContext.RemoveItemCommand, ElementName=PageRoot}"
                                         CommandParameter="{Binding}"
                                         Foreground="{StaticResource TextMuted}"
-                                        Style="{StaticResource AppIconButtonStyle}"
-                                        ToolTipService.ToolTip="Remove">
-                                        <FontIcon Glyph="&#xE74D;"
-                                                Style="{StaticResource IconBodyStyle}"/>
+                                        ToolTipService.ToolTip="Remove"
+                                        Style="{StaticResource AppIconButtonStyle}">
+                                        <FontIcon Style="{StaticResource IconBodyStyle}"
+                                                  Glyph="&#xE74D;"/>
                                     </Button>
                                 </StackPanel>
                             </StackPanel>
@@ -610,8 +616,9 @@
                 Spacing="16">
                 <StackPanel Spacing="8">
                     <Grid>
-                        <TextBlock Style="{StaticResource BodySecondaryTextStyle}"
-                                Text="Subtotal"/>
+                        <TextBlock
+                            Style="{StaticResource BodySecondaryTextStyle}"
+                            Text="Subtotal"/>
                         <TextBlock
                             HorizontalAlignment="Right"
                             FontSize="{StaticResource FontBody}"
@@ -620,8 +627,9 @@
                             Text="{Binding Subtotal, Converter={StaticResource CurrencyConverter}}"/>
                     </Grid>
                     <Grid>
-                        <TextBlock Style="{StaticResource BodyMutedTextStyle}"
-                                Text="Tax (8.75%)"/>
+                        <TextBlock
+                            Style="{StaticResource BodyMutedTextStyle}"
+                            Text="Tax (8.75%)"/>
                         <TextBlock
                             HorizontalAlignment="Right"
                             Style="{StaticResource BodyMutedTextStyle}"
@@ -703,43 +711,43 @@
                         </StackPanel>
                         <VariableSizedWrapGrid
                             ItemHeight="40"
-                            ItemWidth="100"
+                            ItemWidth="40"
                             Orientation="Horizontal">
                             <Button
-                                Width="96"
+                                Width="36"
                                 Margin="0,0,4,4"
-                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='Table 1'}"
+                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='T1'}"
                                 Command="{Binding SetTableNumberCommand}"
-                                CommandParameter="Table 1"
-                                Content="Table 1"
-                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='Table 1'}"
+                                CommandParameter="T1"
+                                Content="T1"
+                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='T1'}"
                                 Style="{StaticResource OrderTypeButtonStyle}"/>
                             <Button
-                                Width="96"
+                                Width="36"
                                 Margin="0,0,4,4"
-                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='Table 2'}"
+                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='T2'}"
                                 Command="{Binding SetTableNumberCommand}"
-                                CommandParameter="Table 2"
-                                Content="Table 2"
-                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='Table 2'}"
+                                CommandParameter="T2"
+                                Content="T2"
+                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='T2'}"
                                 Style="{StaticResource OrderTypeButtonStyle}"/>
                             <Button
-                                Width="96"
+                                Width="36"
                                 Margin="0,0,4,4"
-                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='Table 3'}"
+                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='T3'}"
                                 Command="{Binding SetTableNumberCommand}"
-                                CommandParameter="Table 3"
-                                Content="Table 3"
-                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='Table 3'}"
+                                CommandParameter="T3"
+                                Content="T3"
+                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='T3'}"
                                 Style="{StaticResource OrderTypeButtonStyle}"/>
                             <Button
-                                Width="96"
+                                Width="36"
                                 Margin="0,0,4,4"
-                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='Table 4'}"
+                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='T4'}"
                                 Command="{Binding SetTableNumberCommand}"
-                                CommandParameter="Table 4"
-                                Content="Table 4"
-                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='Table 4'}"
+                                CommandParameter="T4"
+                                Content="T4"
+                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='T4'}"
                                 Style="{StaticResource OrderTypeButtonStyle}"/>
                         </VariableSizedWrapGrid>
                     </StackPanel>
@@ -755,7 +763,7 @@
                     Foreground="White"
                     Style="{StaticResource AppPrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal"
-                            Spacing="8">
+                                Spacing="8">
                         <TextBlock Text="Place Order ·"/>
                         <TextBlock Text="{Binding Total, Converter={StaticResource CurrencyConverter}}"/>
                     </StackPanel>

@@ -21,7 +21,6 @@ public class AppDbContext : DbContext
     public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
     public DbSet<UserSetting> UserSettings { get; set; } = null!;
     public DbSet<WorkSchedule> WorkSchedules { get; set; } = null!;
-    public DbSet<LoyaltyTierConfig> LoyaltyTierConfigs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -127,11 +126,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Promotion>()
             .Property(p => p.MinOrderAmount)
             .HasPrecision(18, 2);
-
-        // LoyaltyTierConfig — store loyalty rules as key-value pairs
-        modelBuilder.Entity<LoyaltyTierConfig>()
-            .HasIndex(c => c.ConfigKey)
-            .IsUnique();
 
         // ===== DEFAULT VALUES =====
         modelBuilder.Entity<User>()

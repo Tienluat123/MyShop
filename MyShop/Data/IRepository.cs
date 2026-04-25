@@ -1,49 +1,47 @@
 namespace MyShop.Data;
 
-using System.Linq.Expressions;
-
-
+/// <summary>
+/// Generic repository interface định nghĩa các CRUD operations cơ bản
+/// Tất cả repositories phải implement interface này
+/// </summary>
+/// <typeparam name="TEntity">Kiểu Entity (Model)</typeparam>
 public interface IRepository<TEntity> where TEntity : class
 {
+    /// <summary>
+    /// Lấy tất cả entities với phân trang
+    /// </summary>
+    /// <param name="paging">Phân trang (nếu không cung cấp lấy hết)</param>
+    /// <returns>PagedResult chứa danh sách entities + metadata</returns>
+    PagedResult<TEntity> GetAll(PagingRequest? paging = null);
 
     /// <summary>
-    /// Lấy tất cả entities với phân trang, Include support, và filter tùy chỉnh (Async)
-    /// 
-    /// Gịm GetAllAsync + GetAllAsyncWithIncludes chó gọn
+    /// Lấy entity theo ID
     /// </summary>
-    Task<PagedResult<TEntity>> GetAllAsync(
-        PagingRequest? paging = null,
-        Expression<Func<TEntity, bool>>? filter = null,
-        params string[] includes);
-
-    Task<TEntity?> GetByIdAsync(int id);
-
-    Task<List<TEntity>> GetAsync(
-        Expression<Func<TEntity, bool>>? predicate = null,
-        params string[] includes);
-
-    Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
-    Task<TResult> ExecuteAsync<TResult>(
-        Func<AppDbContext, Task<TResult>> action,
-        string operationName = "operation");
-
-    Task<PagedResult<TEntity>> GetAllAsyncWithIncludes(
-        PagingRequest? paging = null,
-        Expression<Func<TEntity, bool>>? filter = null,
-        params string[] includes);
-
-    Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null);
-    /// <summary>
-    /// Thêm entity mới - Trả về entity có kèm ID mới từ database (Async)
-    /// </summary>
-    Task<TEntity> AddAsync(TEntity entity);
+    /// <param name="id">ID của entity</param>
+    /// <returns>Entity hoặc null nếu không tìm thấy</returns>
+    TEntity? GetById(int id);
 
     /// <summary>
-    /// Cập nhật entity (Async)
+    /// Thêm entity mới
     /// </summary>
-    Task<TEntity> UpdateAsync(TEntity entity);
+    /// <param name="entity">Entity cần thêm</param>
+    /// <returns>Entity sau khi được thêm (có ID đã gán)</returns>
+    TEntity Add(TEntity entity);
 
-    Task DeleteAsync(int id);
+    /// <summary>
+    /// Cập nhật entity
+    /// </summary>
+    /// <param name="entity">Entity cần cập nhật</param>
+    void Update(TEntity entity);
 
-    Task SaveChangesAsync();
+    /// <summary>
+    /// Xóa entity theo ID
+    /// </summary>
+    /// <param name="id">ID của entity cần xóa</param>
+    void Delete(int id);
+
+    /// <summary>
+    /// Lưu tất cả thay đổi vào database
+    /// </summary>
+    void SaveChanges();
 }

@@ -1,111 +1,76 @@
+namespace MyShop.Views.StaffManagement.Components;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using MyShop.ViewModels.StaffManagement;
-using MyShop.Services;
-using MyShop.Di;
-using System;
-using System.Threading.Tasks;
-
-namespace MyShop.Views.StaffManagement.Components;
+using MyShop.ViewModels;
 
 public sealed partial class EmployeeListTab : UserControl
 {
-    private EmployeeFormDialogHandler? _dialogHandler;
-
-    public EmployeeManagementViewModel? ViewModel
-    {
-        get => (EmployeeManagementViewModel?)GetValue(ViewModelProperty);
-        set => SetValue(ViewModelProperty, value);
-    }
-
-    public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register("ViewModel", typeof(EmployeeManagementViewModel), typeof(EmployeeListTab), new PropertyMetadata(null));
+    private EmployeeListViewModel _viewModel;
 
     public EmployeeListTab()
     {
         this.InitializeComponent();
-        this.Loaded += EmployeeListTab_Loaded;
+        _viewModel = new EmployeeListViewModel();
+        this.DataContext = _viewModel;
+
+        // Wire up search textbox
+        SearchTextBox.TextChanged += SearchTextBox_TextChanged;
     }
 
-    private async void EmployeeListTab_Loaded(object sender, RoutedEventArgs e)
+    private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (ViewModel == null)
+        _viewModel.SearchText = SearchTextBox.Text;
+        _viewModel.SearchCommand.Execute(null);
+    }
+
+    private async void AddEmployee_Click(object sender, RoutedEventArgs e)
+    {
+        var viewModel = new EmployeeFormViewModel(isEditMode: false, employee: null, onCancel: () => { });
+        var dialog = new EmployeeFormView(viewModel)
         {
-            var employeeService = ServiceContainer.Instance.Get<IEmployeeService>();
-            var scheduleService = ServiceContainer.Instance.Get<IScheduleService>();
-            var notificationService = ServiceContainer.Instance.Get<INotificationService>();
-            var dialogService = ServiceContainer.Instance.Get<IDialogService>();
+            XamlRoot = this.XamlRoot
+        };
 
-            _dialogHandler = new EmployeeFormDialogHandler(
-                employeeService,
-                dialogService,
-                notificationService);
+        var result = await dialog.ShowAsync();
 
-            ViewModel = new EmployeeManagementViewModel(
-                employeeService,
-                scheduleService,
-                notificationService,
-                onAddRequested: ShowAddEmployeeDialogAsync,
-                onEditRequested: ShowEditEmployeeDialogAsync);
-        }
-
-        if (ViewModel != null)
+        if (result == ContentDialogResult.Primary)
         {
-            await ViewModel.RefreshCommand.ExecuteAsync(null);
+            // Employee data is available in viewModel.EmployeeData
+            // Save it to your data source
         }
     }
 
-    private async Task ShowAddEmployeeDialogAsync()
+    private async void EditEmployee_Click(object sender, RoutedEventArgs e)
     {
-        if (ViewModel is null || _dialogHandler is null)
-        {
+        // Get the employee from the button's Tag
+        var button = sender as Button;
+        var employee = button?.Tag as EmployeeListItem;
+
+        if (employee == null)
             return;
-        }
 
-        await _dialogHandler.HandleAddAsync(() => ViewModel.RefreshCommand.ExecuteAsync(null));
-    }
-
-    private async Task ShowEditEmployeeDialogAsync(UserSalaryInfo info)
-    {
-        if (ViewModel is null || _dialogHandler is null)
+        // Create employee data object from existing data
+        var employeeData = new EmployeeData
         {
-            return;
-        }
+            Name = employee.Name,
+            Phone = employee.Phone,
+            Position = 0, // Admin - you might want to map this properly
+            Status = 0    // Đang làm việc - you might want to map this properly
+        };
 
-        await _dialogHandler.HandleEditAsync(info, () => ViewModel.RefreshCommand.ExecuteAsync(null));
-    }
-
-    private void Status_Toggled(object sender, RoutedEventArgs e)
-    {
-        if (sender is ToggleSwitch toggle && toggle.DataContext is UserSalaryInfo info && ViewModel != null)
+        var viewModel = new EmployeeFormViewModel(isEditMode: true, employee: employeeData, onCancel: () => { });
+        var dialog = new EmployeeFormView(viewModel)
         {
-            _ = ViewModel.UpdateUserStatusAsync(info);
-        }
-    }
+            XamlRoot = this.XamlRoot
+        };
 
-    private void EditButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.DataContext is UserSalaryInfo info && ViewModel != null)
+        var result = await dialog.ShowAsync();
+
+        if (result == ContentDialogResult.Primary)
         {
-            _ = ViewModel.EditEmployeeAsync(info);
+            // Employee data updated in viewModel.EmployeeData
+            // Save changes to your data source
         }
-    }
-
-    private void DeleteButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.DataContext is UserSalaryInfo info && ViewModel != null)
-        {
-            _ = ViewModel.DeleteEmployeeAsync(info);
-        }
-    }
-
-    private void PreviousButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel?.PreviousPageCommand.Execute(null);
-    }
-
-    private void NextButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel?.NextPageCommand.Execute(null);
     }
 }

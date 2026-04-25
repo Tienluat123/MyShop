@@ -7,7 +7,7 @@ namespace MyShop.Views.ProductManagement.Components;
 
 public sealed partial class ProductManagementView : Page
 {
-    public ProductManagementViewModel? ViewModel => DataContext as ProductManagementViewModel;
+    public ProductManagementViewModel ViewModel => DataContext as ProductManagementViewModel;
 
     public ProductManagementView()
     {

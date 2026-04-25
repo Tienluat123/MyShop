@@ -4,7 +4,7 @@ namespace MyShop.Di;
 /// Simple Service Container để quản lý Dependency Injection
 /// Giúp dễ dàng register và retrieve services
 /// </summary>
-public class ServiceContainer : IServiceProvider
+public class ServiceContainer
 {
     private static readonly Dictionary<Type, object> _services = new();
     private static ServiceContainer? _instance;
@@ -45,26 +45,6 @@ public class ServiceContainer : IServiceProvider
             throw new InvalidOperationException($"Service {serviceType.Name} chưa được register");
 
         return (T)service;
-    }
-
-    /// <summary>
-    /// Lấy service với GetRequiredService (IServiceProvider pattern)
-    /// </summary>
-    public T GetRequiredService<T>() where T : notnull
-    {
-        var serviceType = typeof(T);
-        if (!_services.TryGetValue(serviceType, out var service))
-            throw new InvalidOperationException($"Service {serviceType.Name} chưa được register");
-
-        return (T)service;
-    }
-
-    /// <summary>
-    /// IServiceProvider.GetService implementation
-    /// </summary>
-    public object? GetService(Type serviceType)
-    {
-        return _services.TryGetValue(serviceType, out var service) ? service : null;
     }
 
     /// <summary>

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MyShop.Data;
@@ -32,11 +31,11 @@ public partial class CategoryFormViewModel : ObservableObject
     public CategoryFormViewModel()
     {
         categoryRepository = ServiceContainer.Instance.Get<IRepository<Category>>();
-        _ = ReloadCategories(); // Fire and forget for initialization
+        ReloadCategories();
     }
 
     [RelayCommand]
-    private async Task AddCategory()
+    private void AddCategory()
     {
         var name = CategoryName.Trim();
         if (string.IsNullOrWhiteSpace(name))
@@ -52,26 +51,19 @@ public partial class CategoryFormViewModel : ObservableObject
             return;
         }
 
-        try
+        categoryRepository.Add(new Category
         {
-            await categoryRepository.AddAsync(new Category
-            {
-                Name = name,
-                Description = string.IsNullOrWhiteSpace(CategoryDescription) ? null : CategoryDescription.Trim()
-            });
+            Name = name,
+            Description = string.IsNullOrWhiteSpace(CategoryDescription) ? null : CategoryDescription.Trim()
+        });
 
-            ClearInputs();
-            await ReloadCategories();
-            StatusMessage = "Category added successfully.";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error adding category: {ex.Message}";
-        }
+        ClearInputs();
+        ReloadCategories();
+        StatusMessage = "Category added successfully.";
     }
 
     [RelayCommand]
-    private async Task EditCategory()
+    private void EditCategory()
     {
         if (SelectedCategory is null)
         {
@@ -96,30 +88,23 @@ public partial class CategoryFormViewModel : ObservableObject
             return;
         }
 
-        try
+        var category = categoryRepository.GetById(SelectedCategory.Id);
+        if (category is null)
         {
-            var category = await categoryRepository.GetByIdAsync(SelectedCategory.Id);
-            if (category is null)
-            {
-                StatusMessage = "Category not found.";
-                return;
-            }
-
-            category.Name = name;
-            category.Description = string.IsNullOrWhiteSpace(CategoryDescription) ? null : CategoryDescription.Trim();
-            await categoryRepository.UpdateAsync(category);
-
-            await ReloadCategories();
-            StatusMessage = "Category updated successfully.";
+            StatusMessage = "Category not found.";
+            return;
         }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error updating category: {ex.Message}";
-        }
+
+        category.Name = name;
+        category.Description = string.IsNullOrWhiteSpace(CategoryDescription) ? null : CategoryDescription.Trim();
+        categoryRepository.Update(category);
+
+        ReloadCategories();
+        StatusMessage = "Category updated successfully.";
     }
 
     [RelayCommand]
-    private async Task DeleteCategory()
+    private void DeleteCategory()
     {
         if (SelectedCategory is null)
         {
@@ -127,18 +112,11 @@ public partial class CategoryFormViewModel : ObservableObject
             return;
         }
 
-        try
-        {
-            await categoryRepository.DeleteAsync(SelectedCategory.Id);
-            SelectedCategory = null;
-            ClearInputs();
-            await ReloadCategories();
-            StatusMessage = "Category deleted successfully.";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error deleting category: {ex.Message}";
-        }
+        categoryRepository.Delete(SelectedCategory.Id);
+        SelectedCategory = null;
+        ClearInputs();
+        ReloadCategories();
+        StatusMessage = "Category deleted successfully.";
     }
 
     partial void OnSelectedCategoryChanged(Category? value)
@@ -152,21 +130,13 @@ public partial class CategoryFormViewModel : ObservableObject
         CategoryDescription = value.Description ?? string.Empty;
     }
 
-    private async Task ReloadCategories()
+    private void ReloadCategories()
     {
-        try
-        {
-            var result = await categoryRepository.GetAllAsync(null, null);
-            var data = result.Items
-                .OrderBy(c => c.Name)
-                .ToList();
+        var data = categoryRepository.GetAll().Items
+            .OrderBy(c => c.Name)
+            .ToList();
 
-            Categories = new ObservableCollection<Category>(data);
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error loading categories: {ex.Message}";
-        }
+        Categories = new ObservableCollection<Category>(data);
     }
 
     private void ClearInputs()

@@ -11,19 +11,11 @@
                                 <ResourceDictionary Source="ms-appx:///Themes/Colors.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Themes/Typography.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Themes/Dimensions.xaml"/>
-                                <ResourceDictionary Source="ms-appx:///Themes/Styles.xaml"/>
-
 
                                 <ResourceDictionary Source="ms-appx:///Styles/Texts.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Styles/Navigation.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Styles/Components.xaml"/>
-
                         </ResourceDictionary.MergedDictionaries>
-
-                        <!-- Fallback keys for TeachingTip styles on Uno -->
-                        <SolidColorBrush x:Key="TeachingTipAlternateCloseButtonBorderBrush" Color="Transparent"/>
-                        <Thickness x:Key="TeachingTipAlternateCloseButtonBorderThickness">0</Thickness>
-                        <x:Double x:Key="TeachingTipAlternateCloseButtonGlyphSize">12</x:Double>
                 </ResourceDictionary>
         </Application.Resources>
 </Application>

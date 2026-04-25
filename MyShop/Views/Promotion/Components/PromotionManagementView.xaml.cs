@@ -4,11 +4,6 @@ using MyShop.ViewModels;
 
 namespace MyShop.Views.Promotion.Components;
 
-/// <summary>
-/// Page chứa danh sách promotions và các filter buttons.
-/// Toggle logic được xử lý hoàn toàn trong ViewModel thông qua
-/// PromotionItem.IsActiveChanged event, không cần Toggled event handler ở đây.
-/// </summary>
 public sealed partial class PromotionManagementView : Page
 {
     public PromotionManagementView()

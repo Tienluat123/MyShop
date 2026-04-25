@@ -27,10 +27,6 @@
                     Value="SemiBold"/>
             <Setter Property="BorderThickness"
                     Value="0"/>
-            <Setter Property="HorizontalContentAlignment"
-                    Value="Center"/>
-            <Setter Property="VerticalContentAlignment"
-                    Value="Center"/>
         </Style>
     </Page.Resources>
 
@@ -100,8 +96,8 @@
                         HorizontalAlignment="Right"
                         Spacing="12">
                 <Button Style="{StaticResource PrimaryBtnStyle}"
-                        Command="{Binding SaveSettingsCommand}"
-                        Content="Save Changes"/>
+                        Content="Save Changes"
+                        Click="OnSaveClick"/>
             </StackPanel>
         </Grid>
     </ScrollViewer>

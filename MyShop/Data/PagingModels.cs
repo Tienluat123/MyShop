@@ -16,26 +16,6 @@ public class PagingRequest
     public int PageSize { get; set; } = 10;
 
     /// <summary>
-    /// Chuỗi tìm kiếm (thêm bởi teammate vào Repository.cs gốc)
-    /// </summary>
-    public string? SearchText { get; set; }
-
-    /// <summary>
-    /// Cột sắp xếp (mặc định = null)
-    /// </summary>
-    public string? SortColumn { get; set; }
-
-    /// <summary>
-    /// Sắp xếp tăng dần (mặc định = false, tức là giảm dần)
-    /// </summary>
-    public bool SortAscending { get; set; } = false;
-
-    /// <summary>
-    /// Bộ lọc bổ sung (ví dụ: Role, Status)
-    /// </summary>
-    public Dictionary<string, string>? Filters { get; set; }
-
-    /// <summary>
     /// Validate và điều chỉnh giá trị
     /// </summary>
     public void Validate()

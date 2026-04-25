@@ -2,25 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MyShop.Models;
-using MyShop.Services;
-using MyShop.Data;
 
 namespace MyShop.ViewModels;
 
-public partial class CustomerManagementViewModel : ListManagementViewModelBase
+public partial class CustomerManagementViewModel : ObservableObject
 {
-    private readonly ICustomerService _customerService;
-    private readonly INotificationService _notificationService;
-    private const int PageSize = 10;
-
-    private readonly Action _onAdd;
-    private readonly Action _onRules;
-    private readonly Action<CustomerListItem> _onProfile;
-    private readonly Action<CustomerListItem> _onEdit;
+    private readonly List<CustomerListItem> allCustomers;
+    private readonly Action onAdd;
+    private readonly Action onRules;
+    private readonly Action<CustomerListItem> onProfile;
+    private readonly Action<CustomerListItem> onEdit;
 
     public ObservableCollection<CustomerListItem> DisplayCustomers { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
@@ -43,220 +36,121 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
     [ObservableProperty]
     private string pagingSummary = "Showing 0-0 in 0 items";
 
-    [ObservableProperty]
-    private string pageInfoDisplay = "Page 1 / 1";
-
-    [ObservableProperty]
-    private bool isLoading = false;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SortInfo))]
-    private string sortColumn = "Name";
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SortInfo))]
-    private bool sortAscending = true;
-
     public CustomerManagementViewModel(
-        ICustomerService customerService,
-        INotificationService notificationService,
         Action onAdd,
         Action onRules,
         Action<CustomerListItem> onProfile,
         Action<CustomerListItem> onEdit)
     {
-        _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
-        _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-        _onAdd = onAdd ?? throw new ArgumentNullException(nameof(onAdd));
-        _onRules = onRules ?? throw new ArgumentNullException(nameof(onRules));
-        _onProfile = onProfile ?? throw new ArgumentNullException(nameof(onProfile));
-        _onEdit = onEdit ?? throw new ArgumentNullException(nameof(onEdit));
+        this.onAdd = onAdd;
+        this.onRules = onRules;
+        this.onProfile = onProfile;
+        this.onEdit = onEdit;
+
+        allCustomers = BuildSeedData();
+        RebuildList();
     }
-
-    // --- PROPERTY CHANGE HANDLERS ---
-
-    partial void OnCurrentPageChanged(int value)
-    {
-        RefreshCommand.ExecuteAsync(null);
-    }
-
-    partial void OnSearchTextChanged(string value)
-    {
-        CurrentPage = 1;
-        RunDebounced(LoadCustomersAsync);
-    }
-
-    // --- MAIN LOAD LOGIC ---
 
     [RelayCommand]
-    private async Task Refresh()
+    private void Search()
     {
-        await LoadCustomersAsync();
+        CurrentPage = 1;
+        RebuildList();
     }
-
-    private async Task LoadCustomersAsync()
-    {
-        if (IsLoading) return;
-
-        IsLoading = true;
-        try
-        {
-            var request = new PagingRequest
-            {
-                PageNumber = CurrentPage,
-                PageSize = PageSize,
-                SearchText = SearchText?.Trim(),
-                SortColumn = SortColumn,
-                SortAscending = SortAscending
-            };
-
-            var result = await _customerService.GetAll(request);
-
-            DisplayCustomers.Clear();
-            foreach (var c in result.Items)
-            {
-                DisplayCustomers.Add(new CustomerListItem
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Phone = c.Phone,
-                    Email = c.Email,
-                    Gender = c.Gender,
-                    Birthday = c.Birthday,
-                    Code = $"CUST-{c.Id:D3}",
-                    Tier = c.Tier.ToString(),
-                    Status = c.Status,
-                    TotalAccumulatedPoints = c.TotalAccumulatedPoints,
-                    CurrentAvailablePoints = c.CurrentAvailablePoints,
-                    Visits = c.TotalVisits,
-                    Initials = string.Join("", c.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x[0]))
-                });
-            }
-
-            TotalItems = result.Pagination.TotalItems;
-            TotalPages = result.Pagination.TotalPages;
-
-            UpdatePagingSummary(result.Items.Count);
-            UpdatePageNumbers();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"LoadCustomersAsync error: {ex.Message}");
-            _notificationService.ShowError("Không thể tải danh sách khách hàng");
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
-    // --- HELPER METHODS ---
-
-    private void UpdatePagingSummary(int currentItemsCount)
-    {
-        PagingSummary = BuildPagingSummary(
-            CurrentPage,
-            PageSize,
-            TotalItems,
-            currentItemsCount,
-            "No customers found",
-            "customers");
-    }
-
-    private void UpdatePageNumbers()
-    {
-        PageNumbers.Clear();
-        for (int i = 1; i <= TotalPages; i++)
-            PageNumbers.Add(i);
-
-        PageInfoDisplay = BuildPageInfoDisplay(CurrentPage, TotalPages);
-    }
-
-    // --- PAGING COMMANDS ---
 
     [RelayCommand]
     private void GoToPage(int page)
     {
         if (page < 1 || page > TotalPages) return;
         CurrentPage = page;
+        RebuildList();
     }
 
     [RelayCommand]
     private void PreviousPage()
     {
-        if (CurrentPage > 1)
-            CurrentPage--;
+        if (CurrentPage <= 1) return;
+        CurrentPage--;
+        RebuildList();
     }
 
     [RelayCommand]
     private void NextPage()
     {
-        if (CurrentPage < TotalPages)
-            CurrentPage++;
-    }
-
-    // --- ACTION COMMANDS ---
-
-    [RelayCommand]
-    private async Task DeleteCustomer(CustomerListItem customer)
-    {
-        if (customer == null) return;
-
-        try
-        {
-            await _customerService.Delete(customer.Id);
-            CurrentPage = 1;
-            await LoadCustomersAsync();
-            _notificationService.ShowSuccess($"Đã xóa khách hàng '{customer.Name}'");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($" Delete error: {ex.Message}");
-            _notificationService.ShowError("Không thể xóa khách hàng");
-        }
-    }
-
-    public string SortInfo => $"{SortColumn}|{SortAscending}";
-
-    [RelayCommand]
-    private async Task SortByColumn(string columnName)
-    {
-        if (string.IsNullOrWhiteSpace(columnName)) return;
-
-        if (SortColumn == columnName)
-        {
-            SortAscending = !SortAscending;
-        }
-        else
-        {
-            SortColumn = columnName;
-            SortAscending = true;
-        }
-
-        CurrentPage = 1;
-        await LoadCustomersAsync();
-    }
-
-    // --- NAVIGATION COMMANDS ---
-
-    [RelayCommand]
-    private void AddCustomer() => _onAdd();
-
-    [RelayCommand]
-    private void NavigateToRules() => _onRules();
-
-    [RelayCommand]
-    private void NavigateToProfile(CustomerListItem customer)
-    {
-        if (customer != null)
-            _onProfile(customer);
+        if (CurrentPage >= TotalPages) return;
+        CurrentPage++;
+        RebuildList();
     }
 
     [RelayCommand]
-    private void EditCustomer(CustomerListItem customer)
+    private void MapsToAdd() => onAdd();
+
+    [RelayCommand]
+    private void MapsToRules() => onRules();
+
+    [RelayCommand]
+    private void MapsToProfile()
     {
-        if (customer != null)
-            _onEdit(customer);
+        if (SelectedCustomer is not null) onProfile(SelectedCustomer);
+    }
+
+    [RelayCommand]
+    private void EditCustomer(CustomerListItem customer) => onEdit(customer);
+
+    public void OpenProfile(CustomerListItem customer)
+    {
+        SelectedCustomer = customer;
+        MapsToProfile();
+    }
+
+    partial void OnSearchTextChanged(string value)
+    {
+        Search();
+    }
+
+    private void RebuildList()
+    {
+        const int pageSize = 5;
+
+        var query = SearchText?.Trim() ?? string.Empty;
+        var filtered = string.IsNullOrWhiteSpace(query)
+            ? allCustomers
+            : allCustomers.Where(c =>
+                c.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                c.Phone.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        TotalItems = filtered.Count;
+        TotalPages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)pageSize));
+
+        if (CurrentPage > TotalPages) CurrentPage = TotalPages;
+
+        var pageItems = filtered.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
+
+        DisplayCustomers.Clear();
+        foreach (var customer in pageItems)
+        {
+            DisplayCustomers.Add(customer);
+        }
+
+        PageNumbers.Clear();
+        for (int i = 1; i <= TotalPages; i++) PageNumbers.Add(i);
+
+        var start = filtered.Count == 0 ? 0 : ((CurrentPage - 1) * pageSize) + 1;
+        var end = filtered.Count == 0 ? 0 : start + pageItems.Count - 1;
+        PagingSummary = $"Showing {start}-{end} in {TotalItems} customers";
+    }
+
+    private static List<CustomerListItem> BuildSeedData()
+    {
+        return
+        [
+            new CustomerListItem { Id = 1, Code = "CUST-001", Name = "Nguyen Van A", Initials = "NVA", Phone = "0901234567", Tier = "Gold", Points = 1250, Visits = 25 },
+            new CustomerListItem { Id = 2, Code = "CUST-002", Name = "Tran Thi B", Initials = "TTB", Phone = "0912345678", Tier = "Silver", Points = 450, Visits = 8 },
+            new CustomerListItem { Id = 3, Code = "CUST-003", Name = "Le Van C", Initials = "LVC", Phone = "0987654321", Tier = "Regular", Points = 0, Visits = 1 },
+            new CustomerListItem { Id = 4, Code = "CUST-004", Name = "Pham Van D", Initials = "PVD", Phone = "0933445566", Tier = "Bronze", Points = 150, Visits = 3 },
+            new CustomerListItem { Id = 5, Code = "CUST-005", Name = "Hoang Thi E", Initials = "HTE", Phone = "0944556677", Tier = "Gold", Points = 2100, Visits = 40 },
+            new CustomerListItem { Id = 6, Code = "CUST-006", Name = "Vo Van F", Initials = "VVF", Phone = "0955667788", Tier = "Silver", Points = 880, Visits = 12 },
+            new CustomerListItem { Id = 7, Code = "CUST-007", Name = "Dang Thi G", Initials = "DTG", Phone = "0966778899", Tier = "Regular", Points = 50, Visits = 2 }
+        ];
     }
 }
-

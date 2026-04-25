@@ -61,11 +61,11 @@ public partial class ProductManagementViewModel : ObservableObject
     private bool hasNoData;
 
     public ProductManagementViewModel(
-        IProductService productService,
+        IProductService productService, 
         Action onAddProduct,
         Action<ProductListEntry> onEditProduct)
     {
-
+        
         _productService = productService;
 
         this.onAddProduct = onAddProduct;
@@ -84,7 +84,7 @@ public partial class ProductManagementViewModel : ObservableObject
             const int pageSize = 3;
 
             // Load all first, then apply local filter/sort/paging to avoid double paging.
-            var result = await _productService.GetAll();
+            var result = _productService.GetAll();
 
             IEnumerable<Product> query = result.Items;
 
@@ -160,7 +160,7 @@ public partial class ProductManagementViewModel : ObservableObject
             PagingSummary = "No products found";
         }
     }
-
+    
     [RelayCommand]
     private async Task SearchByName(string keyword)
     {
@@ -240,7 +240,7 @@ public partial class ProductManagementViewModel : ObservableObject
         try
         {
             ErrorMessage = string.Empty;
-            await _productService.Delete(product.Id);
+            _productService.Delete(product.Id);
             await LoadProducts();
         }
         catch (Exception ex)

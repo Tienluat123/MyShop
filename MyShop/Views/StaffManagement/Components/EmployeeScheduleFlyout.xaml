@@ -1,0 +1,128 @@
+<UserControl
+    x:Class="MyShop.Views.StaffManagement.Components.EmployeeScheduleFlyout"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Spacing="12"
+                Width="{StaticResource Size220}"
+                Padding="{StaticResource SpaceSmall}"
+                Margin="0,0,0,8">
+
+        <TextBlock Text="Nam's This Week Schedule"
+                   FontWeight="{StaticResource FontWeightBold}"
+                   FontSize="{StaticResource FontBody}"
+                   Foreground="{StaticResource TextPrimary}"/>
+        <Border BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Margin="0,0,0,4"/>
+
+        <Grid RowSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Monday"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
+                       Foreground="{StaticResource TextSecondary}"
+                       VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="6">
+                <Border Background="{StaticResource WarningSurface}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="{StaticResource SpaceSmall_XSmall}">
+                    <TextBlock Text="Morning"
+                               FontSize="{StaticResource FontCaption}"
+                               Foreground="{StaticResource WarningStrong}"
+                               FontWeight="{StaticResource FontWeightBold}"/>
+                </Border>
+                <Border Background="{StaticResource AccentPurpleSurface}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="{StaticResource SpaceSmall_XSmall}">
+                    <TextBlock Text="Evening"
+                               FontSize="{StaticResource FontCaption}"
+                               Foreground="{StaticResource AccentPurple}"
+                               FontWeight="{StaticResource FontWeightBold}"/>
+                </Border>
+            </StackPanel>
+
+            <TextBlock Grid.Row="1"
+                       Text="Tuesday"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
+                       Foreground="{StaticResource TextSecondary}"
+                       VerticalAlignment="Center"/>
+            <StackPanel Grid.Row="1"
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="6">
+                <Border Background="{StaticResource WarningSurface}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="{StaticResource SpaceSmall_XSmall}">
+                    <TextBlock Text="Sáng"
+                               FontSize="{StaticResource FontCaption}"
+                               Foreground="{StaticResource WarningStrong}"
+                               FontWeight="{StaticResource FontWeightBold}"/>
+                </Border>
+            </StackPanel>
+
+            <TextBlock Grid.Row="2"
+                       Text="Wednesday"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
+                       Foreground="{StaticResource TextSecondary}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="2"
+                       Grid.Column="1"
+                       Text="Leave"
+                       Foreground="{StaticResource TextMuted}"
+                       FontStyle="Italic"
+                       FontSize="{StaticResource FontCaption}"
+                       VerticalAlignment="Center"/>
+
+            <TextBlock Grid.Row="3"
+                       Text="Thursday"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
+                       Foreground="{StaticResource TextSecondary}"
+                       VerticalAlignment="Center"/>
+            <StackPanel Grid.Row="3"
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="6">
+                <Border Background="{StaticResource InfoSurface}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="{StaticResource SpaceSmall_XSmall}">
+                    <TextBlock Text="Afternoon"
+                               FontSize="{StaticResource FontCaption}"
+                               Foreground="{StaticResource InfoStrong}"
+                               FontWeight="{StaticResource FontWeightBold}"/>
+                </Border>
+            </StackPanel>
+
+            <TextBlock Grid.Row="4"
+                       Text="Friday"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
+                       Foreground="{StaticResource TextSecondary}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="5"
+                       Text="Saturday"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
+                       Foreground="{StaticResource TextSecondary}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="6"
+                       Text="CN"
+                       FontWeight="{StaticResource FontWeightSemiBold}"
+                       Foreground="{StaticResource TextSecondary}"
+                       VerticalAlignment="Center"/>
+        </Grid>
+
+    </StackPanel>
+</UserControl>

@@ -11,16 +11,12 @@ public class ColumnWidthConverter : IValueConverter
     {
         if (value is double actualWidth && actualWidth > 0)
         {
-            if (!double.TryParse(parameter?.ToString(), out var columns) || columns <= 0)
-            {
-                return 200d;
-            }
-
+            double columns = double.Parse(parameter.ToString());
             // Subtract padding (24 left + 24 right = 48)
             double availableWidth = actualWidth - 48;
             return availableWidth / columns;
         }
-        return 200d; // Fallback
+        return 200; // Fallback
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

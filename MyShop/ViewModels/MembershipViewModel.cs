@@ -42,8 +42,8 @@ public partial class MembershipViewModel : ObservableObject
 
     private void LoadMockCustomers()
     {
-        _allCustomers.Add(new Customer { Id = 1, Name = "Nguyen Van A", Phone = "0901234567", TotalAccumulatedPoints = 150, CurrentAvailablePoints = 150, Tier = LoyaltyTier.Bronze });
-        _allCustomers.Add(new Customer { Id = 2, Name = "Tran Thi B", Phone = "0912345678", TotalAccumulatedPoints = 320, CurrentAvailablePoints = 320, Tier = LoyaltyTier.Silver });
+        _allCustomers.Add(new Customer { Id = 1, Name = "Nguyen Van A", Phone = "0901234567", Points = 150 });
+        _allCustomers.Add(new Customer { Id = 2, Name = "Tran Thi B", Phone = "0912345678", Points = 320 });
     }
 
     [RelayCommand]
@@ -62,9 +62,7 @@ public partial class MembershipViewModel : ObservableObject
             Id = (int)DateTime.Now.Ticks,
             Name = NewName,
             Phone = NewPhone,
-            TotalAccumulatedPoints = 0,
-            CurrentAvailablePoints = 0,
-            Tier = LoyaltyTier.Bronze
+            Points = 0
         };
         MemberSelected?.Invoke(newCust);
     }

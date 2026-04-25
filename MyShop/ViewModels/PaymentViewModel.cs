@@ -4,15 +4,13 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MyShop.Models;
-using MyShop.Services;
-using System.Threading.Tasks;
 
 namespace MyShop.ViewModels;
 
 public partial class PaymentViewModel : ObservableObject
 {
     [ObservableProperty]
-    private decimal _total;
+    private double _total;
 
     [ObservableProperty]
     private string _orderIdentifier = "";
@@ -27,22 +25,16 @@ public partial class PaymentViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Change))]
-    private decimal _cashAmount;
+    private double _cashAmount;
 
-    public decimal Change => CashAmount - Total;
+    public double Change => CashAmount - Total;
 
     public event Action<PaymentMethod>? PaymentConfirmed;
 
-    private readonly IOrderService _orderService;
-    private readonly Order _order;
-
-    public PaymentViewModel(Order order, IOrderService orderService)
+    public PaymentViewModel(double total, string orderId)
     {
-        _order = order ?? throw new ArgumentNullException(nameof(order));
-        _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
-        
-        Total = order.TotalAmount;
-        OrderIdentifier = $"ORDER-{order.Id}";
+        Total = total;
+        OrderIdentifier = orderId;
         
         PaymentMethods.Add(new PaymentMethodItem { Method = PaymentMethod.Cash, Label = "Cash", IconKey = "IconBanknote", Glyph = "\uE825", IsSelected = true });
         PaymentMethods.Add(new PaymentMethodItem { Method = PaymentMethod.Card, Label = "Debit/Credit", IconKey = "IconCreditCard", Glyph = "\uE8C7" });
@@ -78,7 +70,7 @@ public partial class PaymentViewModel : ObservableObject
             CashInput += key;
         }
 
-        if (decimal.TryParse(CashInput, out var val))
+        if (double.TryParse(CashInput, out var val))
         {
             CashAmount = val;
         }
@@ -91,7 +83,7 @@ public partial class PaymentViewModel : ObservableObject
     [RelayCommand]
     private void AddQuickAmount(string amountStr)
     {
-        if (decimal.TryParse(amountStr, out var amount))
+        if (double.TryParse(amountStr, out var amount))
         {
             CashAmount += amount;
             CashInput = CashAmount.ToString("F2").Replace(".00", "");
@@ -99,29 +91,9 @@ public partial class PaymentViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task Confirm()
+    private void Confirm()
     {
-        if (Method == PaymentMethod.Cash && Change < -0.01m) return;
-        
-        _order.PaymentStatus = "Paid";
-        _order.FulfillmentStatus = "None"; // Or Preparing
-        _order.OrderDate = DateTime.UtcNow;
-        
-        try 
-        {
-            await _orderService.Update(_order);
-            PaymentConfirmed?.Invoke(Method);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error finalizing payment: {ex.Message}");
-        }
-    }
-
-    [RelayCommand]
-    public async Task ReturnToDraft()
-    {
-        _order.PaymentStatus = "Draft";
-        await _orderService.Update(_order);
+        if (Method == PaymentMethod.Cash && Change < -0.01) return;
+        PaymentConfirmed?.Invoke(Method);
     }
 }

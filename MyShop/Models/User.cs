@@ -1,41 +1,29 @@
-using CommunityToolkit.Mvvm.ComponentModel; // Cung cấp ObservableObject và ObservableProperty
-using System.Collections.Generic; // Cung cấp List
-using System.Collections.ObjectModel; // Cung cấp ObservableCollection
-using MyShop.Data; // Cung cấp các lớp dữ liệu như Order, WorkSchedule,
-
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MyShop.Models;
 
 public partial class User : ObservableObject
 {
-    [ObservableProperty] private int id;
-    [ObservableProperty] private string username = string.Empty; // login account (email/username)
-    [ObservableProperty] private string phone = string.Empty; // phone number (09xx.xxx.xxx)
+    [ObservableProperty]
+    private int id;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))] // Khi FirstName hoặc LastName thay đổi, cũng thông báo rằng FullName đã thay đổi
-    private string firstName = string.Empty;
+    private string username = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))] // Khi FirstName hoặc LastName thay đổi, cũng thông báo rằng FullName đã thay đổi
-    private string lastName = string.Empty;
-    [ObservableProperty] private string passwordHash = string.Empty;
-
-    [ObservableProperty] private decimal hourlyRate; // Lương tính theo giờ
-
-    [ObservableProperty] private string role = "2"; // Staff(2) / Admin(1) / SuperAdmin(0)
-
-    [ObservableProperty] private bool isActive = true; // Trạng thái hoạt động, Khóa = false
-
-    [ObservableProperty] private bool isEditing = false; // Trang thái chỉnh sửa (dùng cho UI)
+    private string passwordHash = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(PasswordIcon))] // Tự động đổi Icon khi bấm
-    private bool isPasswordVisible = false; // Show/hide password
+    private string fullName = string.Empty;
 
-    public string FullName => $"{FirstName} {LastName}".Trim();
+    [ObservableProperty]
+    private decimal hourlyRate; // Lương tính theo giờ
 
-    public string PasswordIcon => IsPasswordVisible ? "\uE734" : "\uE735";
+    [ObservableProperty]
+    private string role = "2"; // Staff(2) / Admin(1) / SuperAdmin(0)
+
+    [ObservableProperty]
+    private bool isActive = true; // Trạng thái hoạt động, Khóa = false
 
     // Navigation properties
     public ICollection<Order> Orders { get; set; } = new List<Order>();

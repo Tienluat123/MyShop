@@ -3,440 +3,188 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:MyShop.ViewModels"
-    xmlns:converters="using:MyShop.Converters"
     x:Name="PageRoot"
     Background="#F3F4F6">
 
     <Grid>
-        <Grid.Resources>
-            <converters:PromoStatusBrushConverter x:Key="PromoBgConverter" IsBackground="True"/>
-            <converters:PromoStatusBrushConverter x:Key="PromoFgConverter" IsBackground="False"/>
-            <converters:PromoStatusTextConverter x:Key="PromoStatusTextConverter"/>
-            <converters:StringNullOrEmptyToVisibilityConverter x:Key="StringNullOrEmptyToVisibilityConverter"/>
-            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-            <converters:SortIndicatorConverter x:Key="SortIndicatorConverter"/>
-        </Grid.Resources>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="16,12,16,20" Spacing="16">
+                
+                <Border Background="#FFFFFF"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16">
+                    <StackPanel Spacing="16">
+                        
+                        <!-- Actions Section -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+                            <Button Grid.Column="0"
+                                    Command="{Binding AddPromotionCommand}"
+                                    Background="#BB4D00"
+                                    BorderBrush="#BB4D00"
+                                    Foreground="White"
+                                    CornerRadius="12"
+                                    Padding="14,8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE710;"/>
+                                    <TextBlock Text="Add Promotion" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
 
-        <!-- ===== ERROR MESSAGE ===== -->
-        <Border Grid.Row="0"
-                Margin="16,12,16,0"
-                Background="#FEF2F2"
-                CornerRadius="10"
-                Padding="12,10"
-                Visibility="{Binding ErrorMessage, Converter={StaticResource StringNullOrEmptyToVisibilityConverter}}">
-            <TextBlock Text="{Binding ErrorMessage}"
-                       Foreground="#DC2626"
-                       FontSize="13"
-                       TextWrapping="Wrap"/>
-        </Border>
+                            <Grid Grid.Column="2">
+                                <TextBox Padding="40,10,10,10"
+                                         Background="#F8FAFC"
+                                         BorderBrush="#E5E7EB"
+                                         CornerRadius="12"
+                                         PlaceholderText="Search by code or type..."
+                                         Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <FontIcon Glyph="&#xE721;"
+                                          Foreground="#94A3B8"
+                                          Margin="14,0,0,0"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"/>
+                            </Grid>
+                        </Grid>
 
-        <!-- ===== Main Content Card ===== -->
-        <Border Grid.Row="1"
-                Margin="16,12,16,16"
-                Background="#FFFFFF"
-                BorderBrush="#E5E7EB"
-                BorderThickness="1"
-                CornerRadius="14">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+                        <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
 
-                <!-- ===== Row 0: Actions: Add Button + Search ===== -->
-                <Grid Grid.Row="0" Padding="16,16,16,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="16"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                        <!-- List Section -->
+                        <ItemsRepeater ItemsSource="{Binding PageItems}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Vertical" Spacing="12"/>
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PromotionItem">
+                                    <Border Background="White"
+                                            BorderBrush="#E5E7EB"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="16">
+                                        <Grid ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
 
-                    <!-- Add Promotion Button -->
-                    <Button Grid.Column="0"
-                            Command="{Binding AddPromotionCommand}"
-                            Background="#BB4D00"
-                            BorderBrush="#BB4D00"
-                            Foreground="White"
-                            CornerRadius="12"
-                            Padding="14,8">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE710;"/>
-                            <TextBlock Text="Add Promotion" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Search Box -->
-                    <Grid Grid.Column="2">
-                        <TextBox Padding="40,10,10,10"
-                                 Background="#F8FAFC"
-                                 BorderBrush="#E5E7EB"
-                                 CornerRadius="12"
-                                 PlaceholderText="Search by promotion code..."
-                                 Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                        <FontIcon Glyph="&#xE721;"
-                                  Foreground="#94A3B8"
-                                  Margin="14,0,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Center"/>
-                    </Grid>
-                </Grid>
-
-                <!-- ===== Row 1: Filter by Status Buttons ===== -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="16,0,16,12">
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="All"
-                            Content="All"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="Active"
-                            Content="Active"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="Upcoming"
-                            Content="Upcoming"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="Expired"
-                            Content="Expired"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="Inactive"
-                            Content="Inactive"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                </StackPanel>
-
-                <!-- ===== Row 2: Table Header with Sortable Columns ===== -->
-                <Border Grid.Row="2"
-                        Background="#FAFAFA"
-                        Padding="16,12"
-                        BorderBrush="#EEEEEE"
-                        BorderThickness="0,1,0,1">
-                    <Grid ColumnSpacing="10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.2*"/>  <!-- CODE -->
-                            <ColumnDefinition Width="1*"/>    <!-- TYPE -->
-                            <ColumnDefinition Width="0.8*"/>  <!-- VALUE -->
-                            <ColumnDefinition Width="1*"/>    <!-- STATUS -->
-                            <ColumnDefinition Width="1.2*"/>  <!-- MIN. ORDER -->
-                            <ColumnDefinition Width="2*"/>    <!-- PERIOD -->
-                            <ColumnDefinition Width="0.8*"/>  <!-- TARGET -->
-                            <ColumnDefinition Width="100"/>   <!-- ACTIONS -->
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Column 0: CODE -->
-                        <Button Background="Transparent"
-                                Padding="0"
-                                BorderThickness="0"
-                                Command="{Binding SortByColumnCommand}"
-                                CommandParameter="Code"
-                                Foreground="Gray">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="CODE"
-                                           FontSize="11"
-                                           FontWeight="Bold"/>
-                                <FontIcon Glyph="{Binding SortInfo, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Code}"
-                                          FontSize="12"
-                                          FontWeight="Bold"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- Column 1: TYPE -->
-                        <Button Grid.Column="1"
-                                Background="Transparent"
-                                Padding="0"
-                                BorderThickness="0"
-                                Command="{Binding SortByColumnCommand}"
-                                CommandParameter="Type"
-                                Foreground="Gray">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="TYPE"
-                                           FontSize="11"
-                                           FontWeight="Bold"/>
-                                <FontIcon Glyph="{Binding SortInfo, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Type}"
-                                          FontSize="12"
-                                          FontWeight="Bold"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- Column 2: VALUE -->
-                        <Button Grid.Column="2"
-                                Background="Transparent"
-                                Padding="0"
-                                BorderThickness="0"
-                                HorizontalAlignment="Right"
-                                Command="{Binding SortByColumnCommand}"
-                                CommandParameter="Value"
-                                Foreground="Gray">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="VALUE"
-                                           FontSize="11"
-                                           FontWeight="Bold"/>
-                                <FontIcon Glyph="{Binding SortInfo, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Value}"
-                                          FontSize="12"
-                                          FontWeight="Bold"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- Column 3: STATUS -->
-                        <Button Grid.Column="3"
-                                Background="Transparent"
-                                Padding="0"
-                                BorderThickness="0"
-                                HorizontalAlignment="Center"
-                                Command="{Binding SortByColumnCommand}"
-                                CommandParameter="Status"
-                                Foreground="Gray">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="STATUS"
-                                           FontSize="11"
-                                           FontWeight="Bold"/>
-                                <FontIcon Glyph="{Binding SortInfo, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Status}"
-                                          FontSize="12"
-                                          FontWeight="Bold"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- Column 4: MIN. ORDER -->
-                        <Button Grid.Column="4"
-                                Background="Transparent"
-                                Padding="0"
-                                BorderThickness="0"
-                                HorizontalAlignment="Right"
-                                Command="{Binding SortByColumnCommand}"
-                                CommandParameter="MinOrder"
-                                Foreground="Gray">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="MIN. ORDER"
-                                           FontSize="11"
-                                           FontWeight="Bold"/>
-                                <FontIcon Glyph="{Binding SortInfo, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=MinOrder}"
-                                          FontSize="12"
-                                          FontWeight="Bold"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- Column 5: PERIOD -->
-                        <Button Grid.Column="5"
-                                Background="Transparent"
-                                Padding="0"
-                                BorderThickness="0"
-                                Command="{Binding SortByColumnCommand}"
-                                CommandParameter="StartDate"
-                                Foreground="Gray">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="PERIOD"
-                                           FontSize="11"
-                                           FontWeight="Bold"/>
-                                <FontIcon Glyph="{Binding SortInfo, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=StartDate}"
-                                          FontSize="12"
-                                          FontWeight="Bold"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- Column 6: TARGET -->
-                        <Button Grid.Column="6"
-                                Background="Transparent"
-                                Padding="0"
-                                BorderThickness="0"
-                                HorizontalAlignment="Center"
-                                Command="{Binding SortByColumnCommand}"
-                                CommandParameter="Target"
-                                Foreground="Gray">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="TARGET"
-                                           FontSize="11"
-                                           FontWeight="Bold"/>
-                                <FontIcon Glyph="{Binding SortInfo, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Target}"
-                                          FontSize="12"
-                                          FontWeight="Bold"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- Column 7: ACTIONS (non-sortable) -->
-                        <TextBlock Grid.Column="7"
-                                   Text="ACTIONS"
-                                   FontSize="11"
-                                   FontWeight="Bold"
-                                   Foreground="Gray"
-                                   HorizontalAlignment="Center"/>
-                    </Grid>
-                </Border>
-
-                <!-- ===== Row 3: Promotions Table Rows ===== -->
-                <ScrollViewer Grid.Row="3"
-                              VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding PageItems}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:PromotionItem">
-                                <Border BorderBrush="#F5F5F5"
-                                        BorderThickness="0,0,0,1"
-                                        Padding="16,10">
-                                    <Grid ColumnSpacing="10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="1.2*"/>  <!-- CODE -->
-                                            <ColumnDefinition Width="1*"/>    <!-- TYPE -->
-                                            <ColumnDefinition Width="0.8*"/>  <!-- VALUE -->
-                                            <ColumnDefinition Width="1*"/>    <!-- STATUS -->
-                                            <ColumnDefinition Width="1.2*"/>  <!-- MIN. ORDER -->
-                                            <ColumnDefinition Width="2*"/>    <!-- PERIOD -->
-                                            <ColumnDefinition Width="0.8*"/>  <!-- TARGET -->
-                                            <ColumnDefinition Width="100"/>   <!-- ACTIONS -->
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- CODE -->
-                                        <Border Background="#FEF3C7"
-                                                CornerRadius="6"
-                                                Padding="8,4"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Left">
-                                            <TextBlock Text="{x:Bind Code}"
-                                                       FontSize="12"
-                                                       FontWeight="Bold"
-                                                       Foreground="#92400E"/>
-                                        </Border>
-
-                                        <!-- TYPE -->
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{x:Bind TypeDisplay}"
-                                                   VerticalAlignment="Center"
-                                                   FontSize="12"
-                                                   Foreground="#1E293B"/>
-
-                                        <!-- VALUE -->
-                                        <Border Grid.Column="2"
-                                                Background="#DBEAFE"
-                                                CornerRadius="6"
-                                                Padding="8,4"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Right">
-                                            <TextBlock Text="{x:Bind ValueDisplay}"
-                                                       FontSize="12"
-                                                       FontWeight="Bold"
-                                                       Foreground="#1E40AF"/>
-                                        </Border>
-
-                                        <!-- STATUS (ToggleSwitch) -->
-                                        <ToggleSwitch Grid.Column="3"
-                                                      IsOn="{x:Bind IsActive, Mode=TwoWay}"
-                                                      OnContent="Active"
-                                                      OffContent="Off"
-                                                      FontSize="10"
-                                                      MinWidth="0"
-                                                      HorizontalAlignment="Center"
-                                                      VerticalAlignment="Center"/>
-
-                                        <!-- MIN. ORDER -->
-                                        <TextBlock Grid.Column="4"
-                                                   Text="{x:Bind MinimumOrderDisplay}"
-                                                   FontSize="12"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Right"
-                                                   Foreground="#666666"/>
-
-                                        <!-- PERIOD -->
-                                        <TextBlock Grid.Column="5"
-                                                   Text="{x:Bind PeriodDisplay}"
-                                                   FontSize="12"
-                                                   VerticalAlignment="Center"
-                                                   Foreground="#6B7280"/>
-
-                                        <!-- TARGET -->
-                                        <TextBlock Grid.Column="6"
-                                                   Text="{x:Bind TargetDisplay}"
-                                                   FontSize="12"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center"
-                                                   Foreground="#444444"/>
-
-                                        <!-- ACTIONS -->
-                                        <StackPanel Grid.Column="7"
-                                                    Orientation="Horizontal"
-                                                    Spacing="10"
-                                                    HorizontalAlignment="Center"
+                                            <!-- Code Badge -->
+                                            <Border Grid.Column="0"
+                                                    Background="#FEF3C7"
+                                                    CornerRadius="8"
+                                                    Padding="12,8"
                                                     VerticalAlignment="Center">
-                                            <Button Background="Transparent"
-                                                    BorderThickness="0"
-                                                    Padding="8"
-                                                    ToolTipService.ToolTip="Edit"
-                                                    Command="{Binding DataContext.EditPromotionCommand, ElementName=PageRoot}"
-                                                    CommandParameter="{Binding}">
-                                                <FontIcon Glyph="&#xEB7E;" FontSize="16" Foreground="#0078D4"/>
-                                            </Button>
-                                            <Button Background="Transparent"
-                                                    BorderThickness="0"
-                                                    Padding="8"
-                                                    ToolTipService.ToolTip="Delete"
-                                                    Command="{Binding DataContext.DeletePromotionCommand, ElementName=PageRoot}"
-                                                    CommandParameter="{Binding}">
-                                                <FontIcon Glyph="&#xED62;" FontSize="16" Foreground="#E81123"/>
-                                            </Button>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                                                <TextBlock Text="{x:Bind Code}"
+                                                           FontSize="12"
+                                                           FontWeight="Bold"
+                                                           Foreground="#92400E"/>
+                                            </Border>
 
-                <!-- ===== Row 4: Paging Controls (matching EmployeeListTab) ===== -->
-                <Border Grid.Row="4"
-                        Background="White"
-                        Padding="10"
-                        BorderBrush="#EEEEEE"
-                        BorderThickness="0,1,0,0">
-                    <Grid ColumnSpacing="12"
-                          HorizontalAlignment="Center">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                                            <!-- Details -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                    <TextBlock Text="{x:Bind TypeDisplay}"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#1E293B"/>
+                                                    <Border Background="#DFE9F3"
+                                                            CornerRadius="6"
+                                                            Padding="8,4">
+                                                        <TextBlock Text="{x:Bind ValueDisplay}"
+                                                                   FontSize="12"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="#1E40AF"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="16">
+                                                    <TextBlock FontSize="12" Foreground="#6B7280">
+                                                        <Run Text="Min: "/><Run Text="{x:Bind MinimumOrderDisplay}"/>
+                                                    </TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="#6B7280">
+                                                        <Run Text="Period: "/><Run Text="{x:Bind PeriodDisplay}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </StackPanel>
 
-                        <!-- Previous Button -->
-                        <Button Grid.Column="0"
-                                Content="←"
-                                Command="{Binding PreviousPageCommand}"
-                                Height="30"
-                                Padding="16,0"
-                                CornerRadius="8"
-                                Background="#F0F0F0"
-                                Foreground="#333333"/>
+                                            <!-- Status -->
+                                            <ToggleSwitch Grid.Column="2"
+                                                          IsOn="{x:Bind IsActive, Mode=OneWay}"
+                                                          OnContent="" OffContent=""
+                                                          VerticalAlignment="Center"
+                                                          MinWidth="0"
+                                                          Command="{Binding DataContext.ToggleStatusCommand, ElementName=PageRoot}"
+                                                          CommandParameter="{Binding}"/>
 
-                        <!-- Page Info -->
-                        <TextBlock Grid.Column="1"
-                                   Text="{Binding PageInfoDisplay}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   Foreground="#555555"/>
+                                            <!-- Actions -->
+                                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Button Background="Transparent" BorderThickness="0" Padding="8"
+                                                        Command="{Binding DataContext.EditPromotionCommand, ElementName=PageRoot}"
+                                                        CommandParameter="{Binding}">
+                                                    <FontIcon Glyph="&#xE70F;" FontSize="16" Foreground="#6B7280"/>
+                                                </Button>
+                                                <Button Background="Transparent" BorderThickness="0" Padding="8"
+                                                        Command="{Binding DataContext.RemoveCommand, ElementName=PageRoot}"
+                                                        CommandParameter="{Binding}">
+                                                    <FontIcon Glyph="&#xE74D;" FontSize="16" Foreground="#EF4444"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
 
-                        <!-- Next Button -->
-                        <Button Grid.Column="2"
-                                Content="→"
-                                Command="{Binding NextPageCommand}"
-                                Height="30"
-                                Padding="16,0"
-                                CornerRadius="8"
-                                Background="#0078D4"
-                                Foreground="White"/>
-                    </Grid>
+                        <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
+
+                        <!-- Paging -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="{Binding PagingSummary}"
+                                       Foreground="#64748B"
+                                       VerticalAlignment="Center"/>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Button Command="{Binding PreviousPageCommand}"
+                                        Background="#FFFFFF" BorderBrush="#E5E7EB"
+                                        CornerRadius="8" Width="32" Height="32">
+                                    <FontIcon Glyph="&#xE76B;" Foreground="#94A3B8" FontSize="12"/>
+                                </Button>
+                                <ItemsControl ItemsSource="{Binding PageNumbers}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:Int32">
+                                            <Button Command="{Binding DataContext.GoToPageCommand, ElementName=PageRoot}"
+                                                    CommandParameter="{Binding}"
+                                                    Width="32" Height="32" CornerRadius="8"
+                                                    Background="#FFFFFF" BorderBrush="#E5E7EB"
+                                                    Foreground="#4B5563" Content="{Binding}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Command="{Binding NextPageCommand}"
+                                        Background="#FFFFFF" BorderBrush="#E5E7EB"
+                                        CornerRadius="8" Width="32" Height="32">
+                                    <FontIcon Glyph="&#xE76C;" Foreground="#94A3B8" FontSize="12"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
                 </Border>
-
-            </Grid>
-        </Border>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

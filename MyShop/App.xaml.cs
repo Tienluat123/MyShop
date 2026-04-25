@@ -7,8 +7,6 @@ using MyShop.Data;
 using MyShop.Services;
 using MyShop.Di;
 using MyShop.Models;
-using MyShop.ViewModels;
-using MyShop.ViewModels.StaffManagement;
 using Microsoft.EntityFrameworkCore;
 
 namespace MyShop;
@@ -24,13 +22,7 @@ public partial class App : Application
         this.InitializeComponent();
     }
 
-    /// <summary>
-    /// Static provider to access services globally if needed (like in XAML)
-    /// </summary>
-    public static IServiceProvider Services { get; private set; } = null!;
-
-    // ✅ Make MainWindow public for DialogService to access XamlRoot
-    public Window? MainWindow { get; private set; }
+    protected Window? MainWindow { get; private set; }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
@@ -41,8 +33,6 @@ public partial class App : Application
 
         // Setup Dependency Injection trước khi tạo UI
         RegisterServices();
-
-        // DialogService ready - XamlRoot được set tự động từ constructor
 
         // Do not repeat app initialization when the Window already has content,
         // just ensure that the window is active
@@ -76,9 +66,6 @@ public partial class App : Application
     /// </summary>
     private void RegisterServices()
     {
-        // Cho phép Npgsql xử lý DateTime tự do không bắt buộc UTC
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
         var container = ServiceContainer.Instance;
 
         // Create log file to track database initialization
@@ -87,11 +74,7 @@ public partial class App : Application
             "MyShop",
             "database.log"
         );
-        var logDirectory = Path.GetDirectoryName(logPath);
-        if (!string.IsNullOrEmpty(logDirectory))
-        {
-            Directory.CreateDirectory(logDirectory);
-        }
+        Directory.CreateDirectory(Path.GetDirectoryName(logPath));
 
         void LogMessage(string message)
         {
@@ -113,8 +96,8 @@ public partial class App : Application
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyShop", "appsettings.json") // User data
             };
 
-            DatabaseConfig? dbConfig = null;
-            string? foundPath = null;
+            DatabaseConfig dbConfig = null;
+            string foundPath = null;
 
             foreach (var path in pathsToTry)
             {
@@ -146,12 +129,12 @@ public partial class App : Application
                             SslMode = dbElement.GetProperty("SslMode").GetString() ?? "Require"
                         };
                     }
-                    LogMessage($" Loaded config from: {foundPath}");
+                    LogMessage($"✅ Loaded config from: {foundPath}");
                     LogMessage($"   Host: {dbConfig.Host}:{dbConfig.Port}, DB: {dbConfig.Database}, User: {dbConfig.Username}");
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($" Failed to parse appsettings.json from {foundPath}: {ex.Message}");
+                    LogMessage($"❌ Failed to parse appsettings.json from {foundPath}: {ex.Message}");
                     dbConfig = CreateDefaultConfig();
                 }
             }
@@ -162,54 +145,58 @@ public partial class App : Application
             }
 
             // ===== Setup Database Context (PostgreSQL via Supabase) =====
-            if (dbConfig is null)
-            {
-                dbConfig = CreateDefaultConfig();
-            }
-
             var connectionString = dbConfig.GetConnectionString();
             LogMessage($"📡 Database config loaded - Host: {dbConfig.Host}, Port: {dbConfig.Port}");
 
-            AppDbContext dbContext;
+            AppDbContext dbContext = null;
             try
             {
                 var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                     .UseNpgsql(connectionString, options =>
                     {
                         options.EnableRetryOnFailure(
-                            maxRetryCount: 5,
-                            maxRetryDelay: TimeSpan.FromSeconds(10),
-                            errorCodesToAdd: new[] { "XX000", "ECIRCUITBREAKER", "EMAXCONNSESSION" }
+                            maxRetryCount: 3,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorCodesToAdd: null
                         );
                     })
                     .Options;
 
                 dbContext = new AppDbContext(dbContextOptions);
 
-                //  Skip synchronous CanConnect() - let migrations handle connection validation
-                LogMessage("🔍 Database context initialized (validation deferred to migrations)");
+                // ✅ Test connection first
+                LogMessage("🔍 Testing database connection...");
+                var canConnect = dbContext.Database.CanConnect();
+                if (canConnect)
+                {
+                    LogMessage("✅ Database connection successful!");
 
-                //  Apply migrations (tạo database schema)
-                try
-                {
-                    dbContext.Database.Migrate();
-                    LogMessage(" Database migrations applied successfully");
-                }
-                catch (Exception ex)
-                {
-                    LogMessage($"⚠️ Migration warning: {ex.Message}");
-                    // Fallback: create schema if migrations fail
+                    // ✅ Apply migrations (tạo database schema)
                     try
                     {
-                        dbContext.Database.EnsureCreated();
-                        LogMessage("Database schema created (fallback)");
+                        dbContext.Database.Migrate();
+                        LogMessage("✅ Database migrations applied successfully");
                     }
-                    catch (Exception ex2) { LogMessage($"Schema creation failed: {ex2.Message}"); }
+                    catch (Exception ex)
+                    {
+                        LogMessage($"⚠️ Migration warning: {ex.Message}");
+                        // Fallback: create schema if migrations fail
+                        try
+                        {
+                            dbContext.Database.EnsureCreated();
+                            LogMessage("✅ Database schema created (fallback)");
+                        }
+                        catch (Exception ex2) { LogMessage($"❌ Schema creation failed: {ex2.Message}"); }
+                    }
+                }
+                else
+                {
+                    LogMessage("⚠️ Cannot connect to database - will retry on first access");
                 }
             }
             catch (Exception ex)
             {
-                LogMessage($" Database initialization error: {ex.Message}");
+                LogMessage($"❌ Database initialization error: {ex.Message}");
                 LogMessage($"   Inner exception: {ex.InnerException?.Message}");
                 LogMessage("   App will continue - ensure Supabase is accessible");
 
@@ -225,29 +212,18 @@ public partial class App : Application
             }
 
             // ===== Register Data Access Layer (Repositories) =====
-            // Each Repository operation gets fresh DbContext instance
-            var contextFactory = new AppDbContextFactory();
-            container.Register<AppDbContextFactory>(contextFactory);
-
-            container.Register<IRepository<Product>>(new Repository<Product>(contextFactory));
-            container.Register<IRepository<Category>>(new Repository<Category>(contextFactory));
-            container.Register<IRepository<Customer>>(new Repository<Customer>(contextFactory));
-            container.Register<IRepository<Order>>(new Repository<Order>(contextFactory));
-            container.Register<IRepository<OrderDetail>>(new Repository<OrderDetail>(contextFactory));
-            container.Register<IRepository<User>>(new Repository<User>(contextFactory));
-            container.Register<IRepository<Promotion>>(new Repository<Promotion>(contextFactory));
-            container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(contextFactory));
-            container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(contextFactory));
-            container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(contextFactory));
-            container.Register<IRepository<LoyaltyTierConfig>>(new Repository<LoyaltyTierConfig>(contextFactory));
+            container.Register<IRepository<Product>>(new Repository<Product>(dbContext));
+            container.Register<IRepository<Category>>(new Repository<Category>(dbContext));
+            container.Register<IRepository<Customer>>(new Repository<Customer>(dbContext));
+            container.Register<IRepository<Order>>(new Repository<Order>(dbContext));
+            container.Register<IRepository<OrderDetail>>(new Repository<OrderDetail>(dbContext));
+            container.Register<IRepository<User>>(new Repository<User>(dbContext));
+            container.Register<IRepository<Promotion>>(new Repository<Promotion>(dbContext));
+            container.Register<IRepository<AppConfig>>(new Repository<AppConfig>(dbContext));
+            container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(dbContext));
+            container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(dbContext));
 
             // ===== Register Business Logic Layer (Services) =====
-            var dialogService = new DialogService();
-            container.Register<IDialogService>(dialogService);
-
-            var notificationService = new NotificationService();
-            container.Register<INotificationService>(notificationService);
-
             container.Register<IProductService>(new ProductService(
                 container.Get<IRepository<Product>>(),
                 container.Get<IRepository<Category>>()
@@ -263,80 +239,12 @@ public partial class App : Application
                 container.Get<IRepository<User>>()
             ));
 
-            container.Register<ICategoryService>(new CategoryService(
-                container.Get<IRepository<Category>>()
-            ));
-
-            container.Register<IScheduleService>(new ScheduleService(
-                container.Get<IRepository<WorkSchedule>>()
-            ));
-
-            container.Register<IEmployeeService>(new EmployeeService(
-                container.Get<IRepository<User>>(),
-                contextFactory
-            ));
-
-            container.Register<ILoyaltyService>(new LoyaltyService(
-                contextFactory.CreateDbContext(Array.Empty<string>()),
-                container.Get<IRepository<Customer>>()
-            ));
-
-            container.Register<IPromotionRepository>(new PromotionRepository(
-                contextFactory.CreateDbContext(Array.Empty<string>())
-            ));
-
-            container.Register<IPromotionService>(new PromotionService(
-                container.Get<IPromotionRepository>()
-            ));
-
-            // AppConfigService — singleton, caches key-value settings in memory
-            container.Register<IAppConfigService>(new AppConfigService(
-                container.Get<IRepository<AppConfig>>()
-            ));
-
-            // WeeklyRosterViewModel requires both ScheduleService and EmployeeService
-            container.Register<WeeklyRosterViewModel>(new WeeklyRosterViewModel(
-                container.Get<IScheduleService>(),
-                container.Get<IEmployeeService>(),
-                container.Get<INotificationService>()
-            ));
-
-            // ===== Register ViewModels =====
-            container.Register<PosViewModel>(new PosViewModel(
-                container.Get<IProductService>(),
-                container.Get<ICategoryService>(),
-                container.Get<IOrderService>(),
-                container.Get<IPromotionService>()
-            ));
-
-            container.Register<ConfigViewModel>(new ConfigViewModel(
-                container.Get<IAppConfigService>()
-            ));
-
-            container.Register<OrderManagementViewModel>(new OrderManagementViewModel(
-                container.Get<IOrderService>(),
-                container.Get<IProductService>()
-            ));
-
-            container.Register<EmployeeManagementViewModel>(new EmployeeManagementViewModel(
-                container.Get<IEmployeeService>(),
-                container.Get<IScheduleService>(),
-                container.Get<INotificationService>()
-            ));
-
-            container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
-
-            LogMessage(" All services registered successfully");
-            // ===== Set static Services property for app-wide access =====
-            Services = container;
-
-
-            LogMessage(" All services registered successfully");
+            LogMessage("✅ All services registered successfully");
             LogMessage("====== DATABASE INITIALIZATION END ======");
         }
         catch (Exception ex)
         {
-            LogMessage($" ERROR registering services: {ex.Message}");
+            LogMessage($"❌ ERROR registering services: {ex.Message}");
             LogMessage($"StackTrace: {ex.StackTrace}");
             throw;
         }
@@ -349,12 +257,12 @@ public partial class App : Application
     {
         return new DatabaseConfig
         {
-            Host = "localhost",
-            Database = "myshop",
+            Host = "db.YOUR_PROJECT_ID.supabase.co",
+            Database = "postgres",
             Username = "postgres",
-            Password = "mpa113dn",
+            Password = "your_password",
             Port = 5432,
-            SslMode = "Disable"
+            SslMode = "Require"
         };
     }
 

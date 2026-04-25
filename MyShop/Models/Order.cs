@@ -14,19 +14,7 @@ public partial class Order : ObservableObject
     private int userId; // Nhân viên xử lý
 
     [ObservableProperty]
-    private string type = "Dine-in"; // Dine-in / Takeaway / Delivery
-
-    [ObservableProperty]
-    private string tableNumber = ""; // Số bàn (nếu Dine-in)
-
-    [ObservableProperty]
-    private string notes = ""; // Ghi chú đơn hàng
-
-    [ObservableProperty]
     private int? promotionId; // Mã KM áp dụng (Nếu có)
-
-    [ObservableProperty]
-    private decimal discountAmount; // Tiền được giảm từ mã KM
 
     [ObservableProperty]
     private DateTime orderDate = DateTime.UtcNow;
@@ -35,22 +23,13 @@ public partial class Order : ObservableObject
     private decimal subTotal; // Tổng tiền hàng
 
     [ObservableProperty]
-    private decimal taxAmount; // Thuế (nếu có)
-
-    [ObservableProperty]
-    private decimal manualAdjustment; // Điều chỉnh thủ công (VD: giảm thêm 10k)
-
-    [ObservableProperty]
-    private string manualAdjustmentReason = ""; // Lý do điều chỉnh thủ công
+    private decimal discountAmount; // Tiền được giảm
 
     [ObservableProperty]
     private decimal totalAmount; // Tổng tiền phải thu
 
     [ObservableProperty]
-    private string paymentStatus = "Draft"; // Draft / PendingPayment / Paid / Cancelled / Refunded
-
-    [ObservableProperty]
-    private string fulfillmentStatus = "None"; // None / Preparing / Ready / Completed
+    private string status = "New"; // New / Paid / Cancelled
 
     // Navigation properties
     public Customer? Customer { get; set; }

@@ -57,10 +57,7 @@ namespace MyShop.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool>("HasCustomization")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("IconKey")
+                    b.Property<string>("IconGlyph")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -89,9 +86,6 @@ namespace MyShop.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("CurrentAvailablePoints")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
@@ -112,14 +106,14 @@ namespace MyShop.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Points")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Tier")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalAccumulatedPoints")
                         .HasColumnType("integer");
 
                     b.Property<double>("TotalSpent")
@@ -131,36 +125,6 @@ namespace MyShop.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("MyShop.Models.LoyaltyTierConfig", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ConfigKey")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConfigValue")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConfigKey")
-                        .IsUnique();
-
-                    b.ToTable("LoyaltyTierConfigs");
                 });
 
             modelBuilder.Entity("MyShop.Models.Order", b =>
@@ -178,51 +142,25 @@ namespace MyShop.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<string>("FulfillmentStatus")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("ManualAdjustment")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("ManualAdjustmentReason")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("OrderDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int?>("PromotionId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<decimal>("SubTotal")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<string>("TableNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("TaxAmount")
-                        .HasColumnType("numeric");
-
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -245,9 +183,6 @@ namespace MyShop.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("integer");
@@ -354,7 +289,7 @@ namespace MyShop.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("FirstName")
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -367,21 +302,7 @@ namespace MyShop.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
-                    b.Property<bool>("IsEditing")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPasswordVisible")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -437,16 +358,15 @@ namespace MyShop.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Note")
-                        .HasColumnType("text");
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
 
                     b.Property<string>("ShiftName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");

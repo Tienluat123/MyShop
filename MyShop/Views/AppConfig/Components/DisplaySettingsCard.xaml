@@ -142,11 +142,11 @@
                 </StackPanel>
                 <ComboBox Grid.Column="1"
                           Style="{StaticResource ConfigComboStyle}"
-                          SelectedIndex="{Binding ItemsPerPageIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="5"/>
-                    <ComboBoxItem Content="10"/>
-                    <ComboBoxItem Content="20"/>
-                    <ComboBoxItem Content="50"/>
+                          SelectedIndex="1">
+                    <ComboBoxItem Content="5 items"/>
+                    <ComboBoxItem Content="10 items"/>
+                    <ComboBoxItem Content="20 items"/>
+                    <ComboBoxItem Content="50 items"/>
                 </ComboBox>
             </Grid>
         </StackPanel>

@@ -5,98 +5,126 @@
     xmlns:converters="using:MyShop.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    x:Name="RootDialog"
     mc:Ignorable="d">
 
     <ContentDialog.Resources>
-        <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
-        <converters:CurrencyConverter x:Key="CurrencyConverter" />
-        <converters:CollectionContainsToBoolConverter x:Key="CollectionContainsToBoolConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:StringToDoubleConverter x:Key="StringToDoubleConverter"/>
+        <converters:CurrencyConverter x:Key="CurrencyConverter"/>
+        <converters:CollectionContainsToBoolConverter x:Key="CollectionContainsToBoolConverter"/>
         <converters:EqualityToBrushConverter
             x:Key="SizeSelectedBackgroundConverter"
             FalseBrush="{StaticResource SurfaceAlt}"
-            TrueBrush="{StaticResource WarningSurfaceSoft}" />
+            TrueBrush="{StaticResource WarningSurfaceSoft}"/>
         <converters:EqualityToBrushConverter
             x:Key="SizeSelectedBorderConverter"
             FalseBrush="{StaticResource Gray100}"
-            TrueBrush="{StaticResource BrandPrimary}" />
+            TrueBrush="{StaticResource BrandPrimary}"/>
         <converters:EqualityToBrushConverter
             x:Key="IceSelectedBackgroundConverter"
             FalseBrush="{StaticResource SurfaceAlt}"
-            TrueBrush="{StaticResource AccentTealSurface}" />
+            TrueBrush="{StaticResource AccentTealSurface}"/>
         <converters:EqualityToBrushConverter
             x:Key="IceSelectedBorderConverter"
             FalseBrush="{StaticResource Gray100}"
-            TrueBrush="{StaticResource AccentTeal}" />
+            TrueBrush="{StaticResource AccentTeal}"/>
 
-        <Style x:Key="SectionHeaderStyle" TargetType="StackPanel">
-            <Setter Property="Orientation" Value="Horizontal" />
-            <Setter Property="Spacing" Value="8" />
-            <Setter Property="Margin" Value="0,0,0,12" />
+        <Style x:Key="SectionHeaderStyle"
+               TargetType="StackPanel">
+            <Setter Property="Orientation"
+                    Value="Horizontal"/>
+            <Setter Property="Spacing"
+                    Value="8"/>
+            <Setter Property="Margin"
+                    Value="0,0,0,12"/>
         </Style>
 
-        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="{StaticResource FontCaption}" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
-            <Setter Property="CharacterSpacing" Value="50" />
+        <Style x:Key="SectionTitleStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="{StaticResource FontCaption}"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource TextPrimary}"/>
+            <Setter Property="CharacterSpacing"
+                    Value="50"/>
         </Style>
 
-        <Style x:Key="SelectionButtonStyle" TargetType="Button">
-            <Setter Property="CornerRadius" Value="16" />
-            <Setter Property="Padding" Value="12" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style x:Key="SelectionButtonStyle"
+               TargetType="Button">
+            <Setter Property="CornerRadius"
+                    Value="16"/>
+            <Setter Property="Padding"
+                    Value="12"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
         </Style>
 
-        <Style x:Key="AddOnToggleStyle" TargetType="ToggleButton">
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Margin" Value="4" />
-            <Setter Property="FontSize" Value="{StaticResource FontCaption}" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Background" Value="{StaticResource SurfaceBackground}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Gray100}" />
-            <Setter Property="BorderThickness" Value="2" />
+        <Style x:Key="AddOnToggleStyle"
+               TargetType="ToggleButton">
+            <Setter Property="CornerRadius"
+                    Value="12"/>
+            <Setter Property="Padding"
+                    Value="12,6"/>
+            <Setter Property="Margin"
+                    Value="4"/>
+            <Setter Property="FontSize"
+                    Value="{StaticResource FontCaption}"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Background"
+                    Value="{StaticResource SurfaceBackground}"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource Gray100}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
         </Style>
     </ContentDialog.Resources>
 
-    <Grid Width="450" Background="{StaticResource SurfaceBackground}">
+    <Grid Width="450"
+          Background="{StaticResource SurfaceBackground}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="180" />
+            <RowDefinition Height="180"/>
             <!--  Header  -->
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*"/>
             <!--  Content  -->
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
             <!--  Footer  -->
         </Grid.RowDefinitions>
 
         <!--  Header  -->
         <Grid Grid.Row="0">
-            <Image Source="{Binding Product.ImageUrl}" Stretch="UniformToFill" />
+            <Image Source="{Binding Product.ImageUrl}"
+                   Stretch="UniformToFill"/>
             <Border>
                 <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Offset="0" Color="{StaticResource TransparentBrush}" />
-                        <GradientStop Offset="1" Color="{StaticResource OverlayBlack80}" />
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="0,1">
+                        <GradientStop Offset="0"
+                                      Color="{StaticResource TransparentBrush}"/>
+                        <GradientStop Offset="1"
+                                      Color="{StaticResource OverlayBlack80}"/>
                     </LinearGradientBrush>
                 </Border.Background>
             </Border>
 
-            <StackPanel Margin="24,0,24,16" VerticalAlignment="Bottom">
+            <StackPanel Margin="24,0,24,16"
+                        VerticalAlignment="Bottom">
                 <TextBlock
                     FontSize="{StaticResource FontTitle}"
                     FontWeight="Black"
                     Foreground="White"
-                    Text="{Binding Product.Name}" />
+                    Text="{Binding Product.Name}"/>
                 <TextBlock
                     FontSize="{StaticResource FontCaption}"
                     FontWeight="Medium"
                     Foreground="White"
                     Opacity="0.6"
-                    Text="Customize your selection" />
+                    Text="Customize your selection"/>
             </StackPanel>
 
             <Button
@@ -112,7 +140,7 @@
                 FontFamily="Segoe MDL2 Assets"
                 FontSize="{StaticResource FontSubtitle}"
                 Foreground="White"
-                Style="{StaticResource AppIconButtonStyle}" />
+                Style="{StaticResource AppIconButtonStyle}"/>
 
             <Border
                 Margin="0,0,24,16"
@@ -130,12 +158,12 @@
                         FontWeight="Bold"
                         Foreground="White"
                         Opacity="0.5"
-                        Text="PRICE" />
+                        Text="PRICE"/>
                     <TextBlock
                         FontSize="{StaticResource FontHeader}"
                         FontWeight="Black"
                         Foreground="{StaticResource AccentGold}"
-                        Text="{Binding UnitTotalPrice, Converter={StaticResource CurrencyConverter}}" />
+                        Text="{Binding UnitTotalPrice, Converter={StaticResource CurrencyConverter}}"/>
                 </StackPanel>
             </Border>
         </Grid>
@@ -146,10 +174,8 @@
             MaxHeight="450"
             Padding="24">
             <StackPanel Spacing="32">
-                <StackPanel
-                    x:Name="BeverageOptions"
-                    Spacing="32"
-                    Visibility="{Binding HasCustomization, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel x:Name="BeverageOptions"
+                            Spacing="32">
                     <!--  Size  -->
                     <StackPanel>
                         <StackPanel Style="{StaticResource SectionHeaderStyle}">
@@ -158,14 +184,14 @@
                                 Background="{StaticResource WarningSurfaceSoft}"
                                 CornerRadius="8">
                                 <FontIcon
+                                    Style="{StaticResource IconBodyStyle}"
                                     Foreground="{StaticResource BrandPrimary}"
-                                    Glyph="&#xE93E;"
-                                    Style="{StaticResource IconBodyStyle}" />
+                                    Glyph="&#xE93E;"/>
                             </Border>
                             <TextBlock
                                 VerticalAlignment="Center"
                                 Style="{StaticResource SectionTitleStyle}"
-                                Text="SELECT SIZE" />
+                                Text="SELECT SIZE"/>
                         </StackPanel>
                         <Grid ColumnDefinitions="*,*,*">
                             <Button
@@ -181,13 +207,13 @@
                                         HorizontalAlignment="Center"
                                         FontSize="{StaticResource FontHeader}"
                                         FontWeight="Black"
-                                        Text="S" />
+                                        Text="S"/>
                                     <TextBlock
                                         HorizontalAlignment="Center"
                                         FontSize="{StaticResource FontCaption}"
                                         FontWeight="Bold"
                                         Foreground="{StaticResource TextSecondary}"
-                                        Text="8 oz" />
+                                        Text="8 oz"/>
                                 </StackPanel>
                             </Button>
                             <Button
@@ -204,13 +230,13 @@
                                         HorizontalAlignment="Center"
                                         FontSize="{StaticResource FontHeader}"
                                         FontWeight="Black"
-                                        Text="M" />
+                                        Text="M"/>
                                     <TextBlock
                                         HorizontalAlignment="Center"
                                         FontSize="{StaticResource FontCaption}"
                                         FontWeight="Bold"
                                         Foreground="{StaticResource TextSecondary}"
-                                        Text="12 oz" />
+                                        Text="12 oz"/>
                                 </StackPanel>
                             </Button>
                             <Button
@@ -227,13 +253,13 @@
                                         HorizontalAlignment="Center"
                                         FontSize="{StaticResource FontHeader}"
                                         FontWeight="Black"
-                                        Text="L" />
+                                        Text="L"/>
                                     <TextBlock
                                         HorizontalAlignment="Center"
                                         FontSize="{StaticResource FontCaption}"
                                         FontWeight="Bold"
                                         Foreground="{StaticResource TextSecondary}"
-                                        Text="16 oz" />
+                                        Text="16 oz"/>
                                 </StackPanel>
                             </Button>
                         </Grid>
@@ -248,14 +274,14 @@
                                     Background="{StaticResource AccentBlueSurface}"
                                     CornerRadius="8">
                                     <FontIcon
+                                        Style="{StaticResource IconBodyStyle}"
                                         Foreground="{StaticResource InfoDeep}"
-                                        Glyph="&#xE93C;"
-                                        Style="{StaticResource IconBodyStyle}" />
+                                        Glyph="&#xE93C;"/>
                                 </Border>
                                 <TextBlock
                                     VerticalAlignment="Center"
                                     Style="{StaticResource SectionTitleStyle}"
-                                    Text="SUGAR" />
+                                    Text="SUGAR"/>
                             </StackPanel>
                             <TextBlock
                                 HorizontalAlignment="Right"
@@ -263,14 +289,14 @@
                                 FontSize="{StaticResource FontBody}"
                                 FontWeight="Black"
                                 Foreground="{StaticResource BrandPrimary}"
-                                Text="{Binding Sugar}" />
+                                Text="{Binding Sugar}"/>
                         </Grid>
                         <Slider
-                            Background="{StaticResource AccentBlueSurface}"
                             Maximum="100"
+                            Background="{StaticResource AccentBlueSurface}"
                             StepFrequency="50"
                             TickPlacement="None"
-                            Value="{Binding Sugar, Mode=TwoWay, Converter={StaticResource StringToDoubleConverter}}" />
+                            Value="{Binding Sugar, Mode=TwoWay, Converter={StaticResource StringToDoubleConverter}}"/>
 
                         <!--  Ice  -->
                         <StackPanel>
@@ -281,14 +307,14 @@
                                         Background="{StaticResource AccentTealSurface}"
                                         CornerRadius="8">
                                         <FontIcon
+                                            Style="{StaticResource IconBodyStyle}"
                                             Foreground="{StaticResource AccentTeal}"
-                                            Glyph="&#xE9F3;"
-                                            Style="{StaticResource IconBodyStyle}" />
+                                            Glyph="&#xE9F3;"/>
                                     </Border>
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Style="{StaticResource SectionTitleStyle}"
-                                        Text="ICE" />
+                                        Text="ICE"/>
                                 </StackPanel>
                                 <TextBlock
                                     HorizontalAlignment="Right"
@@ -296,7 +322,7 @@
                                     FontSize="{StaticResource FontBody}"
                                     FontWeight="Black"
                                     Foreground="{StaticResource BrandPrimary}"
-                                    Text="{Binding Ice}" />
+                                    Text="{Binding Ice}"/>
                             </Grid>
                             <Grid ColumnDefinitions="*,*,*,*">
                                 <Button
@@ -307,7 +333,7 @@
                                     Command="{Binding SetIceCommand}"
                                     CommandParameter="No Ice"
                                     Content="None"
-                                    Style="{StaticResource SelectionButtonStyle}" />
+                                    Style="{StaticResource SelectionButtonStyle}"/>
                                 <Button
                                     Grid.Column="1"
                                     Margin="4,0,4,0"
@@ -317,7 +343,7 @@
                                     Command="{Binding SetIceCommand}"
                                     CommandParameter="Less Ice"
                                     Content="Less"
-                                    Style="{StaticResource SelectionButtonStyle}" />
+                                    Style="{StaticResource SelectionButtonStyle}"/>
                                 <Button
                                     Grid.Column="2"
                                     Margin="4,0,4,0"
@@ -327,7 +353,7 @@
                                     Command="{Binding SetIceCommand}"
                                     CommandParameter="Regular"
                                     Content="Regular"
-                                    Style="{StaticResource SelectionButtonStyle}" />
+                                    Style="{StaticResource SelectionButtonStyle}"/>
                                 <Button
                                     Grid.Column="3"
                                     Margin="4,0,0,0"
@@ -337,22 +363,22 @@
                                     Command="{Binding SetIceCommand}"
                                     CommandParameter="Extra Ice"
                                     Content="Extra"
-                                    Style="{StaticResource SelectionButtonStyle}" />
+                                    Style="{StaticResource SelectionButtonStyle}"/>
                             </Grid>
                         </StackPanel>
 
                         <!--  Add-ons  -->
                         <StackPanel>
                             <TextBlock
-                                Margin="0,16,0,12"
+                                Margin="0,0,0,12"
                                 Style="{StaticResource SectionTitleStyle}"
-                                Text="ADD-ONS (+10.000 EACH)" />
-                            <ItemsRepeater ItemsSource="{Binding AddOnOptions}">
+                                Text="ADD-ONS (+$0.75 EACH)"/>
+                            <ItemsRepeater ItemsSource="{Binding AvailableAddOns}">
                                 <ItemsRepeater.Layout>
                                     <FlowLayout
                                         MinColumnSpacing="8"
                                         MinRowSpacing="8"
-                                        Orientation="Horizontal" />
+                                        Orientation="Horizontal"/>
                                 </ItemsRepeater.Layout>
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate>
@@ -360,100 +386,103 @@
                                             MinWidth="60"
                                             Padding="16,8"
                                             HorizontalAlignment="Left"
-                                            Content="{Binding Name}"
-                                            IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                            Style="{StaticResource AddOnToggleStyle}" />
+                                            Command="{Binding DataContext.ToggleAddOnCommand, ElementName=BeverageOptions}"
+                                            CommandParameter="{Binding}"
+                                            Content="{Binding}"
+                                            Style="{StaticResource AddOnToggleStyle}"/>
                                     </DataTemplate>
                                 </ItemsRepeater.ItemTemplate>
                             </ItemsRepeater>
                         </StackPanel>
-                    </StackPanel>
-                </StackPanel>
 
-                <!--  Notes (always visible)  -->
-                <StackPanel Margin="0,16,0,0">
-                    <StackPanel Style="{StaticResource SectionHeaderStyle}">
-                        <FontIcon
-                            Foreground="{StaticResource TextMuted}"
-                            Glyph="&#xE70F;"
-                            Style="{StaticResource IconSubtitleStyle}" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="SPECIAL NOTES" />
+                        <!--  Notes  -->
+                        <StackPanel>
+                            <StackPanel Style="{StaticResource SectionHeaderStyle}">
+                                <FontIcon
+                                    Style="{StaticResource IconSubtitleStyle}"
+                                    Foreground="{StaticResource TextMuted}"
+                                    Glyph="&#xE70F;"/>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource SectionTitleStyle}"
+                                    Text="SPECIAL NOTES"/>
+                            </StackPanel>
+                            <TextBox
+                                Padding="16,12"
+                                Background="{StaticResource SurfaceAlt}"
+                                BorderBrush="{StaticResource Gray100}"
+                                BorderThickness="1"
+                                CornerRadius="16"
+                                PlaceholderText="E.g. Extra hot, no lid..."
+                                Text="{Binding Notes, Mode=TwoWay}"/>
+                        </StackPanel>
                     </StackPanel>
-                    <TextBox
-                        Padding="16,12"
+
+                    <!--  Quantity  -->
+                    <Border
+                        Margin="-24,0"
+                        Padding="24"
                         Background="{StaticResource SurfaceAlt}"
                         BorderBrush="{StaticResource Gray100}"
-                        BorderThickness="1"
-                        CornerRadius="16"
-                        PlaceholderText="E.g. Extra hot, no lid..."
-                        Text="{Binding Notes, Mode=TwoWay}" />
+                        BorderThickness="0,1">
+                        <Grid>
+                            <StackPanel>
+                                <TextBlock
+                                    FontSize="{StaticResource FontBody}"
+                                    FontWeight="Black"
+                                    Foreground="{StaticResource Gray900}"
+                                    Text="QUANTITY"/>
+                                <TextBlock
+                                    FontWeight="Bold"
+                                    Style="{StaticResource CaptionMutedTextStyle}"
+                                    Text="ADJUST NUMBER OF ITEMS"/>
+                            </StackPanel>
+                            <StackPanel
+                                Padding="8"
+                                HorizontalAlignment="Right"
+                                Background="{StaticResource SurfaceBackground}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="16"
+                                Orientation="Horizontal"
+                                Spacing="24">
+                                <Button
+                                    Width="40"
+                                    Height="40"
+                                    Padding="0"
+                                    Background="{StaticResource SurfaceAlt}"
+                                    BorderThickness="0"
+                                    Command="{Binding UpdateQuantityCommand}"
+                                    CommandParameter="-1"
+                                    CornerRadius="12"
+                                    Style="{StaticResource AppIconButtonStyle}">
+                                    <FontIcon Style="{StaticResource IconSubtitleStyle}"
+                                              Glyph="&#xE738;"/>
+                                </Button>
+                                <TextBlock
+                                    MinWidth="24"
+                                    VerticalAlignment="Center"
+                                    FontSize="{StaticResource FontTitle}"
+                                    FontWeight="Black"
+                                    Text="{Binding Quantity}"
+                                    TextAlignment="Center"/>
+                                <Button
+                                    Width="40"
+                                    Height="40"
+                                    Padding="0"
+                                    Background="{StaticResource SurfaceAlt}"
+                                    BorderThickness="0"
+                                    Command="{Binding UpdateQuantityCommand}"
+                                    CommandParameter="1"
+                                    CornerRadius="12"
+                                    Style="{StaticResource AppIconButtonStyle}">
+                                    <FontIcon Style="{StaticResource IconSubtitleStyle}"
+                                              Glyph="&#xE710;"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </StackPanel>
-
-                <!--  Quantity  -->
-                <Border
-                    Padding="24"
-                    Background="{StaticResource SurfaceAlt}"
-                    BorderBrush="{StaticResource Gray100}"
-                    BorderThickness="0,1">
-                    <Grid>
-                        <StackPanel>
-                            <TextBlock
-                                FontSize="{StaticResource FontBody}"
-                                FontWeight="Black"
-                                Foreground="{StaticResource Gray900}"
-                                Text="QUANTITY" />
-                            <TextBlock
-                                FontWeight="Bold"
-                                Style="{StaticResource CaptionMutedTextStyle}"
-                                Text="ADJUST NUMBER OF ITEMS" />
-                        </StackPanel>
-                        <StackPanel
-                            Padding="8"
-                            HorizontalAlignment="Right"
-                            Background="{StaticResource SurfaceBackground}"
-                            BorderBrush="{StaticResource BorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="16"
-                            Orientation="Horizontal"
-                            Spacing="24">
-                            <Button
-                                Width="40"
-                                Height="40"
-                                Padding="0"
-                                Background="{StaticResource SurfaceAlt}"
-                                BorderThickness="0"
-                                Command="{Binding UpdateQuantityCommand}"
-                                CommandParameter="-1"
-                                CornerRadius="12"
-                                Style="{StaticResource AppIconButtonStyle}">
-                                <FontIcon Glyph="&#xE738;" Style="{StaticResource IconSubtitleStyle}" />
-                            </Button>
-                            <TextBlock
-                                MinWidth="24"
-                                VerticalAlignment="Center"
-                                FontSize="{StaticResource FontTitle}"
-                                FontWeight="Black"
-                                Text="{Binding Quantity}"
-                                TextAlignment="Center" />
-                            <Button
-                                Width="40"
-                                Height="40"
-                                Padding="0"
-                                Background="{StaticResource SurfaceAlt}"
-                                BorderThickness="0"
-                                Command="{Binding UpdateQuantityCommand}"
-                                CommandParameter="1"
-                                CornerRadius="12"
-                                Style="{StaticResource AppIconButtonStyle}">
-                                <FontIcon Glyph="&#xE710;" Style="{StaticResource IconSubtitleStyle}" />
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
             </StackPanel>
         </ScrollViewer>
 
@@ -474,10 +503,12 @@
                 FontWeight="Black"
                 Foreground="White"
                 Style="{StaticResource AppPrimaryButtonStyle}">
-                <StackPanel Orientation="Horizontal" Spacing="12">
-                    <FontIcon Glyph="&#xE7BF;" Style="{StaticResource IconBodyStyle}" />
-                    <TextBlock Text="{Binding Title}" />
-                    <TextBlock Text="{Binding TotalPrice, Converter={StaticResource CurrencyConverter}}" />
+                <StackPanel Orientation="Horizontal"
+                            Spacing="12">
+                    <FontIcon Style="{StaticResource IconBodyStyle}"
+                              Glyph="&#xE7BF;"/>
+                    <TextBlock Text="ADD TO ORDER · "/>
+                    <TextBlock Text="{Binding TotalPrice, Converter={StaticResource CurrencyConverter}}"/>
                 </StackPanel>
             </Button>
         </Border>

@@ -6,7 +6,7 @@ namespace MyShop.Views.ProductManagement.Components;
 
 public sealed partial class ProductFormView : ContentDialog
 {
-    public ProductFormViewModel? ViewModel => DataContext as ProductFormViewModel;
+    public ProductFormViewModel ViewModel => DataContext as ProductFormViewModel;
 
     public ProductFormView(ProductFormViewModel viewModel)
     {

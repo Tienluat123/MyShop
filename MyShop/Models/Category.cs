@@ -11,10 +11,7 @@ public partial class Category : ObservableObject
     private string name = string.Empty;
 
     [ObservableProperty]
-    private bool hasCustomization = false;
-
-    [ObservableProperty]
-    private string? iconKey;
+    private string? iconGlyph;
 
     [ObservableProperty]
     private string? description;

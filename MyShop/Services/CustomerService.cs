@@ -3,44 +3,67 @@ using MyShop.Models;
 
 namespace MyShop.Services;
 
+/// <summary>
+/// Interface cho Customer Service
+/// </summary>
 public interface ICustomerService
 {
-    Task<PagedResult<Customer>> GetAll(PagingRequest? paging = null);
-    Task<Customer?> GetById(int id);
-    Task<Customer?> GetByPhone(string phone);
+    /// <summary>
+    /// Lấy tất cả khách hàng
+    /// </summary>
+    PagedResult<Customer> GetAll(PagingRequest? paging = null);
 
-    Task<List<Customer>> Search(string keyword);
-    Task<Customer> Add(Customer customer);
-    Task Update(Customer customer);
+    /// <summary>
+    /// Lấy khách hàng theo ID
+    /// </summary>
+    Customer? GetById(int id);
 
-    Task Delete(int id);
+    /// <summary>
+    /// Tìm khách hàng theo số điện thoại
+    /// </summary>
+    Customer? GetByPhone(string phone);
+
+    /// <summary>
+    /// Tìm kiếm khách hàng
+    /// </summary>
+    List<Customer> Search(string keyword);
+
+    /// <summary>
+    /// Thêm khách hàng mới
+    /// </summary>
+    Customer Add(Customer customer);
+
+    /// <summary>
+    /// Cập nhật khách hàng
+    /// </summary>
+    void Update(Customer customer);
+
+    /// <summary>
+    /// Xóa khách hàng
+    /// </summary>
+    void Delete(int id);
 }
+
+/// <summary>
+/// Customer Service Implementation
+/// </summary>
 public class CustomerService : ICustomerService
 {
-    private readonly IRepository<Customer> _repo;
+    private readonly IRepository<Customer> _customerRepository;
 
-    public CustomerService(IRepository<Customer> repo)
+    public CustomerService(IRepository<Customer> customerRepository)
     {
-        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+        _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
     }
-    public async Task<PagedResult<Customer>> GetAll(PagingRequest? paging = null)
+
+    /// <summary>
+    /// Lấy tất cả khách hàng
+    /// </summary>
+    public PagedResult<Customer> GetAll(PagingRequest? paging = null)
     {
         try
         {
-            // Nếu có SearchText, tạo filter expression để tìm kiếm
-            System.Linq.Expressions.Expression<Func<Customer, bool>>? filter = null;
-
-            if (!string.IsNullOrWhiteSpace(paging?.SearchText))
-            {
-                var keyword = paging.SearchText.ToLower().Trim();
-                filter = c =>
-                    c.Name.ToLower().Contains(keyword) ||
-                    c.Phone.Contains(keyword) ||
-                    (c.Email != null && c.Email.ToLower().Contains(keyword)) ||
-                    (c.Gender != null && c.Gender.ToLower().Contains(keyword));
-            }
-
-            return await _repo.GetAllAsync(paging, filter);
+            return _customerRepository.GetAll(paging);
         }
         catch (Exception ex)
         {
@@ -49,16 +72,16 @@ public class CustomerService : ICustomerService
     }
 
     /// <summary>
-    /// Lấy khách hàng theo ID (Bất đồng bộ)
+    /// Lấy khách hàng theo ID
     /// </summary>
-    public async Task<Customer?> GetById(int id)
+    public Customer? GetById(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
 
         try
         {
-            return await _repo.GetByIdAsync(id);
+            return _customerRepository.GetById(id);
         }
         catch (Exception ex)
         {
@@ -67,19 +90,17 @@ public class CustomerService : ICustomerService
     }
 
     /// <summary>
-    /// Tìm khách hàng theo số điện thoại (Bất đồng bộ)
-    ///  BƯỚC 2: Filter server-side thay vì client-side
+    /// Tìm khách hàng theo số điện thoại
     /// </summary>
-    public async Task<Customer?> GetByPhone(string phone)
+    public Customer? GetByPhone(string phone)
     {
         if (string.IsNullOrWhiteSpace(phone))
             throw new ArgumentException("Số điện thoại không được để trống", nameof(phone));
 
         try
         {
-            // Sử dụng GetAsync với filter thay vì GetAllAsync mà không filter
-            var customers = await _repo.GetAsync(c => c.Phone == phone);
-            return customers.FirstOrDefault();
+            var allCustomers = _customerRepository.GetAll().Items;
+            return allCustomers.FirstOrDefault(c => c.Phone == phone);
         }
         catch (Exception ex)
         {
@@ -88,24 +109,23 @@ public class CustomerService : ICustomerService
     }
 
     /// <summary>
-    /// Tìm kiếm khách hàng (Bất đồng bộ)
-    /// BƯỚC 2: Filter server-side thay vì client-side
+    /// Tìm kiếm khách hàng
     /// </summary>
-    public async Task<List<Customer>> Search(string keyword)
+    public List<Customer> Search(string keyword)
     {
         if (string.IsNullOrWhiteSpace(keyword))
             return new List<Customer>();
 
         try
         {
-            var keywordLower = keyword.ToLower();
-            // Sử dụng GetAsync với filter để lọc server-side
-            var customers = await _repo.GetAsync(c =>
-                c.Name.ToLower().Contains(keywordLower) ||
-                c.Phone.Contains(keyword) ||
-                (c.Email != null && c.Email.ToLower().Contains(keywordLower))
-            );
-            return customers;
+            var allCustomers = _customerRepository.GetAll().Items;
+            return allCustomers
+                .Where(c =>
+                    c.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    c.Phone.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    (c.Email != null && c.Email.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                )
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -114,13 +134,14 @@ public class CustomerService : ICustomerService
     }
 
     /// <summary>
-    /// Thêm khách hàng mới (Bất đồng bộ)
+    /// Thêm khách hàng mới
     /// </summary>
-    public async Task<Customer> Add(Customer customer)
+    public Customer Add(Customer customer)
     {
         if (customer == null)
             throw new ArgumentNullException(nameof(customer));
 
+        // ✅ Business logic validation
         if (string.IsNullOrWhiteSpace(customer.Name))
             throw new ArgumentException("Tên khách hàng không được để trống", nameof(customer.Name));
 
@@ -128,13 +149,13 @@ public class CustomerService : ICustomerService
             throw new ArgumentException("Số điện thoại không được để trống", nameof(customer.Phone));
 
         // Kiểm tra số điện thoại đã tồn tại
-        var existingCustomer = await GetByPhone(customer.Phone);
+        var existingCustomer = GetByPhone(customer.Phone);
         if (existingCustomer != null)
             throw new InvalidOperationException($"Khách hàng với số điện thoại {customer.Phone} đã tồn tại");
 
         try
         {
-            return await _repo.AddAsync(customer);
+            return _customerRepository.Add(customer);
         }
         catch (Exception ex)
         {
@@ -143,9 +164,9 @@ public class CustomerService : ICustomerService
     }
 
     /// <summary>
-    /// Cập nhật khách hàng (Bất đồng bộ)
+    /// Cập nhật khách hàng
     /// </summary>
-    public async Task Update(Customer customer)
+    public void Update(Customer customer)
     {
         if (customer == null)
             throw new ArgumentNullException(nameof(customer));
@@ -153,6 +174,7 @@ public class CustomerService : ICustomerService
         if (customer.Id <= 0)
             throw new ArgumentException("ID khách hàng không hợp lệ", nameof(customer.Id));
 
+        // ✅ Business logic validation
         if (string.IsNullOrWhiteSpace(customer.Name))
             throw new ArgumentException("Tên khách hàng không được để trống", nameof(customer.Name));
 
@@ -161,7 +183,7 @@ public class CustomerService : ICustomerService
 
         try
         {
-            await _repo.UpdateAsync(customer);
+            _customerRepository.Update(customer);
         }
         catch (Exception ex)
         {
@@ -170,16 +192,16 @@ public class CustomerService : ICustomerService
     }
 
     /// <summary>
-    /// Xóa khách hàng (Bất đồng bộ)
+    /// Xóa khách hàng
     /// </summary>
-    public async Task Delete(int id)
+    public void Delete(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID khách hàng không hợp lệ", nameof(id));
 
         try
         {
-            await _repo.DeleteAsync(id);
+            _customerRepository.Delete(id);
         }
         catch (Exception ex)
         {

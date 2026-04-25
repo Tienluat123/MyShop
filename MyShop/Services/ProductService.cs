@@ -1,6 +1,5 @@
 using MyShop.Data;
 using MyShop.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace MyShop.Services;
 
@@ -12,37 +11,37 @@ public interface IProductService
     /// <summary>
     /// Lấy tất cả sản phẩm với phân trang
     /// </summary>
-    Task<PagedResult<Product>> GetAll(PagingRequest? paging = null);
+    PagedResult<Product> GetAll(PagingRequest? paging = null);
 
     /// <summary>
     /// Lấy sản phẩm theo ID
     /// </summary>
-    Task<Product?> GetById(int id);
+    Product? GetById(int id);
 
     /// <summary>
     /// Lấy sản phẩm theo category ID
     /// </summary>
-    Task<List<Product>> GetByCategory(int categoryId);
+    List<Product> GetByCategory(int categoryId);
 
     /// <summary>
     /// Tìm kiếm sản phẩm theo tên
     /// </summary>
-    Task<List<Product>> Search(string keyword);
+    List<Product> Search(string keyword);
 
     /// <summary>
     /// Thêm sản phẩm mới
     /// </summary>
-    Task<Product> Add(Product product);
+    Product Add(Product product);
 
     /// <summary>
     /// Cập nhật sản phẩm
     /// </summary>
-    Task Update(Product product);
+    void Update(Product product);
 
     /// <summary>
     /// Xóa sản phẩm
     /// </summary>
-    Task Delete(int id);
+    void Delete(int id);
 }
 
 /// <summary>
@@ -62,45 +61,13 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Lấy tất cả sản phẩm (Bất đồng bộ)
-    /// ✅ BƯỚC 2: Sử dụng GetAsync với Include thay vì Query()
+    /// Lấy tất cả sản phẩm
     /// </summary>
-    public async Task<PagedResult<Product>> GetAll(PagingRequest? paging = null)
+    public PagedResult<Product> GetAll(PagingRequest? paging = null)
     {
         try
         {
-            // Sử dụng GetAsync với Include để tải Category
-            var allProducts = await _productRepository.GetAsync(null, "Category");
-            var result = new PagedResult<Product>();
-
-            if (paging == null)
-            {
-                result.Items = allProducts;
-                result.Pagination = new PagingMetadata
-                {
-                    PageNumber = 1,
-                    PageSize = result.Items.Count,
-                    TotalItems = result.Items.Count,
-                };
-            }
-            else
-            {
-                paging.Validate();
-                var totalItems = allProducts.Count;
-                var items = allProducts
-                    .Skip(paging.GetSkip())
-                    .Take(paging.PageSize)
-                    .ToList();
-
-                result.Items = items;
-                result.Pagination = new PagingMetadata
-                {
-                    PageNumber = paging.PageNumber,
-                    PageSize = paging.PageSize,
-                    TotalItems = totalItems,
-                };
-            }
-            return result;
+            return _productRepository.GetAll(paging);
         }
         catch (Exception ex)
         {
@@ -109,16 +76,16 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Lấy sản phẩm theo ID (Bất đồng bộ)
+    /// Lấy sản phẩm theo ID
     /// </summary>
-    public async Task<Product?> GetById(int id)
+    public Product? GetById(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
 
         try
         {
-            return await _productRepository.GetByIdAsync(id);
+            return _productRepository.GetById(id);
         }
         catch (Exception ex)
         {
@@ -127,19 +94,20 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Lấy sản phẩm theo category (Bất đồng bộ)
-    /// ✅ BƯỚC 2: Sử dụng GetAsync với filter server-side
+    /// Lấy sản phẩm theo category
     /// </summary>
-    public async Task<List<Product>> GetByCategory(int categoryId)
+    public List<Product> GetByCategory(int categoryId)
     {
         if (categoryId <= 0)
             throw new ArgumentException("Category ID phải lớn hơn 0", nameof(categoryId));
 
         try
         {
-            return await _productRepository.GetAsync(
-                p => p.CategoryId == categoryId,
-                "Category");
+            // ✅ Thực tế sẽ dùng LINQ to Entities, nhưng hiện tại dùng simple filter
+            var allProducts = _productRepository.GetAll().Items;
+            return allProducts
+                .Where(p => p.CategoryId == categoryId)
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -148,20 +116,19 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Tìm kiếm sản phẩm (Bất đồng bộ)
-    /// ✅ BƯỚC 2: Sử dụng GetAsync với filter server-side
+    /// Tìm kiếm sản phẩm
     /// </summary>
-    public async Task<List<Product>> Search(string keyword)
+    public List<Product> Search(string keyword)
     {
         if (string.IsNullOrWhiteSpace(keyword))
             return new List<Product>();
 
         try
         {
-            var keywordLower = keyword.ToLower();
-            return await _productRepository.GetAsync(
-                p => p.Name.ToLower().Contains(keywordLower),
-                "Category");
+            var allProducts = _productRepository.GetAll().Items;
+            return allProducts
+                .Where(p => p.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -170,13 +137,14 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Thêm sản phẩm mới (Bất đồng bộ)
+    /// Thêm sản phẩm mới
     /// </summary>
-    public async Task<Product> Add(Product product)
+    public Product Add(Product product)
     {
         if (product == null)
             throw new ArgumentNullException(nameof(product));
 
+        // ✅ Business logic validation
         if (string.IsNullOrWhiteSpace(product.Name))
             throw new ArgumentException("Tên sản phẩm không được để trống", nameof(product.Name));
 
@@ -186,13 +154,14 @@ public class ProductService : IProductService
         if (product.CategoryId <= 0)
             throw new ArgumentException("Phải chọn category hợp lệ", nameof(product.CategoryId));
 
-        var category = await _categoryRepository.GetByIdAsync(product.CategoryId);
+        // Kiểm tra category tồn tại
+        var category = _categoryRepository.GetById(product.CategoryId);
         if (category == null)
             throw new InvalidOperationException($"Category với ID {product.CategoryId} không tồn tại");
 
         try
         {
-            return await _productRepository.AddAsync(product);
+            return _productRepository.Add(product);
         }
         catch (Exception ex)
         {
@@ -201,9 +170,9 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Cập nhật sản phẩm (Bất đồng bộ)
+    /// Cập nhật sản phẩm
     /// </summary>
-    public async Task Update(Product product)
+    public void Update(Product product)
     {
         if (product == null)
             throw new ArgumentNullException(nameof(product));
@@ -211,6 +180,7 @@ public class ProductService : IProductService
         if (product.Id <= 0)
             throw new ArgumentException("ID sản phẩm không hợp lệ", nameof(product.Id));
 
+        // ✅ Business logic validation
         if (string.IsNullOrWhiteSpace(product.Name))
             throw new ArgumentException("Tên sản phẩm không được để trống", nameof(product.Name));
 
@@ -219,7 +189,7 @@ public class ProductService : IProductService
 
         try
         {
-            await _productRepository.UpdateAsync(product);
+            _productRepository.Update(product);
         }
         catch (Exception ex)
         {
@@ -228,16 +198,16 @@ public class ProductService : IProductService
     }
 
     /// <summary>
-    /// Xóa sản phẩm (Bất đồng bộ)
+    /// Xóa sản phẩm
     /// </summary>
-    public async Task Delete(int id)
+    public void Delete(int id)
     {
         if (id <= 0)
             throw new ArgumentException("ID sản phẩm không hợp lệ", nameof(id));
 
         try
         {
-            await _productRepository.DeleteAsync(id);
+            _productRepository.Delete(id);
         }
         catch (Exception ex)
         {

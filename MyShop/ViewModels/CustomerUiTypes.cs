@@ -10,19 +10,10 @@ public sealed class CustomerListItem
     public string Name { get; set; } = string.Empty;
     public string Initials { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
-    public string? Email { get; set; }
-    public string? Gender { get; set; }
-    public DateTime? Birthday { get; set; }
     public string Tier { get; set; } = string.Empty;
-    public string Status { get; set; } = "Active";
-    public int TotalAccumulatedPoints { get; set; } // Điểm tổng
-    public int CurrentAvailablePoints { get; set; } // Điểm có sẵn để đổi
+    public int Points { get; set; }
     public int Visits { get; set; }
-    
-    // UI Helper
-    public string BirthdayDisplay => Birthday.HasValue ? Birthday.Value.ToString("dd/MM/yyyy") : "-";
 }
-
 
 public sealed class TierThreshold
 {

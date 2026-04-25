@@ -10,8 +10,6 @@
 
         <ContentDialog.Resources>
                 <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-                <converters:StringNullOrEmptyToVisibilityConverter x:Key="StringNullOrEmptyToVisibilityConverter"/>
-                <converters:DateTimeToDateTimeOffsetConverter x:Key="DateConverter"/>
                 <Style TargetType="TextBlock"
                        x:Key="LabelStyle">
                         <Setter Property="FontSize"
@@ -69,26 +67,14 @@
                 <ScrollViewer Grid.Row="1"
                               Padding="32,8,32,24"
                               MaxHeight="550">
-                        <StackPanel Spacing="16">
-
-                                <!-- ===== PROMOTION CODE ===== -->
+                        <StackPanel Spacing="18">
                                 <StackPanel>
                                         <TextBlock Text="PROMOTION CODE"
                                                    Style="{StaticResource LabelStyle}"/>
-                                        <TextBox Text="{Binding PromotionData.Code, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        <TextBox Text="{Binding PromotionData.Code, Mode=TwoWay}"
                                                  PlaceholderText="e.g. GIAM30K"/>
-                                        <!-- Validation error -->
-                                        <TextBlock Text="{Binding PromotionData.Code, Converter={StaticResource StringNullOrEmptyToVisibilityConverter}}"
-                                                   FontSize="12"
-                                                   Foreground="#EF4444"
-                                                   Visibility="Collapsed"/>
-                                        <TextBlock Text="Mã khuyến mãi không được để trống"
-                                                   FontSize="12"
-                                                   Foreground="#EF4444"
-                                                   Visibility="{Binding PromotionData.Code.Length, Converter={StaticResource StringNullOrEmptyToVisibilityConverter}}"/>
                                 </StackPanel>
 
-                                <!-- ===== TYPE + VALUE ===== -->
                                 <Grid ColumnSpacing="16">
                                         <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -97,7 +83,7 @@
                                         <StackPanel Grid.Column="0">
                                                 <TextBlock Text="TYPE"
                                                            Style="{StaticResource LabelStyle}"/>
-                                                <ComboBox SelectedIndex="{Binding SelectedTypeIndex, Mode=TwoWay}">
+                                                <ComboBox SelectedIndex="{Binding PromotionData.Type, Mode=TwoWay}">
                                                         <ComboBoxItem Content="Percent (%)"/>
                                                         <ComboBoxItem Content="Fixed Amount (đ)"/>
                                                 </ComboBox>
@@ -106,33 +92,27 @@
                                                 <TextBlock Text="VALUE"
                                                            Style="{StaticResource LabelStyle}"/>
                                                 <NumberBox Value="{Binding PromotionData.Value, Mode=TwoWay}"
-                                                           SpinButtonPlacementMode="Compact"
-                                                           Minimum="0"/>
+                                                           SpinButtonPlacementMode="Compact"/>
                                         </StackPanel>
                                 </Grid>
 
-                                <!-- ===== MINIMUM ORDER ===== -->
                                 <StackPanel>
                                         <TextBlock Text="MINIMUM ORDER REQUIREMENT"
                                                    Style="{StaticResource LabelStyle}"/>
                                         <NumberBox Value="{Binding PromotionData.MinimumOrderAmount, Mode=TwoWay}"
-                                                   SpinButtonPlacementMode="Compact"
-                                                   Minimum="0"/>
+                                                   SpinButtonPlacementMode="Compact"/>
                                 </StackPanel>
 
-                                <!-- ===== TARGET AUDIENCE ===== -->
                                 <StackPanel>
                                         <TextBlock Text="TARGET AUDIENCE"
                                                    Style="{StaticResource LabelStyle}"/>
-                                        <ComboBox SelectedIndex="{Binding SelectedTargetIndex, Mode=TwoWay}">
+                                        <ComboBox SelectedIndex="{Binding PromotionData.Target, Mode=TwoWay}">
                                                 <ComboBoxItem Content="All Customers"/>
                                                 <ComboBoxItem Content="VIP Member"/>
                                                 <ComboBoxItem Content="New Customer"/>
-                                                <ComboBoxItem Content="Loyalty Member"/>
                                         </ComboBox>
                                 </StackPanel>
 
-                                <!-- ===== ACTIVE STATUS (chỉ hiện khi edit) ===== -->
                                 <Border Background="#F9FAFB"
                                         Padding="16,12"
                                         CornerRadius="16"
@@ -157,7 +137,6 @@
                                         </Grid>
                                 </Border>
 
-                                <!-- ===== START + END DATE ===== -->
                                 <Grid ColumnSpacing="16">
                                         <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -166,7 +145,7 @@
                                         <StackPanel Grid.Column="0">
                                                 <TextBlock Text="START DATE"
                                                            Style="{StaticResource LabelStyle}"/>
-                                                <CalendarDatePicker Date="{Binding PromotionData.StartDate, Mode=TwoWay, Converter={StaticResource DateConverter}}"
+                                                <CalendarDatePicker Date="{Binding PromotionData.StartDate, Mode=TwoWay}"
                                                                     CornerRadius="12"
                                                                     PlaceholderText="Select start date"
                                                                     Header=""
@@ -175,25 +154,13 @@
                                         <StackPanel Grid.Column="1">
                                                 <TextBlock Text="END DATE"
                                                            Style="{StaticResource LabelStyle}"/>
-                                                <CalendarDatePicker Date="{Binding PromotionData.EndDate, Mode=TwoWay, Converter={StaticResource DateConverter}}"
+                                                <CalendarDatePicker Date="{Binding PromotionData.EndDate, Mode=TwoWay}"
                                                                     HorizontalAlignment="Stretch"
                                                                     CornerRadius="12"
                                                                     PlaceholderText="Select end date"
                                                                     Header=""/>
                                         </StackPanel>
                                 </Grid>
-
-                                <!-- ===== GLOBAL ERROR MESSAGE ===== -->
-                                <Border Background="#FEF2F2"
-                                        CornerRadius="10"
-                                        Padding="12,10"
-                                        Visibility="{Binding ErrorMessage, Converter={StaticResource StringNullOrEmptyToVisibilityConverter}}">
-                                        <TextBlock Text="{Binding ErrorMessage}"
-                                                   Foreground="#DC2626"
-                                                   FontSize="13"
-                                                   TextWrapping="Wrap"/>
-                                </Border>
-
                         </StackPanel>
                 </ScrollViewer>
 

@@ -20,7 +20,7 @@
                                                 <VisualStateManager.VisualStateGroups>
                                                         <VisualStateGroup x:Name="CommonStates">
                                                                 <VisualStateGroup.Transitions>
-                                                                        <VisualTransition/>
+                                                                        <VisualTransition GeneratedDuration="0:0:0.15"/>
                                                                 </VisualStateGroup.Transitions>
 
                                                                 <VisualState x:Name="Normal">
