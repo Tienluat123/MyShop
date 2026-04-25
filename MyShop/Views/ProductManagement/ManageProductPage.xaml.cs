@@ -11,11 +11,13 @@ namespace MyShop.Views.ProductManagement;
 public sealed partial class ManageProductPage : Page
 {
     private readonly IProductService _productService;
+    private readonly IAppConfigService _configService;
 
     public ManageProductPage()
     {
         InitializeComponent();
         _productService = ServiceContainer.Instance.Get<IProductService>();
+        _configService = ServiceContainer.Instance.Get<IAppConfigService>();
         Loaded += ManageProductPage_Loaded;
     }
 
@@ -31,6 +33,7 @@ public sealed partial class ManageProductPage : Page
     {
         var vm = new ProductManagementViewModel(
             productService: _productService,
+            configService: _configService,
             onAddProduct: () => ShowFormDialog(false),
             onEditProduct: product => ShowFormDialog(true, product));
 

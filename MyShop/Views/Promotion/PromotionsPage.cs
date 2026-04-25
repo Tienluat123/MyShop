@@ -26,9 +26,11 @@ public sealed partial class PromotionsPage : Page
     private void NavigateToManagement()
     {
         var promoService = ServiceContainer.Instance.Get<IPromotionService>();
+        var configService = ServiceContainer.Instance.Get<IAppConfigService>();
 
         _viewModel = new PromotionsViewModel(
             promoService,
+            configService,
             onAdd: () => ShowPromotionFormDialog(isEditMode: false),
             onEdit: promo => ShowPromotionFormDialog(isEditMode: true, promo));
 

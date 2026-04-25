@@ -29,9 +29,9 @@ public partial class PromoViewModel : ObservableObject
 
     private async Task LoadActivePromotions()
     {
-        var promos = await _promoService.GetAllAsync();
+        var result = await _promoService.GetAllAsync();
         ActivePromotions.Clear();
-        foreach (var p in promos)
+        foreach (var p in result.Items)
         {
             ActivePromotions.Add(p);
         }

@@ -15,7 +15,10 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
 {
     private readonly ICustomerService _customerService;
     private readonly INotificationService _notificationService;
-    private const int PageSize = 10;
+    private readonly IAppConfigService _configService;
+
+    [ObservableProperty]
+    private int pageSize = 10;
 
     private readonly Action _onAdd;
     private readonly Action _onRules;
@@ -60,6 +63,7 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
     public CustomerManagementViewModel(
         ICustomerService customerService,
         INotificationService notificationService,
+        IAppConfigService configService,
         Action onAdd,
         Action onRules,
         Action<CustomerListItem> onProfile,
@@ -67,6 +71,7 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
     {
         _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+        _configService = configService ?? throw new ArgumentNullException(nameof(configService));
         _onAdd = onAdd ?? throw new ArgumentNullException(nameof(onAdd));
         _onRules = onRules ?? throw new ArgumentNullException(nameof(onRules));
         _onProfile = onProfile ?? throw new ArgumentNullException(nameof(onProfile));
@@ -101,6 +106,9 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
         IsLoading = true;
         try
         {
+            // Fetch PageSize from config
+            PageSize = await _configService.GetPageSizeAsync();
+
             var request = new PagingRequest
             {
                 PageNumber = CurrentPage,

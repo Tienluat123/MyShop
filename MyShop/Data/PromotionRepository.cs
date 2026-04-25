@@ -30,16 +30,25 @@ public class PromotionRepository : IPromotionRepository
     /// Fix stale data bug: khi có Add/Update/Delete trước đó, EF Core ChangeTracker
     /// có thể trả về entity cũ thay vì query mới từ DB.
     /// </summary>
-    public async Task<PagedResult<Promotion>> GetAllFreshAsync(PagingRequest? paging = null, CancellationToken ct = default)
+    public async Task<PagedResult<Promotion>> GetAllFreshAsync(
+        PagingRequest? paging = null, 
+        System.Linq.Expressions.Expression<Func<Promotion, bool>>? filter = null,
+        CancellationToken ct = default)
     {
         var result = new PagedResult<Promotion>();
 
         // LUON clear ChangeTracker de khong co stale entity
         _context.ChangeTracker.Clear();
 
+        var query = _dbSet.AsNoTracking();
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
         if (paging == null)
         {
-            result.Items = await _dbSet.AsNoTracking().ToListAsync(ct);
+            result.Items = await query.ToListAsync(ct);
             result.Pagination = new PagingMetadata
             {
                 PageNumber = 1,
@@ -50,9 +59,44 @@ public class PromotionRepository : IPromotionRepository
         }
 
         paging.Validate();
-        var totalItems = await _dbSet.AsNoTracking().CountAsync(ct);
-        var items = await _dbSet
-            .AsNoTracking()
+        var totalItems = await query.CountAsync(ct);
+
+        // Apply sorting based on SortColumn and SortAscending
+        var sortedQuery = paging.SortColumn switch
+        {
+            "Code" => paging.SortAscending
+                ? query.OrderBy(p => p.PromoCode)
+                : query.OrderByDescending(p => p.PromoCode),
+
+            "Type" => paging.SortAscending
+                ? query.OrderBy(p => p.PromoType)
+                : query.OrderByDescending(p => p.PromoType),
+
+            "Value" => paging.SortAscending
+                ? query.OrderBy(p => p.DiscountValue)
+                : query.OrderByDescending(p => p.DiscountValue),
+
+            "Status" => paging.SortAscending
+                ? query.OrderBy(p => p.IsActive)
+                : query.OrderByDescending(p => p.IsActive),
+
+            "MinOrder" => paging.SortAscending
+                ? query.OrderBy(p => p.MinOrderAmount)
+                : query.OrderByDescending(p => p.MinOrderAmount),
+
+            "StartDate" => paging.SortAscending
+                ? query.OrderBy(p => p.StartDate)
+                : query.OrderByDescending(p => p.StartDate),
+
+            "Target" => paging.SortAscending
+                ? query.OrderBy(p => p.TargetAudience)
+                : query.OrderByDescending(p => p.TargetAudience),
+
+            // Mặc định sort theo PromoCode tăng dần
+            _ => query.OrderBy(p => p.PromoCode)
+        };
+
+        var items = await sortedQuery
             .Skip(paging.GetSkip())
             .Take(paging.PageSize)
             .ToListAsync(ct);
