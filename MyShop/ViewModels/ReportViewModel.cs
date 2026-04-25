@@ -19,6 +19,13 @@ public partial class ReportViewModel : ObservableObject
         
         SelectedDatePreset = "Last 30 days";
 
+        AnalyticsModes = new ObservableCollection<string> { "Top Products", "Top Categories" };
+        SelectedAnalyticsMode = "Top Products";
+        IsCategoryFilterEnabled = true;
+
+        CategoryScopes = new ObservableCollection<string> { "All", "Coffee", "Tea", "Food", "Others" };
+        SelectedCategoryScope = "All";
+
         // Initialize Year/Month lists
         for (int i = 2020; i <= DateTime.Now.Year; i++) Years.Add(i);
         for (int i = 1; i <= 12; i++) Months.Add(i);
@@ -30,8 +37,10 @@ public partial class ReportViewModel : ObservableObject
         UpdateVisibility();
 
         // Mock Statistics
-        ProductsCount = 1250;
-        OrdersCount = 450;
+        ProductsCount = 42;
+        OrdersCount = 156;
+        TotalRevenue = 12500.50m;
+        TotalProfit = 4200.75m;
 
         // Mock Sales Trend Data (Line Chart)
         SalesTrend = new ObservableCollection<TrendPoint>
@@ -61,13 +70,18 @@ public partial class ReportViewModel : ObservableObject
             new ProfitPoint("Food", 2800000, "#10B981"),
             new ProfitPoint("Others", 1200000, "#F59E0B")
         };
+
+        TopProducts.Add(new RankingPoint("Latte Art Coffee", 156, 780.00m));
+        TopProducts.Add(new RankingPoint("Green Tea Matcha", 124, 620.00m));
+        TopProducts.Add(new RankingPoint("Chocolate Cake", 98, 490.00m));
+        TopProducts.Add(new RankingPoint("Espresso Shot", 85, 255.00m));
+        TopProducts.Add(new RankingPoint("Iced Americano", 76, 228.00m));
     }
 
-    [ObservableProperty]
-    private int productsCount;
-
-    [ObservableProperty]
-    private int ordersCount;
+    [ObservableProperty] private int productsCount;
+    [ObservableProperty] private int ordersCount;
+    [ObservableProperty] private decimal totalRevenue;
+    [ObservableProperty] private decimal totalProfit;
 
     [ObservableProperty]
     private string selectedPeriod;
@@ -91,6 +105,33 @@ public partial class ReportViewModel : ObservableObject
 
     [ObservableProperty] private bool isCustomRangeVisible;
     [ObservableProperty] private string selectedDatePreset;
+    [ObservableProperty] private string selectedAnalyticsMode;
+    [ObservableProperty] private string selectedCategoryScope;
+    [ObservableProperty] private bool isCategoryFilterEnabled;
+
+    [ObservableProperty] private bool isTopProductsSelected = true;
+    [ObservableProperty] private bool isTopCategoriesSelected;
+
+    partial void OnIsTopProductsSelectedChanged(bool value)
+    {
+        if (value) SelectedAnalyticsMode = "Top Products";
+    }
+
+    partial void OnIsTopCategoriesSelectedChanged(bool value)
+    {
+        if (value) SelectedAnalyticsMode = "Top Categories";
+    }
+
+    partial void OnSelectedAnalyticsModeChanged(string value)
+    {
+        IsCategoryFilterEnabled = value == "Top Products";
+        IsTopProductsSelected = value == "Top Products";
+        IsTopCategoriesSelected = value == "Top Categories";
+        if (!IsCategoryFilterEnabled) SelectedCategoryScope = "All";
+    }
+
+    public ObservableCollection<string> AnalyticsModes { get; }
+    public ObservableCollection<string> CategoryScopes { get; }
 
     partial void OnSelectedDatePresetChanged(string value)
     {
@@ -187,6 +228,20 @@ public partial class ReportViewModel : ObservableObject
     public ObservableCollection<TrendPoint> SalesTrend { get; }
     public ObservableCollection<TrendPoint> RevenueData { get; }
     public ObservableCollection<ProfitPoint> CategoryProfit { get; }
+    public ObservableCollection<RankingPoint> TopProducts { get; } = new();
+
+    public class RankingPoint
+    {
+        public RankingPoint(string name, double volume, decimal amount)
+        {
+            Name = name;
+            Volume = volume;
+            Amount = amount;
+        }
+        public string Name { get; }
+        public double Volume { get; }
+        public decimal Amount { get; }
+    }
 
     public class TrendPoint
     {
