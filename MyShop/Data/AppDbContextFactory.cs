@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using System.Text.Json;
+using MyShop.Models;
+using MyShop.Services;
 
 namespace MyShop.Data;
 
@@ -10,21 +11,30 @@ namespace MyShop.Data;
 /// </summary>
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
+    private readonly IConfigService _configService;
+
+    public AppDbContextFactory() : this(new ConfigService())
+    {
+    }
+
+    public AppDbContextFactory(IConfigService configService)
+    {
+        _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+    }
+
     public AppDbContext CreateDbContext(string[] args)
     {
-        // Try to read connection string from appsettings.json
-        var dbConfig = TryReadAppsettingsConfig()
-            ?? new DatabaseConfig
-            {
-                Host = "localhost",
-                Database = "myshop",
-                Username = "nguyentienluat",
-                Password = string.Empty,
-                Port = 5432,
-                SslMode = "Disable"
-            };
+        DbConfig dbConfig;
+        try
+        {
+            dbConfig = _configService.LoadAsync().GetAwaiter().GetResult();
+        }
+        catch
+        {
+            dbConfig = new DbConfig();
+        }
 
-        var connectionString = dbConfig.GetConnectionString();
+        var connectionString = dbConfig.ToConnectionString();
 
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseNpgsql(connectionString, options =>
@@ -37,48 +47,6 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         });
 
         return new AppDbContext(optionsBuilder.Options);
-    }
-
-    private DatabaseConfig? TryReadAppsettingsConfig()
-    {
-        try
-        {
-            // Find appsettings.json in current or parent directory
-            var paths = new[]
-            {
-                Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json"),
-                Path.Combine(Directory.GetCurrentDirectory(), "MyShop", "appsettings.json"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "appsettings.json")
-            };
-
-            foreach (var path in paths)
-            {
-                if (File.Exists(path))
-                {
-                    var json = File.ReadAllText(path);
-                    using var doc = JsonDocument.Parse(json);
-                    if (doc.RootElement.TryGetProperty("Database", out var dbElement))
-                    {
-                        return new DatabaseConfig
-                        {
-                            Host = dbElement.GetProperty("Host").GetString() ?? "localhost",
-                            Database = dbElement.GetProperty("Database").GetString() ?? "myshop",
-                            Username = dbElement.GetProperty("Username").GetString() ?? "nguyentienluat",
-                            Password = dbElement.GetProperty("Password").GetString() ?? string.Empty,
-                            Port = dbElement.GetProperty("Port").GetInt32(),
-                            SslMode = dbElement.GetProperty("SslMode").GetString() ?? "Disable"
-                        };
-                    }
-                    break;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore errors, use default
-        }
-
-        return null;
     }
 
     /// <summary>
