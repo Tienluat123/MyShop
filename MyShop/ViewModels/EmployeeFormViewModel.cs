@@ -2,8 +2,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MyShop.Models;
 using System;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace MyShop.ViewModels.StaffManagement;
 
@@ -78,7 +76,7 @@ public partial class EmployeeFormViewModel : ObservableObject
 
     private string HashPassword(string password)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(bytes);
+        // Sử dụng BCrypt để băm mật khẩu, đồng bộ với logic kiểm tra trong AuthService
+        return BCrypt.Net.BCrypt.HashPassword(password);
     }
 }
