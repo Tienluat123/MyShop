@@ -35,6 +35,7 @@ public sealed partial class EmployeeListTab : UserControl
             var scheduleService = ServiceContainer.Instance.Get<IScheduleService>();
             var notificationService = ServiceContainer.Instance.Get<INotificationService>();
             var dialogService = ServiceContainer.Instance.Get<IDialogService>();
+            var configService = ServiceContainer.Instance.Get<IAppConfigService>();
 
             _dialogHandler = new EmployeeFormDialogHandler(
                 employeeService,
@@ -45,6 +46,7 @@ public sealed partial class EmployeeListTab : UserControl
                 employeeService,
                 scheduleService,
                 notificationService,
+                configService,
                 onAddRequested: ShowAddEmployeeDialogAsync,
                 onEditRequested: ShowEditEmployeeDialogAsync);
         }

@@ -29,6 +29,11 @@ public interface IAppConfigService
     Task<Dictionary<string, string>> GetAllAsync();
 
     /// <summary>
+    /// Gets the configured items per page for pagination. Defaults to 10.
+    /// </summary>
+    Task<int> GetPageSizeAsync();
+
+    /// <summary>
     /// Reloads the in-memory cache from the database.
     /// </summary>
     Task ReloadCacheAsync();

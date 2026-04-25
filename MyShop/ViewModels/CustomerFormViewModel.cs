@@ -9,8 +9,9 @@ namespace MyShop.ViewModels;
 public partial class CustomerFormViewModel : ObservableObject
 {
     private readonly ICustomerService _customerService;
+    private readonly INotificationService? _notificationService;
     private readonly Action _onSuccess;
-    private readonly int? _editingCustomerId;
+    private readonly int _editingCustomerId = 0;
     [ObservableProperty]
     private bool isEditMode;
 
@@ -26,9 +27,13 @@ public partial class CustomerFormViewModel : ObservableObject
     [ObservableProperty] private string? nameError;
     [ObservableProperty] private string? phoneError;
     [ObservableProperty] private string? emailError;
-    public CustomerFormViewModel(ICustomerService customerService, bool isEditMode, CustomerListItem? customer, Action onSuccess)
+
+    [ObservableProperty] private bool isLoading = false;
+
+    public CustomerFormViewModel(ICustomerService customerService, bool isEditMode, CustomerListItem? customer, Action onSuccess, INotificationService? notificationService = null)
     {
         _customerService = customerService;
+        _notificationService = notificationService;
         _onSuccess = onSuccess;
         IsEditMode = isEditMode;
 
@@ -38,25 +43,58 @@ public partial class CustomerFormViewModel : ObservableObject
             FormTitle = $"Edit: {customer.Name}";
             SubmitButtonText = "Save Changes";
 
-            // PHẢI NẠP ĐỦ THÔNG TIN Ở ĐÂY ĐỂ UI CÓ DỮ LIỆU CŨ
-            // Lấy thông tin chi tiết từ Service vì CustomerListItem thường thiếu Address, Email
-            var fullInfo = _customerService.GetById(customer.Id).GetAwaiter().GetResult();
-
+            // Nạp dữ liệu ban đầu từ customer item
             CustomerData = new CustomerInputModel
             {
-                FullName = fullInfo?.Name ?? customer.Name,
-                Phone = fullInfo?.Phone ?? customer.Phone,
-                Email = fullInfo?.Email ?? "",
-                Address = fullInfo?.Address ?? "",
-                Notes = fullInfo?.Notes ?? "",
-                Birthday = fullInfo?.Birthday.HasValue == true ? new DateTimeOffset(fullInfo.Birthday.Value) : null
+                FullName = customer.Name,
+                Phone = customer.Phone,
+                Email = customer.Email ?? "",
+                Gender = customer.Gender ?? "Male",
+                Address = "",
+                Notes = "",
+                Birthday = customer.Birthday.HasValue ? new DateTimeOffset(customer.Birthday.Value) : null
             };
+
+            // Async load chi tiết từ database (không chặn constructor)
+            _ = LoadCustomerDetailsAsync(customer.Id);
         }
         else
         {
             FormTitle = "Create New Customer";
             SubmitButtonText = "Create Customer";
-            //CustomerData = new CustomerInputModel();
+        }
+    }
+
+    // Tải chi tiết customer từ DB (async, không block constructor)
+    private async Task LoadCustomerDetailsAsync(int customerId)
+    {
+        try
+        {
+            IsLoading = true;
+            var fullInfo = await _customerService.GetById(customerId);
+
+            if (fullInfo != null)
+            {
+                CustomerData = new CustomerInputModel
+                {
+                    FullName = fullInfo.Name,
+                    Phone = fullInfo.Phone,
+                    Email = fullInfo.Email ?? "",
+                    Gender = fullInfo.Gender ?? "Male",
+                    Address = fullInfo.Address ?? "",
+                    Notes = fullInfo.Notes ?? "",
+                    Birthday = fullInfo.Birthday.HasValue ? new DateTimeOffset(fullInfo.Birthday.Value) : null
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ERROR] Load customer details failed: {ex.Message}");
+            _notificationService?.ShowError("Không thể tải thông tin khách hàng");
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
     [RelayCommand]
@@ -72,29 +110,72 @@ public partial class CustomerFormViewModel : ObservableObject
 
         Console.WriteLine("[DEBUG] Validate THÀNH CÔNG. Đang chuẩn bị lưu...");
 
-        var customer = new Customer
-        {
-            Id = _editingCustomerId ?? 0,
-            Name = CustomerData.FullName,
-            Phone = CustomerData.Phone,
-            Email = CustomerData.Email,
-            Address = CustomerData.Address,
-            Notes = CustomerData.Notes,
-            Birthday = CustomerData.Birthday?.DateTime,
-            CreatedAt = DateTime.UtcNow
-        };
-
         try
         {
+            IsLoading = true;
+
             if (IsEditMode)
             {
+                if (_editingCustomerId <= 0)
+                {
+                    _notificationService?.ShowError("ID khách hàng không hợp lệ");
+                    return;
+                }
+
+                var existing = await _customerService.GetById(_editingCustomerId);
+                if (existing == null)
+                {
+                    _notificationService?.ShowError("Không tìm thấy khách hàng để cập nhật");
+                    return;
+                }
+
+                var customer = new Customer
+                {
+                    Id = existing.Id,
+                    Name = CustomerData.FullName,
+                    Phone = CustomerData.Phone,
+                    Email = CustomerData.Email,
+                    Gender = CustomerData.Gender,
+                    Address = CustomerData.Address,
+                    Notes = CustomerData.Notes,
+                    Birthday = CustomerData.Birthday?.DateTime,
+                    CreatedAt = existing.CreatedAt,
+                    Status = existing.Status,
+                    TotalAccumulatedPoints = existing.TotalAccumulatedPoints,
+                    CurrentAvailablePoints = existing.CurrentAvailablePoints,
+                    TotalVisits = existing.TotalVisits,
+                    TotalSpent = existing.TotalSpent,
+                    LastVisitDate = existing.LastVisitDate,
+                    Tier = existing.Tier
+                };
+
                 Console.WriteLine($"[DEBUG] Đang gọi UPDATE cho ID: {customer.Id}");
-                await Task.Run(() => _customerService.Update(customer));
+                await _customerService.Update(customer);
+                _notificationService?.ShowSuccess("Cập nhật khách hàng thành công!");
             }
             else
             {
+                var customer = new Customer
+                {
+                    Id = 0,
+                    Name = CustomerData.FullName,
+                    Phone = CustomerData.Phone,
+                    Email = CustomerData.Email,
+                    Gender = CustomerData.Gender,
+                    Address = CustomerData.Address,
+                    Notes = CustomerData.Notes,
+                    Birthday = CustomerData.Birthday?.DateTime,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = "Active",
+                    TotalAccumulatedPoints = 0,
+                    CurrentAvailablePoints = 0,
+                    TotalVisits = 0,
+                    TotalSpent = 0
+                };
+
                 Console.WriteLine("[DEBUG] Đang gọi ADD khách hàng mới");
-                await Task.Run(() => _customerService.Add(customer));
+                await _customerService.Add(customer);
+                _notificationService?.ShowSuccess("Thêm khách hàng mới thành công!");
             }
 
             Console.WriteLine("[DEBUG] Lưu Database THÀNH CÔNG!");
@@ -102,10 +183,34 @@ public partial class CustomerFormViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            // In lỗi chi tiết nhất có thể
-            var errorMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-            Console.WriteLine($"[DEBUG] LỖI DATABASE THỰC SỰ: {errorMsg}");
+            var errorMsg = BuildDetailedErrorMessage(ex);
+            Console.WriteLine($"[ERROR] Submit failed:\n{errorMsg}");
+            _notificationService?.ShowError($"Lỗi: {ex.Message}");
         }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Build full exception chain message for debugging
+    /// </summary>
+    private string BuildDetailedErrorMessage(Exception ex)
+    {
+        var messages = new List<string>();
+        var current = ex;
+        int level = 0;
+
+        while (current != null)
+        {
+            string indent = new string(' ', level * 2);
+            messages.Add($"{indent}└─ {current.GetType().Name}: {current.Message}");
+            current = current.InnerException;
+            level++;
+        }
+
+        return string.Join("\n", messages);
     }
     [RelayCommand]
     private void Cancel() => _onSuccess?.Invoke();

@@ -11,7 +11,10 @@ public interface IPromotionRepository
     /// <summary>
     /// Lấy tất cả promotions — luôn từ database, không dùng EF cached entities.
     /// </summary>
-    Task<PagedResult<Promotion>> GetAllFreshAsync(PagingRequest? paging = null, CancellationToken ct = default);
+    Task<PagedResult<Promotion>> GetAllFreshAsync(
+        PagingRequest? paging = null, 
+        System.Linq.Expressions.Expression<Func<Promotion, bool>>? filter = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Lấy promotion theo ID — luôn từ database.

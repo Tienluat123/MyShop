@@ -18,7 +18,7 @@ public sealed class CustomerListItem
     public int TotalAccumulatedPoints { get; set; } // Điểm tổng
     public int CurrentAvailablePoints { get; set; } // Điểm có sẵn để đổi
     public int Visits { get; set; }
-    
+
     // UI Helper
     public string BirthdayDisplay => Birthday.HasValue ? Birthday.Value.ToString("dd/MM/yyyy") : "-";
 }
@@ -81,6 +81,7 @@ public sealed class CustomerInputModel
     public string FullName { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string Gender { get; set; } = "Male";  // ✅ Add Gender
     public DateTimeOffset? Birthday { get; set; }
     public string Address { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;

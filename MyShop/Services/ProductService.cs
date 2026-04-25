@@ -1,6 +1,7 @@
 using MyShop.Data;
 using MyShop.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace MyShop.Services;
 
@@ -69,42 +70,94 @@ public class ProductService : IProductService
     {
         try
         {
-            // Sử dụng GetAsync với Include để tải Category
-            var allProducts = await _productRepository.GetAsync(null, "Category");
-            var result = new PagedResult<Product>();
+            Expression<Func<Product, bool>>? filter = null;
 
-            if (paging == null)
+            if (paging != null)
             {
-                result.Items = allProducts;
-                result.Pagination = new PagingMetadata
+                var filters = new List<Expression<Func<Product, bool>>>();
+
+                // SearchText filter
+                if (!string.IsNullOrWhiteSpace(paging.SearchText))
                 {
-                    PageNumber = 1,
-                    PageSize = result.Items.Count,
-                    TotalItems = result.Items.Count,
+                    var keyword = paging.SearchText.ToLower().Trim();
+                    filters.Add(p => p.Name.ToLower().Contains(keyword));
+                }
+
+                // Category filter from Dictionary
+                if (paging.Filters != null && paging.Filters.TryGetValue("Category", out var category) && !string.IsNullOrWhiteSpace(category) && category != "All")
+                {
+                    filters.Add(p => p.Category != null && p.Category.Name == category);
+                }
+
+                // Price range filters
+                if (paging.Filters != null && paging.Filters.TryGetValue("MinPrice", out var minPriceStr) && decimal.TryParse(minPriceStr, out var minPrice))
+                {
+                    filters.Add(p => p.Price >= minPrice);
+                }
+
+                if (paging.Filters != null && paging.Filters.TryGetValue("MaxPrice", out var maxPriceStr) && decimal.TryParse(maxPriceStr, out var maxPrice))
+                {
+                    filters.Add(p => p.Price <= maxPrice);
+                }
+
+                // Combine filters
+                if (filters.Any())
+                {
+                    var parameter = Expression.Parameter(typeof(Product), "p");
+                    Expression? combined = null;
+
+                    foreach (var f in filters)
+                    {
+                        var body = f.Body;
+                        // Replace parameter to maintain consistency
+                        body = new ParameterReplacer(f.Parameters[0], parameter).Visit(body);
+
+                        combined = combined == null ? body : Expression.AndAlso(combined, body);
+                    }
+
+                    if (combined != null)
+                    {
+                        filter = Expression.Lambda<Func<Product, bool>>(combined, parameter);
+                    }
+                }
+            }
+
+            // Build orderBy expression from paging sort info
+            Func<IQueryable<Product>, IOrderedQueryable<Product>>? orderBy = null;
+            if (paging != null && !string.IsNullOrWhiteSpace(paging.SortColumn))
+            {
+                orderBy = (paging.SortColumn, paging.SortAscending) switch
+                {
+                    ("Price", true)  => q => q.OrderBy(p => p.Price),
+                    ("Price", false) => q => q.OrderByDescending(p => p.Price),
+                    ("Name", true)   => q => q.OrderBy(p => p.Name),
+                    ("Name", false)  => q => q.OrderByDescending(p => p.Name),
+                    _                => q => q.OrderBy(p => p.Name) // default
                 };
             }
-            else
-            {
-                paging.Validate();
-                var totalItems = allProducts.Count;
-                var items = allProducts
-                    .Skip(paging.GetSkip())
-                    .Take(paging.PageSize)
-                    .ToList();
 
-                result.Items = items;
-                result.Pagination = new PagingMetadata
-                {
-                    PageNumber = paging.PageNumber,
-                    PageSize = paging.PageSize,
-                    TotalItems = totalItems,
-                };
-            }
-            return result;
+            return await _productRepository.GetAllAsync(paging, filter, orderBy, "Category");
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException("Lỗi khi lấy danh sách sản phẩm", ex);
+        }
+    }
+
+    private class ParameterReplacer : ExpressionVisitor
+    {
+        private readonly ParameterExpression _oldParameter;
+        private readonly ParameterExpression _newParameter;
+
+        public ParameterReplacer(ParameterExpression oldParameter, ParameterExpression newParameter)
+        {
+            _oldParameter = oldParameter;
+            _newParameter = newParameter;
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            return node == _oldParameter ? _newParameter : base.VisitParameter(node);
         }
     }
 

@@ -101,11 +101,8 @@ public sealed partial class CustomerManagementView : Page
 
             if (customer != null)
             {
-                customer.Status = toggleSwitch.IsOn ? "Active" : "Inactive";
-                if (ViewModel?.RefreshCommand.CanExecute(null) ?? false)
-                {
-                    ViewModel.RefreshCommand.Execute(null);
-                }
+                if (ViewModel != null)
+                    await ViewModel.UpdateCustomerStatusAsync(customer, toggleSwitch.IsOn);
             }
         }
         finally

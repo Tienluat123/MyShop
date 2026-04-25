@@ -14,6 +14,7 @@ public interface IRepository<TEntity> where TEntity : class
     Task<PagedResult<TEntity>> GetAllAsync(
         PagingRequest? paging = null,
         Expression<Func<TEntity, bool>>? filter = null,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         params string[] includes);
 
     Task<TEntity?> GetByIdAsync(int id);
@@ -30,6 +31,7 @@ public interface IRepository<TEntity> where TEntity : class
     Task<PagedResult<TEntity>> GetAllAsyncWithIncludes(
         PagingRequest? paging = null,
         Expression<Func<TEntity, bool>>? filter = null,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         params string[] includes);
 
     Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null);

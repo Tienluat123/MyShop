@@ -29,11 +29,12 @@ public sealed partial class CustomerPage : Page
 
         var customerService = ServiceContainer.Instance.Get<ICustomerService>();
         var notificationService = ServiceContainer.Instance.Get<INotificationService>();
-
+        var configService = ServiceContainer.Instance.Get<IAppConfigService>();
 
         var viewModel = new CustomerManagementViewModel(
-            customerService, // Quan trọng nhất là dòng này!
+            customerService,
             notificationService,
+            configService,
             onAdd: () => ShowFormDialog(isEditMode: false),
             onRules: NavigateToRules,
             onProfile: NavigateToProfile,
@@ -82,6 +83,7 @@ public sealed partial class CustomerPage : Page
     private async void ShowFormDialog(bool isEditMode, CustomerListItem? customer = null)
     {
         var customerService = ServiceContainer.Instance.Get<ICustomerService>();
+        var notificationService = ServiceContainer.Instance.Get<INotificationService>();
         var dialogService = ServiceContainer.Instance.Get<IDialogService>();
 
         // Tiêm Service và truyền Action để Refresh danh sách khi lưu thành công
@@ -93,7 +95,8 @@ public sealed partial class CustomerPage : Page
             {
                 // Tải lại danh sách khách hàng ở trang chính
                 NavigateToManagement();
-            });
+            },
+            notificationService: notificationService);
 
         var dialog = new CustomerFormView(viewModel) { XamlRoot = this.XamlRoot };
         await dialogService.ShowAsync(dialog, this.XamlRoot);
