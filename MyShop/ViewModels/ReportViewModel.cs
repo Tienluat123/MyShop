@@ -8,10 +8,16 @@ public partial class ReportViewModel : ObservableObject
     public ReportViewModel()
     {
         // Default filters
-        StartDate = DateTime.Now.AddDays(-30);
-        EndDate = DateTime.Now;
+        DatePresets = new ObservableCollection<string>
+        {
+            "Today", "Yesterday", "Last 7 days", "Last 30 days", "Last 3 months",
+            "This month", "Last month", "This year", "Custom range..."
+        };
+        
         Periods = new ObservableCollection<string> { "Day", "Week", "Month", "Year" };
-        SelectedPeriod = "Day";
+        AvailablePeriods = new ObservableCollection<string>();
+        
+        SelectedDatePreset = "Last 30 days";
 
         // Initialize Year/Month lists
         for (int i = 2020; i <= DateTime.Now.Year; i++) Years.Add(i);
@@ -82,6 +88,86 @@ public partial class ReportViewModel : ObservableObject
 
     public ObservableCollection<int> Years { get; } = new();
     public ObservableCollection<int> Months { get; } = new();
+
+    [ObservableProperty] private bool isCustomRangeVisible;
+    [ObservableProperty] private string selectedDatePreset;
+
+    partial void OnSelectedDatePresetChanged(string value)
+    {
+        ApplyPreset();
+    }
+
+    private void ApplyPreset()
+    {
+        IsCustomRangeVisible = SelectedDatePreset == "Custom range...";
+        var today = DateTime.Today;
+        
+        AvailablePeriods.Clear();
+
+        switch (SelectedDatePreset)
+        {
+            case "Today":
+            case "Yesterday":
+                StartDate = SelectedDatePreset == "Today" ? today : today.AddDays(-1);
+                EndDate = StartDate;
+                AvailablePeriods.Add("Day");
+                break;
+            case "Last 7 days":
+                StartDate = today.AddDays(-6);
+                EndDate = today;
+                AvailablePeriods.Add("Day");
+                break;
+            case "Last 30 days":
+            case "This month":
+            case "Last month":
+                if (SelectedDatePreset == "Last 30 days")
+                {
+                    StartDate = today.AddDays(-29);
+                    EndDate = today;
+                }
+                else if (SelectedDatePreset == "This month")
+                {
+                    StartDate = new DateTime(today.Year, today.Month, 1);
+                    EndDate = StartDate.AddMonths(1).AddDays(-1);
+                }
+                else
+                {
+                    var lastMonth = today.AddMonths(-1);
+                    StartDate = new DateTime(lastMonth.Year, lastMonth.Month, 1);
+                    EndDate = StartDate.AddMonths(1).AddDays(-1);
+                }
+                AvailablePeriods.Add("Day");
+                AvailablePeriods.Add("Week");
+                break;
+            case "Last 3 months":
+                StartDate = today.AddMonths(-3).AddDays(1);
+                EndDate = today;
+                AvailablePeriods.Add("Day");
+                AvailablePeriods.Add("Week");
+                AvailablePeriods.Add("Month");
+                break;
+            case "This year":
+                StartDate = new DateTime(today.Year, 1, 1);
+                EndDate = new DateTime(today.Year, 12, 31);
+                AvailablePeriods.Add("Week");
+                AvailablePeriods.Add("Month");
+                break;
+            case "Custom range...":
+                AvailablePeriods.Add("Day");
+                AvailablePeriods.Add("Week");
+                AvailablePeriods.Add("Month");
+                AvailablePeriods.Add("Year");
+                break;
+        }
+
+        if (!AvailablePeriods.Contains(SelectedPeriod))
+        {
+            SelectedPeriod = AvailablePeriods.FirstOrDefault() ?? "Day";
+        }
+    }
+
+    public ObservableCollection<string> DatePresets { get; } = new();
+    public ObservableCollection<string> AvailablePeriods { get; }
 
     private void UpdateVisibility()
     {

@@ -46,55 +46,66 @@
 
         <!-- Filter Bar -->
         <Grid Grid.Row="1" Padding="24,12" Background="{StaticResource SurfaceBackground}" BorderBrush="{StaticResource SurfaceAlt}" BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="24" VerticalAlignment="Center">
                 
-                <!-- Period Selector (Always Visible) -->
+                <!-- Date Presets -->
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="Period" Style="{StaticResource CaptionTextStyle}" VerticalAlignment="Center"/>
-                    <ComboBox ItemsSource="{x:Bind ViewModel.Periods}" 
+                    <TextBlock Text="Range" Style="{StaticResource CaptionTextStyle}" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{x:Bind ViewModel.DatePresets}" 
+                              SelectedItem="{x:Bind ViewModel.SelectedDatePreset, Mode=TwoWay}" 
+                              Width="160" CornerRadius="8" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Granularity (Always Visible) -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Granularity" Style="{StaticResource CaptionTextStyle}" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{x:Bind ViewModel.AvailablePeriods}" 
                               SelectedItem="{x:Bind ViewModel.SelectedPeriod, Mode=TwoWay}" 
                               Width="120" CornerRadius="8" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Day/Week Range -->
-                <StackPanel Orientation="Horizontal" Spacing="12" Visibility="{x:Bind ViewModel.IsDayWeekVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="From" Style="{StaticResource CaptionTextStyle}"/>
-                        <CalendarDatePicker Date="{x:Bind ViewModel.StartDate, Mode=TwoWay, Converter={StaticResource DateConverter}}" PlaceholderText="Select date" Width="150" CornerRadius="8"/>
+                <!-- Custom Range (Conditional) -->
+                <StackPanel Orientation="Horizontal" Spacing="24" Visibility="{x:Bind ViewModel.IsCustomRangeVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <!-- Day/Week Range -->
+                    <StackPanel Orientation="Horizontal" Spacing="12" Visibility="{x:Bind ViewModel.IsDayWeekVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="From" Style="{StaticResource CaptionTextStyle}"/>
+                            <CalendarDatePicker Date="{x:Bind ViewModel.StartDate, Mode=TwoWay, Converter={StaticResource DateConverter}}" PlaceholderText="Select date" Width="150" CornerRadius="8"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="To" Style="{StaticResource CaptionTextStyle}"/>
+                            <CalendarDatePicker Date="{x:Bind ViewModel.EndDate, Mode=TwoWay, Converter={StaticResource DateConverter}}" PlaceholderText="Select date" Width="150" CornerRadius="8"/>
+                        </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="To" Style="{StaticResource CaptionTextStyle}"/>
-                        <CalendarDatePicker Date="{x:Bind ViewModel.EndDate, Mode=TwoWay, Converter={StaticResource DateConverter}}" PlaceholderText="Select date" Width="150" CornerRadius="8"/>
+
+                    <!-- Month Range -->
+                    <StackPanel Orientation="Horizontal" Spacing="12" Visibility="{x:Bind ViewModel.IsMonthVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="From" Style="{StaticResource CaptionTextStyle}"/>
+                            <ComboBox ItemsSource="{x:Bind ViewModel.Months}" SelectedItem="{x:Bind ViewModel.StartMonth, Mode=TwoWay}" Width="70" CornerRadius="8"/>
+                            <ComboBox ItemsSource="{x:Bind ViewModel.Years}" SelectedItem="{x:Bind ViewModel.StartYear, Mode=TwoWay}" Width="90" CornerRadius="8"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="To" Style="{StaticResource CaptionTextStyle}"/>
+                            <ComboBox ItemsSource="{x:Bind ViewModel.Months}" SelectedItem="{x:Bind ViewModel.EndMonth, Mode=TwoWay}" Width="70" CornerRadius="8"/>
+                            <ComboBox ItemsSource="{x:Bind ViewModel.Years}" SelectedItem="{x:Bind ViewModel.EndYear, Mode=TwoWay}" Width="90" CornerRadius="8"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Year Range -->
+                    <StackPanel Orientation="Horizontal" Spacing="12" Visibility="{x:Bind ViewModel.IsYearVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="From" Style="{StaticResource CaptionTextStyle}"/>
+                            <ComboBox ItemsSource="{x:Bind ViewModel.Years}" SelectedItem="{x:Bind ViewModel.StartYear, Mode=TwoWay}" Width="100" CornerRadius="8"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="To" Style="{StaticResource CaptionTextStyle}"/>
+                            <ComboBox ItemsSource="{x:Bind ViewModel.Years}" SelectedItem="{x:Bind ViewModel.EndYear, Mode=TwoWay}" Width="100" CornerRadius="8"/>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Month Range -->
-                <StackPanel Orientation="Horizontal" Spacing="12" Visibility="{x:Bind ViewModel.IsMonthVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="From" Style="{StaticResource CaptionTextStyle}"/>
-                        <ComboBox ItemsSource="{x:Bind ViewModel.Months}" SelectedItem="{x:Bind ViewModel.StartMonth, Mode=TwoWay}" Width="70" CornerRadius="8"/>
-                        <ComboBox ItemsSource="{x:Bind ViewModel.Years}" SelectedItem="{x:Bind ViewModel.StartYear, Mode=TwoWay}" Width="90" CornerRadius="8"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="To" Style="{StaticResource CaptionTextStyle}"/>
-                        <ComboBox ItemsSource="{x:Bind ViewModel.Months}" SelectedItem="{x:Bind ViewModel.EndMonth, Mode=TwoWay}" Width="70" CornerRadius="8"/>
-                        <ComboBox ItemsSource="{x:Bind ViewModel.Years}" SelectedItem="{x:Bind ViewModel.EndYear, Mode=TwoWay}" Width="90" CornerRadius="8"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Year Range -->
-                <StackPanel Orientation="Horizontal" Spacing="12" Visibility="{x:Bind ViewModel.IsYearVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="From" Style="{StaticResource CaptionTextStyle}"/>
-                        <ComboBox ItemsSource="{x:Bind ViewModel.Years}" SelectedItem="{x:Bind ViewModel.StartYear, Mode=TwoWay}" Width="100" CornerRadius="8"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="To" Style="{StaticResource CaptionTextStyle}"/>
-                        <ComboBox ItemsSource="{x:Bind ViewModel.Years}" SelectedItem="{x:Bind ViewModel.EndYear, Mode=TwoWay}" Width="100" CornerRadius="8"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <Button Content="Filter" Click="FilterButton_Click" Style="{StaticResource AppOutlineButtonStyle}" Padding="20,0" Height="36" CornerRadius="8"/>
+                <Button Content="Update Report" Click="FilterButton_Click" Style="{StaticResource AppPrimaryButtonStyle}" Padding="20,0" Height="36" CornerRadius="8"/>
             </StackPanel>
         </Grid>
 
