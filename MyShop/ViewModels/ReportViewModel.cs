@@ -1,12 +1,23 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using MyShop.Models;
+using MyShop.Services;
 
 namespace MyShop.ViewModels;
 
 public partial class ReportViewModel : ObservableObject
 {
-    public ReportViewModel()
+    private readonly IReportService _reportService;
+    private readonly ICategoryService _categoryService;
+
+    public ReportViewModel(IReportService reportService, ICategoryService categoryService)
     {
+        _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
+        _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
+        
+        // Default filters
         // Default filters
         DatePresets = new ObservableCollection<string>
         {
@@ -23,59 +34,19 @@ public partial class ReportViewModel : ObservableObject
         SelectedAnalyticsMode = "Top Products";
         IsCategoryFilterEnabled = true;
 
-        CategoryScopes = new ObservableCollection<string> { "All", "Coffee", "Tea", "Food", "Others" };
+        CategoryScopes = new ObservableCollection<string> { "All" };
         SelectedCategoryScope = "All";
+        _ = LoadCategoriesAsync();
 
         // Initialize Year/Month lists
         for (int i = 2020; i <= DateTime.Now.Year; i++) Years.Add(i);
         for (int i = 1; i <= 12; i++) Months.Add(i);
 
         StartYear = EndYear = DateTime.Now.Year;
-        StartMonth = 1;
-        EndMonth = DateTime.Now.Month;
-
         UpdateVisibility();
 
-        // Mock Statistics
-        ProductsCount = 42;
-        OrdersCount = 156;
-        TotalRevenue = 12500.50m;
-        TotalProfit = 4200.75m;
-
-        // Mock Sales Trend Data (Line Chart)
-        SalesTrend = new ObservableCollection<TrendPoint>
-        {
-            new TrendPoint("Mon", 45),
-            new TrendPoint("Tue", 52),
-            new TrendPoint("Wed", 48),
-            new TrendPoint("Thu", 70),
-            new TrendPoint("Fri", 65),
-            new TrendPoint("Sat", 85),
-            new TrendPoint("Sun", 75)
-        };
-
-        // Mock Revenue Data (Bar Chart)
-        RevenueData = new ObservableCollection<TrendPoint>
-        {
-            new TrendPoint("Week 1", 12000),
-            new TrendPoint("Week 2", 15000),
-            new TrendPoint("Week 3", 11000),
-            new TrendPoint("Week 4", 18000)
-        };
-
-        // Mock Profit Data (Pie Chart)
-        CategoryProfit = new ObservableCollection<ProfitPoint>
-        {
-            new ProfitPoint("Coffee", 4500000, "#3B82F6"),
-            new ProfitPoint("Food", 2800000, "#10B981"),
-            new ProfitPoint("Others", 1200000, "#F59E0B")
-        };
-
-        TopProducts.Add(new RankingPoint("Latte Art Coffee", 156, 780.00m));
-        TopProducts.Add(new RankingPoint("Green Tea Matcha", 124, 620.00m));
-        TopProducts.Add(new RankingPoint("Chocolate Cake", 98, 490.00m));
-        TopProducts.Add(new RankingPoint("Espresso Shot", 85, 255.00m));
-        TopProducts.Add(new RankingPoint("Iced Americano", 76, 228.00m));
+        // Load Initial Data
+        _ = RefreshData();
     }
 
     [ObservableProperty] private int productsCount;
@@ -108,6 +79,11 @@ public partial class ReportViewModel : ObservableObject
     [ObservableProperty] private string selectedAnalyticsMode;
     [ObservableProperty] private string selectedCategoryScope;
     [ObservableProperty] private bool isCategoryFilterEnabled;
+
+    public ObservableCollection<TrendPoint> SalesTrend { get; } = new();
+    public ObservableCollection<TrendPoint> RevenueData { get; } = new();
+    public ObservableCollection<ProfitPoint> CategoryProfit { get; } = new();
+    public ObservableCollection<RankingPoint> TopProducts { get; } = new();
 
     [ObservableProperty] private bool isTopProductsSelected = true;
     [ObservableProperty] private bool isTopCategoriesSelected;
@@ -225,45 +201,56 @@ public partial class ReportViewModel : ObservableObject
 
     public ObservableCollection<string> Periods { get; }
 
-    public ObservableCollection<TrendPoint> SalesTrend { get; }
-    public ObservableCollection<TrendPoint> RevenueData { get; }
-    public ObservableCollection<ProfitPoint> CategoryProfit { get; }
-    public ObservableCollection<RankingPoint> TopProducts { get; } = new();
-
-    public class RankingPoint
+    public async Task RefreshData()
     {
-        public RankingPoint(string name, double volume, decimal amount)
+        try
         {
-            Name = name;
-            Volume = volume;
-            Amount = amount;
+            var data = await _reportService.GetReportDataAsync(StartDate, EndDate, SelectedPeriod, SelectedCategoryScope);
+            
+            // 1. Summary
+            ProductsCount = data.Summary.ProductsCount;
+            OrdersCount = data.Summary.OrdersCount;
+            TotalRevenue = data.Summary.TotalRevenue;
+            TotalProfit = data.Summary.TotalProfit;
+
+            // 2. Trends
+            SalesTrend.Clear();
+            foreach (var p in data.SalesTrend) SalesTrend.Add(p);
+
+            RevenueData.Clear();
+            foreach (var p in data.RevenueTrend) RevenueData.Add(p);
+
+            // 3. Rankings
+            TopProducts.Clear();
+            foreach (var p in data.TopProducts) TopProducts.Add(p);
+
+            CategoryProfit.Clear();
+            foreach (var p in data.CategoryProfit) CategoryProfit.Add(p);
+
+            RequestChartRefresh?.Invoke(this, EventArgs.Empty);
         }
-        public string Name { get; }
-        public double Volume { get; }
-        public decimal Amount { get; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error refreshing report data: {ex.Message}");
+        }
     }
 
-    public class TrendPoint
+    public async Task LoadCategoriesAsync()
     {
-        public TrendPoint(string label, double value)
+        try
         {
-            Label = label;
-            Value = value;
+            var categories = await _categoryService.GetAll();
+            foreach (var cat in categories)
+            {
+                if (!CategoryScopes.Contains(cat.Name))
+                    CategoryScopes.Add(cat.Name);
+            }
         }
-        public string Label { get; }
-        public double Value { get; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading categories: {ex.Message}");
+        }
     }
 
-    public class ProfitPoint
-    {
-        public ProfitPoint(string category, double amount, string color)
-        {
-            Category = category;
-            Amount = amount;
-            Color = color;
-        }
-        public string Category { get; }
-        public double Amount { get; }
-        public string Color { get; }
-    }
+    public event EventHandler? RequestChartRefresh;
 }

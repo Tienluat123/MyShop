@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="MyShop.Views.Report.ReportPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,6 +7,7 @@
     xmlns:local="using:MyShop.Views.Report"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:MyShop.ViewModels"
+    xmlns:models="using:MyShop.Models"
     Name="RootPage"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
@@ -266,7 +267,7 @@
                             ItemsSource="{x:Bind ViewModel.TopProducts, Mode=OneWay}"
                             Visibility="{x:Bind ViewModel.IsTopProductsSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:ReportViewModel+RankingPoint">
+                                <DataTemplate x:DataType="models:RankingPoint">
                                     <Grid
                                         Padding="0,12"
                                         BorderBrush="{StaticResource SurfaceAlt}"
@@ -305,7 +306,7 @@
                             ItemsSource="{x:Bind ViewModel.CategoryProfit, Mode=OneWay}"
                             Visibility="{x:Bind ViewModel.IsTopCategoriesSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:ReportViewModel+ProfitPoint">
+                                <DataTemplate x:DataType="models:ProfitPoint">
                                     <Grid
                                         Padding="0,12"
                                         BorderBrush="{StaticResource SurfaceAlt}"

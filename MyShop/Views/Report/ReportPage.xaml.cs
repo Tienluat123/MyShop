@@ -17,8 +17,13 @@ public sealed partial class ReportPage : Page
     public ReportPage()
     {
         this.InitializeComponent();
-        ViewModel = new ReportViewModel();
+        ViewModel = (App.Services as MyShop.Di.ServiceContainer)!.Get<ReportViewModel>();
+        this.DataContext = ViewModel;
         this.Loaded += ReportPage_Loaded;
+        ViewModel.RequestChartRefresh += (s, e) => {
+            RenderSalesTrend();
+            RenderRevenueChart();
+        };
     }
 
     private void ReportPage_Loaded(object sender, RoutedEventArgs e)
@@ -27,7 +32,7 @@ public sealed partial class ReportPage : Page
         RenderRevenueChart();
     }
 
-    private void FilterButton_Click(object sender, RoutedEventArgs e)
+    private async void FilterButton_Click(object sender, RoutedEventArgs e)
     {
         // Sync dates based on granularity
         if (ViewModel.SelectedPeriod == "Month")
@@ -41,9 +46,7 @@ public sealed partial class ReportPage : Page
             ViewModel.EndDate = new DateTime(ViewModel.EndYear, 12, 31);
         }
 
-        // Re-render charts based on new filters
-        RenderSalesTrend();
-        RenderRevenueChart();
+        await ViewModel.RefreshData();
     }
 
     private void RenderSalesTrend()
