@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Category> Categories { get; set; } = null!;
     public DbSet<Product> Products { get; set; } = null!;
+    public DbSet<ProductImage> ProductImages { get; set; } = null!;
     public DbSet<Customer> Customers { get; set; } = null!;
     public DbSet<Promotion> Promotions { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
@@ -55,6 +56,32 @@ public class AppDbContext : DbContext
             .WithMany(c => c.Products)
             .HasForeignKey(p => p.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Product - ProductImages (1 to Many)
+        modelBuilder.Entity<ProductImage>()
+            .HasOne(pi => pi.Product)
+            .WithMany(p => p.ProductImages)
+            .HasForeignKey(pi => pi.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProductImage>()
+            .HasIndex(pi => new { pi.ProductId, pi.SortOrder })
+            .IsUnique();
+
+        // One primary image per product (partial index for PostgreSQL)
+        modelBuilder.Entity<ProductImage>()
+            .HasIndex(pi => pi.ProductId)
+            .HasFilter("\"IsPrimary\" = TRUE")
+            .IsUnique();
+
+        modelBuilder.Entity<ProductImage>()
+            .ToTable(t => t.HasCheckConstraint(
+                "CK_ProductImages_SortOrder_1_3",
+                "\"SortOrder\" >= 1 AND \"SortOrder\" <= 3"));
+
+        modelBuilder.Entity<ProductImage>()
+            .Property(pi => pi.CreatedAt)
+            .HasDefaultValueSql("NOW()");
 
         // ===== CUSTOMER RELATIONSHIPS =====
         // Customer - Orders (1 to Many)

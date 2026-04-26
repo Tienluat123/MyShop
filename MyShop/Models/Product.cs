@@ -26,4 +26,5 @@ public partial class Product : ObservableObject
     // Navigation properties
     public Category? Category { get; set; }
     public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+    public ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
 }
