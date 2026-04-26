@@ -12,30 +12,25 @@
         BorderBrush="{StaticResource SurfaceAlt}"
         BorderThickness="1"
         CornerRadius="16">
-        <StackPanel Spacing="12">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Border
-                    Width="32"
-                    Height="32"
-                    Background="{x:Bind IconBackground, Mode=OneWay}"
-                    CornerRadius="8">
-                    <FontIcon
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        FontSize="16"
-                        Foreground="White"
-                        Glyph="{x:Bind Icon, Mode=OneWay}" />
-                </Border>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    FontWeight="Medium"
-                    Style="{StaticResource CaptionTextStyle}"
-                    Text="{x:Bind Label, Mode=OneWay}" />
-            </StackPanel>
+
+        <StackPanel HorizontalAlignment="Center" Spacing="6">
+
+            <!--  value  -->
             <TextBlock
-                FontSize="24"
-                FontWeight="Bold"
+                HorizontalAlignment="Center"
+                FontSize="28"
+                FontWeight="SemiBold"
+                HorizontalTextAlignment="Center"
                 Text="{x:Bind Value, Mode=OneWay}" />
+
+            <!--  label  -->
+            <TextBlock
+                HorizontalAlignment="Center"
+                HorizontalTextAlignment="Center"
+                Opacity="0.75"
+                Style="{StaticResource CaptionTextStyle}"
+                Text="{x:Bind Label, Mode=OneWay}" />
+
         </StackPanel>
     </Border>
 </UserControl>
