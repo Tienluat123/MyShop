@@ -140,6 +140,26 @@
                     </StackPanel>
                 </Grid>
 
+                <StackPanel Spacing="6">
+                    <TextBlock Text="PRODUCT IMAGE"
+                               Foreground="#94A3B8"
+                               FontWeight="Bold"
+                               FontSize="11"/>
+
+                    <TextBox Text="{Binding ProductData.ImageUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="Paste image URL or choose image file..."
+                             CornerRadius="12"
+                             Padding="14,10"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <Button Content="Choose File"
+                                Click="ChooseImageFile_Click"
+                                CornerRadius="12"
+                                MinWidth="110"/>
+                    </StackPanel>
+                </StackPanel>
+
                 <TextBlock Text="{Binding ValidationMessage}"
                            Foreground="#DC2626"
                            FontSize="12"
