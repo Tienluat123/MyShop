@@ -70,7 +70,7 @@ public class ProductService : IProductService
         try
         {
             // Sử dụng GetAsync với Include để tải Category
-            var allProducts = await _productRepository.GetAsync(null, "Category");
+            var allProducts = await _productRepository.GetAsync(null, "Category", "ProductImages");
             var result = new PagedResult<Product>();
 
             if (paging == null)
@@ -118,7 +118,8 @@ public class ProductService : IProductService
 
         try
         {
-            return await _productRepository.GetByIdAsync(id);
+            var items = await _productRepository.GetAsync(p => p.Id == id, "Category", "ProductImages");
+            return items.FirstOrDefault();
         }
         catch (Exception ex)
         {
@@ -139,7 +140,8 @@ public class ProductService : IProductService
         {
             return await _productRepository.GetAsync(
                 p => p.CategoryId == categoryId,
-                "Category");
+                "Category",
+                "ProductImages");
         }
         catch (Exception ex)
         {
@@ -161,7 +163,8 @@ public class ProductService : IProductService
             var keywordLower = keyword.ToLower();
             return await _productRepository.GetAsync(
                 p => p.Name.ToLower().Contains(keywordLower),
-                "Category");
+                "Category",
+                "ProductImages");
         }
         catch (Exception ex)
         {

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Linq;
 
 namespace MyShop.Models;
 
@@ -22,6 +23,25 @@ public partial class Product : ObservableObject
     // UI/Display helpers - computed properties
     public bool HasCustomization => Category?.Name != "Pastries";
     public string DisplayPrice => HasCustomization ? $"from {Price:C}" : $"{Price:C}";
+    public string? PrimaryImageUrl =>
+        ProductImages
+            .OrderBy(pi => pi.SortOrder)
+            .FirstOrDefault(pi => pi.IsPrimary)?.ImageUrl
+        ?? ProductImages
+            .OrderBy(pi => pi.SortOrder)
+            .FirstOrDefault()?.ImageUrl
+        ?? ImagePath;
+
+    public IReadOnlyList<string> SecondaryImageUrls =>
+        ProductImages
+            .Where(pi => !pi.IsPrimary)
+            .OrderBy(pi => pi.SortOrder)
+            .Select(pi => pi.ImageUrl)
+            .Take(2)
+            .ToList();
+
+    public bool HasPrimaryImage => !string.IsNullOrWhiteSpace(PrimaryImageUrl);
+    public bool HasSecondaryImages => SecondaryImageUrls.Count > 0;
 
     // Navigation properties
     public Category? Category { get; set; }

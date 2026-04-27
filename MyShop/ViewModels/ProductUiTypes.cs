@@ -8,6 +8,11 @@ public sealed class ProductListEntry
     public string Category { get; set; } = string.Empty;
     public decimal CostPrice { get; set; }
     public decimal SellingPrice { get; set; }
+    public string? PrimaryImageUrl { get; set; }
+    public IReadOnlyList<string> SecondaryImageUrls { get; set; } = Array.Empty<string>();
+
+    public bool HasPrimaryImage => !string.IsNullOrWhiteSpace(PrimaryImageUrl);
+    public bool HasSecondaryImages => SecondaryImageUrls.Count > 0;
 
     public string SellingPriceText => $"{SellingPrice:N0} d";
     public string CostPriceText => $"{CostPrice:N0} d";

@@ -21,6 +21,7 @@
             x:Key="CategoryBackgroundConverter"
             ActiveBrush="{StaticResource Warning}"
             InactiveBrush="{StaticResource TransparentBrush}"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 
         <converters:EqualityToBrushConverter
@@ -320,10 +321,39 @@
 
                                         <Border Background="{StaticResource SurfaceAlt}"
                                                 CornerRadius="16,16,0,0">
-                                            <FontIcon
-                                                FontSize="{StaticResource Size40}"
-                                                Foreground="{StaticResource Gray200}"
-                                                Glyph="&#xEB9F;"/>
+                                            <Grid>
+                                                <FontIcon
+                                                    FontSize="{StaticResource Size40}"
+                                                    Foreground="{StaticResource Gray200}"
+                                                    Glyph="&#xEB9F;"/>
+                                                <Image Source="{Binding PrimaryImageUrl}"
+                                                       Stretch="UniformToFill"
+                                                       Visibility="{Binding HasPrimaryImage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                                <ItemsControl VerticalAlignment="Bottom"
+                                                              HorizontalAlignment="Right"
+                                                              Margin="0,0,8,8"
+                                                              ItemsSource="{Binding SecondaryImageUrls}"
+                                                              Visibility="{Binding HasSecondaryImages, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Width="18"
+                                                                    Height="18"
+                                                                    CornerRadius="4"
+                                                                    BorderBrush="White"
+                                                                    BorderThickness="1">
+                                                                <Image Source="{Binding}"
+                                                                       Stretch="UniformToFill"/>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Grid>
                                         </Border>
 
                                         <StackPanel
