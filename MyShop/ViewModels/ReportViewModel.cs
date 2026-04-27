@@ -1,7 +1,9 @@
-using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using MyShop.Models;
 using MyShop.Services;
 
@@ -76,6 +78,9 @@ public partial class ReportViewModel : ObservableObject
     [ObservableProperty] private string selectedCategoryScope;
     [ObservableProperty] private bool isCategoryFilterEnabled;
     [ObservableProperty] private string selectedTrendType;
+    [ObservableProperty] private int currentPage = 1;
+    [ObservableProperty] private int totalPages;
+    private const int PageSize = 10;
 
     partial void OnStartDateChanged(DateTime value) => _ = RefreshData();
     partial void OnEndDateChanged(DateTime value) => _ = RefreshData();
@@ -91,6 +96,7 @@ public partial class ReportViewModel : ObservableObject
     public ObservableCollection<TrendPoint> ProfitTrend { get; } = new();
     public ObservableCollection<ProfitPoint> CategoryProfit { get; } = new();
     public ObservableCollection<RankingPoint> TopProducts { get; } = new();
+    public ObservableCollection<RankingPoint> PagedTopProducts { get; } = new();
 
     [ObservableProperty] private bool isTopProductsSelected = true;
     [ObservableProperty] private bool isTopCategoriesSelected;
@@ -242,6 +248,7 @@ public partial class ReportViewModel : ObservableObject
             CategoryProfit.Clear();
             foreach (var p in data.CategoryProfit) CategoryProfit.Add(p);
 
+            UpdatePagedRankings();
             RequestChartRefresh?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex)
@@ -268,4 +275,35 @@ public partial class ReportViewModel : ObservableObject
     }
 
     public event EventHandler? RequestChartRefresh;
+
+    private void UpdatePagedRankings()
+    {
+        TotalPages = (int)Math.Ceiling(TopProducts.Count / (double)PageSize);
+        if (CurrentPage < 1) CurrentPage = 1;
+        if (CurrentPage > TotalPages && TotalPages > 0) CurrentPage = TotalPages;
+
+        PagedTopProducts.Clear();
+        var items = TopProducts.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        foreach (var item in items) PagedTopProducts.Add(item);
+    }
+
+    [RelayCommand]
+    private void NextPage()
+    {
+        if (CurrentPage < TotalPages)
+        {
+            CurrentPage++;
+            UpdatePagedRankings();
+        }
+    }
+
+    [RelayCommand]
+    private void PrevPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            UpdatePagedRankings();
+        }
+    }
 }
