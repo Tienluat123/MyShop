@@ -153,7 +153,7 @@ public class ReportService : IReportService
         return result;
     }
 
-    private DateTime GetStartOfWeek(DateTime dt) => dt.AddDays(-(int)dt.DayOfWeek);
+    private DateTime GetStartOfWeek(DateTime dt) => dt.Date.AddDays(-(int)dt.DayOfWeek);
     private int GetWeekOfYear(DateTime dt) => System.Globalization.CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dt, System.Globalization.DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, System.Globalization.DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
 
     private string GetCategoryColor(string? category) => category switch
