@@ -19,9 +19,10 @@ public class AppDbContext : DbContext
     public DbSet<Promotion> Promotions { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
     public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
+    public DbSet<ProductImage> ProductImages { get; set; } = null!;
+    public DbSet<LoyaltyTierConfig> LoyaltyTierConfigs { get; set; } = null!;
     public DbSet<UserSetting> UserSettings { get; set; } = null!;
     public DbSet<WorkSchedule> WorkSchedules { get; set; } = null!;
-    public DbSet<LoyaltyTierConfig> LoyaltyTierConfigs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,10 +89,38 @@ public class AppDbContext : DbContext
             .HasForeignKey(od => od.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Product - ProductImages (1 to Many)
+        modelBuilder.Entity<ProductImage>()
+            .HasOne(pi => pi.Product)
+            .WithMany(p => p.ProductImages)
+            .HasForeignKey(pi => pi.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProductImage>()
+            .Property(pi => pi.CreatedAt)
+            .HasDefaultValueSql("NOW()");
+
+        modelBuilder.Entity<ProductImage>()
+            .ToTable(t => t.HasCheckConstraint("CK_ProductImages_SortOrder_1_3", "\"SortOrder\" >= 1 AND \"SortOrder\" <= 3"));
+
+        modelBuilder.Entity<ProductImage>()
+            .HasIndex(pi => new { pi.ProductId, pi.SortOrder })
+            .IsUnique();
+
+        modelBuilder.Entity<ProductImage>()
+            .HasIndex(pi => pi.ProductId)
+            .IsUnique()
+            .HasFilter("\"IsPrimary\" = TRUE");
+
         // ===== UNIQUE CONSTRAINTS =====
         // PromoCode must be unique
         modelBuilder.Entity<Promotion>()
             .HasIndex(p => p.PromoCode)
+            .IsUnique();
+
+        // LoyaltyTierConfig.ConfigKey must be unique
+        modelBuilder.Entity<LoyaltyTierConfig>()
+            .HasIndex(c => c.ConfigKey)
             .IsUnique();
 
         // Username must be unique
@@ -127,11 +156,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Promotion>()
             .Property(p => p.MinOrderAmount)
             .HasPrecision(18, 2);
-
-        // LoyaltyTierConfig — store loyalty rules as key-value pairs
-        modelBuilder.Entity<LoyaltyTierConfig>()
-            .HasIndex(c => c.ConfigKey)
-            .IsUnique();
 
         // ===== DEFAULT VALUES =====
         modelBuilder.Entity<User>()
