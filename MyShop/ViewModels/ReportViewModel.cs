@@ -13,6 +13,7 @@ public partial class ReportViewModel : ObservableObject
 {
     private readonly IReportService _reportService;
     private readonly ICategoryService _categoryService;
+    private System.Threading.CancellationTokenSource? _cts;
 
     public ReportViewModel(IReportService reportService, ICategoryService categoryService)
     {
@@ -48,8 +49,7 @@ public partial class ReportViewModel : ObservableObject
         StartYear = EndYear = DateTime.Now.Year;
         UpdateVisibility();
 
-        // Load Initial Data
-        _ = RefreshData();
+        // Data is refreshed via property changes during initialization
     }
 
     [ObservableProperty] private int productsCount;
@@ -221,10 +221,18 @@ public partial class ReportViewModel : ObservableObject
 
     public async Task RefreshData()
     {
+        _cts?.Cancel();
+        _cts = new System.Threading.CancellationTokenSource();
+        var token = _cts.Token;
+
         try
         {
+            // Debounce slightly to allow multiple property changes to settle
+            await Task.Delay(50, token);
+
             var data = await _reportService.GetReportDataAsync(StartDate, EndDate, SelectedPeriod, SelectedCategoryScope);
-            
+            if (token.IsCancellationRequested) return;
+
             // 1. Summary
             ProductsCount = data.Summary.ProductsCount;
             OrdersCount = data.Summary.OrdersCount;
@@ -251,6 +259,7 @@ public partial class ReportViewModel : ObservableObject
             UpdatePagedRankings();
             RequestChartRefresh?.Invoke(this, EventArgs.Empty);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error refreshing report data: {ex.Message}");
