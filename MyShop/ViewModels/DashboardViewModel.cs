@@ -1,84 +1,81 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using MyShop.Models;
+using MyShop.Services;
+using System.Collections.ObjectModel;
 
 namespace MyShop.ViewModels;
 
 public partial class DashboardViewModel : ObservableObject
 {
-    public DashboardViewModel()
+    private readonly IProductService _productService;
+    private readonly IOrderService _orderService;
+
+    [ObservableProperty] private int _productsCount;
+    [ObservableProperty] private int _todayOrdersCount;
+    [ObservableProperty] private decimal _todayRevenue;
+    [ObservableProperty] private ObservableCollection<Product> _lowStockProducts = new();
+    [ObservableProperty] private ObservableCollection<Order> _recentOrders = new();
+    [ObservableProperty] private ObservableCollection<ChartDataPoint> _revenueTrend = new();
+    [ObservableProperty] private ObservableCollection<TopProduct> _topProducts = new();
+
+    public DashboardViewModel(IProductService productService, IOrderService orderService)
     {
-        // Mock metrics
-        ProductsCount = 7460;
-        Revenue = 42200;
-        OrdersCount = 1280;
-        CustomersCount = 980;
-
-        ProductTrend = new ObservableCollection<TrendPoint>
-        {
-            new TrendPoint("27/1", 1200),
-            new TrendPoint("28/1", 2500),
-            new TrendPoint("29/1", 1800),
-            new TrendPoint("30/1", 4200),
-            new TrendPoint("31/1", 4000),
-            new TrendPoint("1/2", 5200)
-        };
-
-        RevenueTrend = new ObservableCollection<TrendPoint>
-        {
-            new TrendPoint("27/1", 800),
-            new TrendPoint("28/1", 1700),
-            new TrendPoint("29/1", 2900),
-            new TrendPoint("30/1", 3600),
-            new TrendPoint("31/1", 1800)
-        };
-
-        TopProducts = new ObservableCollection<TopProduct>
-        {
-            new TopProduct("Caramel Latte", 500),
-            new TopProduct("Croissant", 450),
-            new TopProduct("Matcha Latte", 380),
-            new TopProduct("Blueberry Muffin", 310),
-            new TopProduct("Flat White", 210)
-        };
+        _productService = productService;
+        _orderService = orderService;
+        _ = LoadDashboardData();
     }
 
-    [ObservableProperty]
-    private int productsCount;
-
-    [ObservableProperty]
-    private int revenue;
-
-    [ObservableProperty]
-    private int ordersCount;
-
-    [ObservableProperty]
-    private int customersCount;
-
-    public ObservableCollection<TrendPoint> ProductTrend { get; }
-    public ObservableCollection<TrendPoint> RevenueTrend { get; }
-    public ObservableCollection<TopProduct> TopProducts { get; }
-
-    public class TrendPoint
+    public async Task LoadDashboardData()
+{
+    try 
     {
-        public TrendPoint(string label, int value)
-        {
-            Label = label;
-            Value = value;
-        }
+        // 1. Tổng số sản phẩm
+        var products = await _productService.GetAll();
+        ProductsCount = products.Pagination.TotalItems;
 
-        public string Label { get; }
-        public int Value { get; }
+        // 2. Top 5 sản phẩm sắp hết hàng (số lượng < 5)
+        var lowStock = await _productService.GetLowStockProducts(5, 5);
+        LowStockProducts = new ObservableCollection<Product>(lowStock);
+
+        // 3. Đơn hàng và doanh thu hôm nay (Chỉ tính đơn đã Paid)
+        TodayOrdersCount = await _orderService.GetTodayOrderCount();
+        TodayRevenue = await _orderService.GetTodayRevenue();
+
+        // 4. Chi tiết 3 đơn hàng gần nhất
+        var recent = await _orderService.GetRecentOrders(3);
+        RecentOrders = new ObservableCollection<Order>(recent);
+
+        // 5. Biểu đồ doanh thu tháng hiện tại
+        var now = DateTime.Now;
+        var trend = await _orderService.GetRevenueByDateInMonth(now.Month, now.Year);
+        
+        // Đảm bảo cập nhật UI Thread nếu cần
+        RevenueTrend = new ObservableCollection<ChartDataPoint>(
+            trend.Select(x => new ChartDataPoint { Label = x.Label, Value = (double)x.Value }));
+
+        // 6. Top 5 bán chạy
+        var topSelling = await _orderService.GetTopSellingProducts(5);
+        TopProducts = new ObservableCollection<TopProduct>(
+            topSelling.Select(x => new TopProduct { 
+                Name = x.Name, 
+                Amount = x.Quantity.ToString() 
+            }));
+    }
+    catch (Exception ex)
+    {
+        // Log error hoặc thông báo qua NotificationService
+    }
+}
+
+    public class ChartDataPoint
+    {
+        public string Label { get; set; } = string.Empty;
+        public double Value { get; set; }
     }
 
     public class TopProduct
     {
-        public TopProduct(string name, int amount)
-        {
-            Name = name;
-            Amount = amount;
-        }
-
-        public string Name { get; }
-        public int Amount { get; }
+        public string Name { get; set; } = string.Empty;
+        public string Amount { get; set; } = string.Empty;
     }
 }
