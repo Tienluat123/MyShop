@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<UserSetting> UserSettings { get; set; } = null!;
     public DbSet<WorkSchedule> WorkSchedules { get; set; } = null!;
     public DbSet<LoyaltyTierConfig> LoyaltyTierConfigs { get; set; } = null!;
+    public DbSet<Expense> Expenses { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -60,6 +60,22 @@ INSERT INTO "Orders" ("Id", "CustomerId", "UserId", "OrderDate", "SubTotal", "Di
 (102, 3, 2, NOW() - INTERVAL '35 days', 220000, 0, 242000, 'Paid', 'Completed', 'Dine-in', 'Table 4', '', NULL, 22000, 0, ''),
 (103, 4, 3, NOW() - INTERVAL '40 days', 45000, 0, 49500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 4500, 0, ''),
 (104, 5, 3, NOW() - INTERVAL '45 days', 110000, 0, 121000, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 11000, 0, ''),
+-- APRIL 2026 SALES (1/4 - 18/4)
+(200, 1, 2, NOW() - INTERVAL '26 days', 120000, 0, 132000, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 12000, 0, ''),
+(201, 2, 2, NOW() - INTERVAL '25 days', 45000, 0, 49500, 'Paid', 'Completed', 'Dine-in', 'Table 3', 'Birthday', NULL, 4500, 0, ''),
+(202, 3, 3, NOW() - INTERVAL '24 days', 280000, 20000, 286000, 'Paid', 'Completed', 'Dine-in', 'Table 1', 'Group', NULL, 26000, 0, ''),
+(203, 4, 3, NOW() - INTERVAL '22 days', 55000, 0, 60500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 5500, 0, ''),
+(204, 5, 5, NOW() - INTERVAL '21 days', 95000, 0, 104500, 'Paid', 'Completed', 'Dine-in', 'Table 5', '', NULL, 9500, 0, ''),
+(205, 1, 5, NOW() - INTERVAL '19 days', 35000, 0, 38500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 3500, 0, ''),
+(206, 2, 2, NOW() - INTERVAL '18 days', 150000, 10000, 154000, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 14000, 0, ''),
+(207, 3, 2, NOW() - INTERVAL '16 days', 60000, 0, 66000, 'Paid', 'Completed', 'Dine-in', 'Table 8', '', NULL, 6000, 0, ''),
+(208, 4, 3, NOW() - INTERVAL '15 days', 95000, 0, 104500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 9500, 0, ''),
+(209, 5, 3, NOW() - INTERVAL '14 days', 125000, 15000, 121000, 'Paid', 'Completed', 'Dine-in', 'Table 4', '', NULL, 11000, 0, ''),
+(210, 1, 5, NOW() - INTERVAL '13 days', 45000, 0, 49500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 4500, 0, ''),
+(211, 2, 5, NOW() - INTERVAL '12 days', 85000, 0, 93500, 'Paid', 'Completed', 'Dine-in', 'Table 1', '', NULL, 8500, 0, ''),
+(212, 3, 2, NOW() - INTERVAL '11 days', 110000, 0, 121000, 'Paid', 'Completed', 'Dine-in', 'Table 6', '', NULL, 11000, 0, ''),
+(213, 4, 2, NOW() - INTERVAL '10 days', 52000, 0, 57200, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 5200, 0, ''),
+(214, 5, 2, NOW() - INTERVAL '9 days', 75000, 5000, 77000, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 7000, 0, ''),
 -- FEBRUARY 2026 SALES
 (110, 1, 5, NOW() - INTERVAL '60 days', 300000, 20000, 310000, 'Paid', 'Completed', 'Dine-in', 'Table 10', 'Party', NULL, 30000, 0, ''),
 (111, 2, 5, NOW() - INTERVAL '65 days', 95000, 0, 104500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 9500, 0, ''),
@@ -148,7 +164,23 @@ INSERT INTO "OrderDetails" ("Id", "OrderId", "ProductId", "Quantity", "UnitPrice
 (113, 112, 18, 3, 40000, 15000, NULL), (114, 112, 1, 2, 30000, 10000, NULL),
 -- JANUARY DETAILS
 (120, 120, 19, 2, 35000, 12000, NULL), (121, 120, 20, 1, 65000, 28000, NULL),
-(122, 121, 2, 1, 45000, 18000, NULL), (123, 121, 10, 1, 32000, 8000, NULL)
+(122, 121, 2, 1, 45000, 18000, NULL), (123, 121, 10, 1, 32000, 8000, NULL),
+-- April 2026 Details (200-214)
+(400, 200, 2, 2, 45000, 18000, NULL), (401, 200, 15, 1, 95000, 42000, NULL),
+(402, 201, 3, 1, 50000, 20000, NULL), (403, 201, 9, 1, 30000, 8000, NULL),
+(404, 202, 14, 2, 85000, 35000, NULL), (405, 202, 23, 1, 75000, 32000, NULL), (406, 202, 7, 2, 52000, 22000, NULL),
+(407, 203, 11, 1, 35000, 10000, NULL), (408, 203, 1, 1, 30000, 10000, NULL),
+(409, 204, 3, 1, 50000, 20000, NULL), (410, 204, 17, 1, 45000, 18000, NULL),
+(411, 205, 12, 1, 38000, 12000, NULL),
+(412, 206, 6, 2, 48000, 15000, NULL), (413, 206, 17, 1, 45000, 18000, NULL),
+(414, 207, 5, 1, 55000, 22000, NULL), (415, 207, 1, 1, 30000, 10000, NULL),
+(416, 208, 15, 1, 95000, 42000, NULL),
+(417, 209, 2, 2, 45000, 18000, NULL), (418, 209, 10, 1, 32000, 8000, NULL),
+(419, 210, 3, 1, 50000, 20000, NULL),
+(420, 211, 4, 1, 40000, 12000, NULL), (421, 211, 14, 1, 85000, 35000, NULL),
+(422, 212, 5, 2, 55000, 22000, NULL),
+(423, 213, 7, 1, 52000, 22000, NULL),
+(424, 214, 15, 1, 95000, 42000, NULL)
 ON CONFLICT ("Id") DO UPDATE SET
     "OrderId" = EXCLUDED."OrderId",
     "ProductId" = EXCLUDED."ProductId",

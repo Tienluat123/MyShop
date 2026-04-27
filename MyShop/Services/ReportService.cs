@@ -12,15 +12,18 @@ public class ReportService : IReportService
     private readonly IRepository<Order> _orderRepository;
     private readonly IRepository<Product> _productRepository;
     private readonly IRepository<OrderDetail> _orderDetailRepository;
+    private readonly IRepository<Expense> _expenseRepository;
 
     public ReportService(
         IRepository<Order> orderRepository,
         IRepository<Product> productRepository,
-        IRepository<OrderDetail> orderDetailRepository)
+        IRepository<OrderDetail> orderDetailRepository,
+        IRepository<Expense> expenseRepository)
     {
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
         _orderDetailRepository = orderDetailRepository ?? throw new ArgumentNullException(nameof(orderDetailRepository));
+        _expenseRepository = expenseRepository ?? throw new ArgumentNullException(nameof(expenseRepository));
     }
 
     public async Task<ReportData> GetReportDataAsync(DateTime start, DateTime end, string granularity, string categoryScope = "All")
@@ -60,10 +63,24 @@ public class ReportService : IReportService
         data.Summary.TotalProfit = filteredDetails.Sum(od => od.Quantity * (od.UnitPrice - od.UnitCostPrice));
         data.Summary.ProductsCount = filteredDetails.Sum(od => od.Quantity);
 
+        // Fetch Expenses for net profit
+        var expenses = await _expenseRepository.GetAsync(e => 
+            e.Date >= start.ToUniversalTime() && e.Date <= end.ToUniversalTime());
+        if (categoryScope == "All")
+        {
+            data.Summary.TotalProfit -= expenses.Sum(e => e.Amount);
+        }
+
         // 4. Trends with Hole-Filling
         data.SalesTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = d.Quantity }), start, end, granularity);
         data.RevenueTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * d.UnitPrice) }), start, end, granularity);
-        data.ProfitTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * (d.UnitPrice - d.UnitCostPrice)) }), start, end, granularity);
+        
+        var grossProfitTrend = filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * (d.UnitPrice - d.UnitCostPrice)) });
+        var expenseTrend = categoryScope == "All" 
+            ? expenses.Select(e => new TrendItem { Date = e.Date, Value = -(double)e.Amount }) 
+            : Enumerable.Empty<TrendItem>();
+            
+        data.ProfitTrend = GroupAndFillHoles(grossProfitTrend.Concat(expenseTrend), start, end, granularity);
 
         // 5. Rankings (All products with 1+ sales)
         data.TopProducts = filteredDetails
