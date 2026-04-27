@@ -25,4 +25,6 @@ public sealed class ProductInputData
     public string CostPrice { get; set; } = string.Empty;
     public string SellingPrice { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
+    public string SecondaryImageUrl1 { get; set; } = string.Empty;
+    public string SecondaryImageUrl2 { get; set; } = string.Empty;
 }

@@ -5,6 +5,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using MyShop.ViewModels;
 
@@ -18,12 +19,24 @@ public sealed partial class ProductFormView : ContentDialog
     {
         this.InitializeComponent();
         this.DataContext = viewModel;
-        UpdateImagePreview(viewModel.ProductData.ImageUrl);
+        UpdateImagePreview(viewModel.ProductData.ImageUrl, PrimaryImagePreview, PrimaryImagePreviewPlaceholder);
+        UpdateImagePreview(viewModel.ProductData.SecondaryImageUrl1, SecondaryImage1Preview, SecondaryImage1PreviewPlaceholder);
+        UpdateImagePreview(viewModel.ProductData.SecondaryImageUrl2, SecondaryImage2Preview, SecondaryImage2PreviewPlaceholder);
     }
 
-    private void ImageUrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void PrimaryImageUrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        UpdateImagePreview(ImageUrlTextBox.Text);
+        UpdateImagePreview(PrimaryImageUrlTextBox.Text, PrimaryImagePreview, PrimaryImagePreviewPlaceholder);
+    }
+
+    private void SecondaryImage1UrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateImagePreview(SecondaryImage1UrlTextBox.Text, SecondaryImage1Preview, SecondaryImage1PreviewPlaceholder);
+    }
+
+    private void SecondaryImage2UrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateImagePreview(SecondaryImage2UrlTextBox.Text, SecondaryImage2Preview, SecondaryImage2PreviewPlaceholder);
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -43,7 +56,42 @@ public sealed partial class ProductFormView : ContentDialog
             this.Hide();
     }
 
-    private async void ChooseImageFile_Click(object sender, RoutedEventArgs e)
+    private async void ChoosePrimaryImageFile_Click(object sender, RoutedEventArgs e)
+    {
+        await PickImageFileAndAssignAsync(
+            path => ViewModel!.ProductData.ImageUrl = path,
+            () => ViewModel?.ProductData.ImageUrl,
+            PrimaryImagePreview,
+            PrimaryImagePreviewPlaceholder,
+            "Primary image selected successfully.");
+    }
+
+    private async void ChooseSecondaryImage1File_Click(object sender, RoutedEventArgs e)
+    {
+        await PickImageFileAndAssignAsync(
+            path => ViewModel!.ProductData.SecondaryImageUrl1 = path,
+            () => ViewModel?.ProductData.SecondaryImageUrl1,
+            SecondaryImage1Preview,
+            SecondaryImage1PreviewPlaceholder,
+            "Secondary image 1 selected successfully.");
+    }
+
+    private async void ChooseSecondaryImage2File_Click(object sender, RoutedEventArgs e)
+    {
+        await PickImageFileAndAssignAsync(
+            path => ViewModel!.ProductData.SecondaryImageUrl2 = path,
+            () => ViewModel?.ProductData.SecondaryImageUrl2,
+            SecondaryImage2Preview,
+            SecondaryImage2PreviewPlaceholder,
+            "Secondary image 2 selected successfully.");
+    }
+
+    private async Task PickImageFileAndAssignAsync(
+        Action<string> assignPath,
+        Func<string?> getCurrentPath,
+        Image previewImage,
+        UIElement previewPlaceholder,
+        string successMessage)
     {
         try
         {
@@ -74,10 +122,10 @@ public sealed partial class ProductFormView : ContentDialog
 
             await CopyFileToPath(sourceFile, targetPath);
 
-            ViewModel.ProductData.ImageUrl = targetPath;
-            ViewModel.ValidationMessage = "Image file selected successfully.";
+            assignPath(targetPath);
+            ViewModel.ValidationMessage = successMessage;
             ViewModel.ValidateProductFormCommand.Execute(null);
-            UpdateImagePreview(targetPath);
+            UpdateImagePreview(getCurrentPath(), previewImage, previewPlaceholder);
         }
         catch (Exception ex)
         {
@@ -95,13 +143,13 @@ public sealed partial class ProductFormView : ContentDialog
         await sourceStream.CopyToAsync(destinationStream);
     }
 
-    private void UpdateImagePreview(string? imagePathOrUrl)
+    private void UpdateImagePreview(string? imagePathOrUrl, Image previewImage, UIElement previewPlaceholder)
     {
         if (string.IsNullOrWhiteSpace(imagePathOrUrl))
         {
-            ImagePreview.Source = null;
-            ImagePreview.Visibility = Visibility.Collapsed;
-            ImagePreviewPlaceholder.Visibility = Visibility.Visible;
+            previewImage.Source = null;
+            previewImage.Visibility = Visibility.Collapsed;
+            previewPlaceholder.Visibility = Visibility.Visible;
             return;
         }
 
@@ -117,9 +165,9 @@ public sealed partial class ProductFormView : ContentDialog
                 var fullPath = Path.GetFullPath(imagePathOrUrl.Trim());
                 if (!File.Exists(fullPath))
                 {
-                    ImagePreview.Source = null;
-                    ImagePreview.Visibility = Visibility.Collapsed;
-                    ImagePreviewPlaceholder.Visibility = Visibility.Visible;
+                    previewImage.Source = null;
+                    previewImage.Visibility = Visibility.Collapsed;
+                    previewPlaceholder.Visibility = Visibility.Visible;
                     return;
                 }
 
@@ -127,15 +175,15 @@ public sealed partial class ProductFormView : ContentDialog
             }
 
             var bitmap = new BitmapImage(previewUri);
-            ImagePreview.Source = bitmap;
-            ImagePreview.Visibility = Visibility.Visible;
-            ImagePreviewPlaceholder.Visibility = Visibility.Collapsed;
+            previewImage.Source = bitmap;
+            previewImage.Visibility = Visibility.Visible;
+            previewPlaceholder.Visibility = Visibility.Collapsed;
         }
         catch
         {
-            ImagePreview.Source = null;
-            ImagePreview.Visibility = Visibility.Collapsed;
-            ImagePreviewPlaceholder.Visibility = Visibility.Visible;
+            previewImage.Source = null;
+            previewImage.Visibility = Visibility.Collapsed;
+            previewPlaceholder.Visibility = Visibility.Visible;
         }
     }
 }

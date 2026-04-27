@@ -74,7 +74,9 @@ public partial class ProductFormViewModel : ObservableObject
                 Category = product.Category,
                 CostPrice = product.CostPrice.ToString("N0"),
                 SellingPrice = product.SellingPrice.ToString("N0"),
-                ImageUrl = product.PrimaryImageUrl ?? string.Empty
+                ImageUrl = product.PrimaryImageUrl ?? string.Empty,
+                SecondaryImageUrl1 = product.SecondaryImageUrls.ElementAtOrDefault(0) ?? string.Empty,
+                SecondaryImageUrl2 = product.SecondaryImageUrls.ElementAtOrDefault(1) ?? string.Empty
             };
         }
         else
@@ -187,7 +189,7 @@ public partial class ProductFormViewModel : ObservableObject
                 existing.CategoryId = category.Id;
                 existing.Price = sellingPrice;
                 await productService.Update(existing);
-                await UpsertPrimaryProductImage(existing.Id, ProductData.ImageUrl);
+                await UpsertProductImages(existing.Id);
             }
             else
             {
@@ -198,7 +200,7 @@ public partial class ProductFormViewModel : ObservableObject
                     Price = sellingPrice
                 });
 
-                await UpsertPrimaryProductImage(created.Id, ProductData.ImageUrl);
+                await UpsertProductImages(created.Id);
             }
 
             onSaved();
@@ -211,7 +213,14 @@ public partial class ProductFormViewModel : ObservableObject
         }
     }
 
-    private async Task UpsertPrimaryProductImage(int productId, string? imageUrl)
+    private async Task UpsertProductImages(int productId)
+    {
+        await UpsertProductImageAtSortOrder(productId, ProductData.ImageUrl, 1, true);
+        await UpsertProductImageAtSortOrder(productId, ProductData.SecondaryImageUrl1, 2, false);
+        await UpsertProductImageAtSortOrder(productId, ProductData.SecondaryImageUrl2, 3, false);
+    }
+
+    private async Task UpsertProductImageAtSortOrder(int productId, string? imageUrl, int sortOrder, bool isPrimary)
     {
         if (string.IsNullOrWhiteSpace(imageUrl))
         {
@@ -221,33 +230,34 @@ public partial class ProductFormViewModel : ObservableObject
         var normalizedUrl = imageUrl.Trim();
         var existingImages = await productImageRepository.GetAsync(pi => pi.ProductId == productId);
 
-        var primaryImage = existingImages
-            .OrderBy(pi => pi.SortOrder)
-            .FirstOrDefault(pi => pi.IsPrimary)
-            ?? existingImages.FirstOrDefault(pi => pi.SortOrder == 1);
-
-        if (primaryImage is null)
+        var targetImage = existingImages.FirstOrDefault(pi => pi.SortOrder == sortOrder);
+        if (targetImage is null)
         {
             await productImageRepository.AddAsync(new ProductImage
             {
                 ProductId = productId,
                 ImageUrl = normalizedUrl,
-                SortOrder = 1,
-                IsPrimary = true,
+                SortOrder = sortOrder,
+                IsPrimary = isPrimary,
                 CreatedAt = DateTime.UtcNow
             });
-            return;
+        }
+        else
+        {
+            targetImage.ImageUrl = normalizedUrl;
+            targetImage.SortOrder = sortOrder;
+            targetImage.IsPrimary = isPrimary;
+            await productImageRepository.UpdateAsync(targetImage);
         }
 
-        primaryImage.ImageUrl = normalizedUrl;
-        primaryImage.SortOrder = 1;
-        primaryImage.IsPrimary = true;
-        await productImageRepository.UpdateAsync(primaryImage);
-
-        foreach (var duplicatePrimary in existingImages.Where(pi => pi.Id != primaryImage.Id && pi.IsPrimary))
+        if (isPrimary)
         {
-            duplicatePrimary.IsPrimary = false;
-            await productImageRepository.UpdateAsync(duplicatePrimary);
+            var refreshedImages = await productImageRepository.GetAsync(pi => pi.ProductId == productId);
+            foreach (var duplicatePrimary in refreshedImages.Where(pi => pi.SortOrder != sortOrder && pi.IsPrimary))
+            {
+                duplicatePrimary.IsPrimary = false;
+                await productImageRepository.UpdateAsync(duplicatePrimary);
+            }
         }
     }
 

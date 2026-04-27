@@ -146,19 +146,23 @@
                                FontWeight="Bold"
                                FontSize="11"/>
 
+                    <TextBlock Text="Primary image"
+                           Foreground="#64748B"
+                           FontSize="12"/>
+
                     <TextBox Text="{Binding ProductData.ImageUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             x:Name="ImageUrlTextBox"
-                             TextChanged="ImageUrlTextBox_TextChanged"
+                         x:Name="PrimaryImageUrlTextBox"
+                         TextChanged="PrimaryImageUrlTextBox_TextChanged"
                              PlaceholderText="Paste image URL or choose image file..."
                              CornerRadius="12"
                              Padding="14,10"/>
 
                     <StackPanel Orientation="Horizontal"
                                 Spacing="10">
-                        <Button Content="Choose File"
-                                Click="ChooseImageFile_Click"
+                    <Button Content="Choose Primary"
+                        Click="ChoosePrimaryImageFile_Click"
                                 CornerRadius="12"
-                                MinWidth="110"/>
+                        MinWidth="130"/>
                     </StackPanel>
 
                     <Border Background="#F8FAFC"
@@ -167,7 +171,7 @@
                             CornerRadius="12"
                             Padding="10">
                         <Grid>
-                            <StackPanel x:Name="ImagePreviewPlaceholder"
+                            <StackPanel x:Name="PrimaryImagePreviewPlaceholder"
                                         Orientation="Horizontal"
                                         Spacing="8"
                                         VerticalAlignment="Center"
@@ -179,8 +183,96 @@
                                            FontSize="12"/>
                             </StackPanel>
 
-                            <Image x:Name="ImagePreview"
+                            <Image x:Name="PrimaryImagePreview"
                                    Height="140"
+                                   Stretch="Uniform"
+                                   Visibility="Collapsed"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="Secondary image 1"
+                               Foreground="#64748B"
+                               FontSize="12"/>
+
+                    <TextBox Text="{Binding ProductData.SecondaryImageUrl1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             x:Name="SecondaryImage1UrlTextBox"
+                             TextChanged="SecondaryImage1UrlTextBox_TextChanged"
+                             PlaceholderText="Paste secondary image URL..."
+                             CornerRadius="12"
+                             Padding="14,10"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <Button Content="Choose Secondary 1"
+                                Click="ChooseSecondaryImage1File_Click"
+                                CornerRadius="12"
+                                MinWidth="150"/>
+                    </StackPanel>
+
+                    <Border Background="#F8FAFC"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="10">
+                        <Grid>
+                            <StackPanel x:Name="SecondaryImage1PreviewPlaceholder"
+                                        Orientation="Horizontal"
+                                        Spacing="8"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xEB9F;"
+                                          Foreground="#94A3B8"/>
+                                <TextBlock Text="Secondary image 1 preview"
+                                           Foreground="#94A3B8"
+                                           FontSize="12"/>
+                            </StackPanel>
+
+                            <Image x:Name="SecondaryImage1Preview"
+                                   Height="120"
+                                   Stretch="Uniform"
+                                   Visibility="Collapsed"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="Secondary image 2"
+                               Foreground="#64748B"
+                               FontSize="12"/>
+
+                    <TextBox Text="{Binding ProductData.SecondaryImageUrl2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             x:Name="SecondaryImage2UrlTextBox"
+                             TextChanged="SecondaryImage2UrlTextBox_TextChanged"
+                             PlaceholderText="Paste secondary image URL..."
+                             CornerRadius="12"
+                             Padding="14,10"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <Button Content="Choose Secondary 2"
+                                Click="ChooseSecondaryImage2File_Click"
+                                CornerRadius="12"
+                                MinWidth="150"/>
+                    </StackPanel>
+
+                    <Border Background="#F8FAFC"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="10">
+                        <Grid>
+                            <StackPanel x:Name="SecondaryImage2PreviewPlaceholder"
+                                        Orientation="Horizontal"
+                                        Spacing="8"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xEB9F;"
+                                          Foreground="#94A3B8"/>
+                                <TextBlock Text="Secondary image 2 preview"
+                                           Foreground="#94A3B8"
+                                           FontSize="12"/>
+                            </StackPanel>
+
+                            <Image x:Name="SecondaryImage2Preview"
+                                   Height="120"
                                    Stretch="Uniform"
                                    Visibility="Collapsed"/>
                         </Grid>
