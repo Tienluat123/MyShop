@@ -240,6 +240,7 @@ public partial class App : Application
             container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(contextFactory));
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(contextFactory));
             container.Register<IRepository<LoyaltyTierConfig>>(new Repository<LoyaltyTierConfig>(contextFactory));
+            container.Register<IRepository<ProductImage>>(new Repository<ProductImage>(contextFactory));
 
             // ===== Register Business Logic Layer (Services) =====
             var dialogService = new DialogService();
