@@ -33,6 +33,13 @@
             <FontIcon Glyph="&#xE7C3;"/>
           </NavigationViewItem.Icon>
         </NavigationViewItem>
+        <NavigationViewItem Content="REPORTS"
+                            Tag="ReportPage"
+                            Style="{StaticResource SidebarItemStyle}">
+          <NavigationViewItem.Icon>
+            <FontIcon Glyph="&#xE9D2;"/>
+          </NavigationViewItem.Icon>
+        </NavigationViewItem>
         <NavigationViewItem Content="POS"
                             Tag="PosPage"
                             Style="{StaticResource SidebarItemStyle}">

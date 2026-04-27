@@ -261,6 +261,13 @@ public partial class App : Application
                 container.Get<IRepository<AppConfig>>()
             ));
 
+            var reportService = new ReportService(
+                container.Get<IRepository<Order>>(),
+                container.Get<IRepository<Product>>(),
+                container.Get<IRepository<OrderDetail>>()
+            );
+            container.Register<IReportService>(reportService);
+
             container.Register<IAuthService>(new AuthService(contextFactory));
 
             container.Register<WeeklyRosterViewModel>(new WeeklyRosterViewModel(
@@ -297,6 +304,11 @@ public partial class App : Application
             ));
 
             container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
+
+            container.Register<ReportViewModel>(new ReportViewModel(
+                container.Get<IReportService>(),
+                container.Get<ICategoryService>()
+            ));
 
             Services = container;
         }

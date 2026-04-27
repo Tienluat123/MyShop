@@ -18,6 +18,9 @@ public partial class Product : ObservableObject
     private decimal price; // Giá bán
 
     [ObservableProperty]
+    private decimal baseCostPrice; // Giá vốn
+
+    [ObservableProperty]
     private string? imagePath; // Đường dẫn ảnh
 
     // Navigation properties

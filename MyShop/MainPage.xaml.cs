@@ -9,6 +9,7 @@ using MyShop.Views.Pos;
 using MyShop.Views.ProductManagement;
 using MyShop.Views.Promotion;
 using MyShop.Views.StaffManagement;
+using MyShop.Views.Report;
 using MyShop.Di;
 using MyShop.Services;
 
@@ -59,6 +60,7 @@ public sealed partial class MainPage : Page
         Type? pageType = tag switch
         {
             "DashboardPage" => typeof(DashboardPage),
+            "ReportPage" => typeof(ReportPage),
             "PosPage" => typeof(PosPage),
             "ManageProductPage" => typeof(ManageProductPage),
             "CustomersPage" => typeof(CustomerPage),

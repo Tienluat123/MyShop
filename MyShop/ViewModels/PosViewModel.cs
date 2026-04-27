@@ -237,6 +237,7 @@ public partial class PosViewModel : ObservableObject
                 ProductId = product.Id,
                 Quantity = 1,
                 UnitPrice = product.Price,
+                UnitCostPrice = product.BaseCostPrice,
                 Product = product
             };
             _currentDraftOrder.OrderDetails.Add(detail);
@@ -254,13 +255,26 @@ public partial class PosViewModel : ObservableObject
         // For simplicity, treating customized items as new entries or matching by notes
         var notes = param.Options != null ? SerializeOptions(param.Options) : null;
 
-        // Compute unit price including size and addons, when applicable
+        // Compute unit price and cost including size and addons, when applicable
         decimal unitPrice = param.Product.Price;
+        decimal unitCost = param.Product.BaseCostPrice;
+
         if (param.Options != null && (param.Product.Category?.HasCustomization == true))
         {
-            if (param.Options.Size == "M") unitPrice += 15000;
-            else if (param.Options.Size == "L") unitPrice += 25000;
-            unitPrice += (param.Options.AddOns?.Count ?? 0) * 10000;
+            if (param.Options.Size == "M")
+            {
+                unitPrice += 15000;
+                unitCost += 5000;
+            }
+            else if (param.Options.Size == "L")
+            {
+                unitPrice += 25000;
+                unitCost += 8000;
+            }
+            
+            var addOnCount = param.Options.AddOns?.Count ?? 0;
+            unitPrice += addOnCount * 10000;
+            unitCost += addOnCount * 3000;
         }
 
         var detail = _currentDraftOrder!.OrderDetails.FirstOrDefault(od =>
@@ -276,6 +290,7 @@ public partial class PosViewModel : ObservableObject
                 ProductId = param.Product.Id,
                 Quantity = param.Quantity,
                 UnitPrice = unitPrice,
+                UnitCostPrice = unitCost,
                 Product = param.Product,
                 Notes = notes
             });
