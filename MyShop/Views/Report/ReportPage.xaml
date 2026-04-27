@@ -442,6 +442,69 @@
                         </Grid>
                     </Grid>
                 </Border>
+
+                <!--  Tier 4: Operating Expenses  -->
+                <Grid ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="400" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  Add Expense Form  -->
+                    <Border
+                        Padding="24"
+                        Background="{StaticResource SurfaceBackground}"
+                        BorderBrush="{StaticResource SurfaceAlt}"
+                        BorderThickness="1"
+                        CornerRadius="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Log Expense" />
+                            <TextBox Header="Expense Name" PlaceholderText="e.g. Electricity, Rent" Text="{x:Bind ViewModel.NewExpenseTitle, Mode=TwoWay}" />
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <NumberBox Header="Amount" PlaceholderText="0.00" SmallChange="1000" Value="{x:Bind ViewModel.NewExpenseAmount, Mode=TwoWay, Converter={StaticResource CurrencyConverter}}" />
+                                <ComboBox Grid.Column="1" Header="Category" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.ExpenseCategories}" SelectedItem="{x:Bind ViewModel.NewExpenseCategory, Mode=TwoWay}" />
+                            </Grid>
+                            <Button HorizontalAlignment="Right" Command="{x:Bind ViewModel.AddExpenseCommand}" Content="Add Expense" CornerRadius="8" Style="{StaticResource AppPrimaryButtonStyle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Recent Expenses List  -->
+                    <Border
+                        Grid.Column="1"
+                        Padding="24"
+                        Background="{StaticResource SurfaceBackground}"
+                        BorderBrush="{StaticResource SurfaceAlt}"
+                        BorderThickness="1"
+                        CornerRadius="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Recent Overhead" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.RecentExpenses, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Expense">
+                                        <Grid Padding="0,8" BorderBrush="{StaticResource SurfaceAlt}" BorderThickness="0,0,0,1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock FontWeight="Medium" Text="{x:Bind Title}" />
+                                                <TextBlock Style="{StaticResource CaptionMutedTextStyle}" Text="{x:Bind Category}" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Margin="24,0" VerticalAlignment="Center" Foreground="{StaticResource Gray400}" Style="{StaticResource CaptionTextStyle}" Text="{x:Bind Date, Converter={StaticResource DateConverter}}" />
+                                            <TextBlock Grid.Column="2" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource DangerColor}" Text="{x:Bind Amount, Converter={StaticResource CurrencyConverter}}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock HorizontalAlignment="Center" IsHitTestVisible="False" Style="{StaticResource CaptionMutedTextStyle}" Text="Showing last 5 entries for current range" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
     </Grid>

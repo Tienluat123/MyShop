@@ -6,6 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MyShop.Models;
 using MyShop.Services;
+using MyShop.Data;
+using System;
 
 namespace MyShop.ViewModels;
 
@@ -13,14 +15,15 @@ public partial class ReportViewModel : ObservableObject
 {
     private readonly IReportService _reportService;
     private readonly ICategoryService _categoryService;
+    private readonly IRepository<Expense> _expenseRepository;
     private System.Threading.CancellationTokenSource? _cts;
 
-    public ReportViewModel(IReportService reportService, ICategoryService categoryService)
+    public ReportViewModel(IReportService reportService, ICategoryService categoryService, IRepository<Expense> expenseRepository)
     {
         _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
         _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
+        _expenseRepository = expenseRepository ?? throw new ArgumentNullException(nameof(expenseRepository));
         
-        // Default filters
         // Default filters
         DatePresets = new ObservableCollection<string>
         {
@@ -48,8 +51,6 @@ public partial class ReportViewModel : ObservableObject
 
         StartYear = EndYear = DateTime.Now.Year;
         UpdateVisibility();
-
-        // Data is refreshed via property changes during initialization
     }
 
     [ObservableProperty] private int productsCount;
@@ -58,26 +59,26 @@ public partial class ReportViewModel : ObservableObject
     [ObservableProperty] private decimal totalProfit;
 
     [ObservableProperty]
-    private string selectedPeriod;
+    private string selectedPeriod = "Day";
 
     [ObservableProperty] private bool isDayWeekVisible;
     [ObservableProperty] private bool isMonthVisible;
     [ObservableProperty] private bool isYearVisible;
 
-    [ObservableProperty] private int startMonth;
-    [ObservableProperty] private int startYear;
-    [ObservableProperty] private int endMonth;
-    [ObservableProperty] private int endYear;
+    [ObservableProperty] private int startMonth = DateTime.Now.Month;
+    [ObservableProperty] private int startYear = DateTime.Now.Year;
+    [ObservableProperty] private int endMonth = DateTime.Now.Month;
+    [ObservableProperty] private int endYear = DateTime.Now.Year;
 
     public ObservableCollection<int> Years { get; } = new();
     public ObservableCollection<int> Months { get; } = new();
 
     [ObservableProperty] private bool isCustomRangeVisible;
-    [ObservableProperty] private string selectedDatePreset;
-    [ObservableProperty] private string selectedAnalyticsMode;
-    [ObservableProperty] private string selectedCategoryScope;
+    [ObservableProperty] private string selectedDatePreset = "Last 30 days";
+    [ObservableProperty] private string selectedAnalyticsMode = "Top Products";
+    [ObservableProperty] private string selectedCategoryScope = "All";
     [ObservableProperty] private bool isCategoryFilterEnabled;
-    [ObservableProperty] private string selectedTrendType;
+    [ObservableProperty] private string selectedTrendType = "Sales";
     [ObservableProperty] private int currentPage = 1;
     [ObservableProperty] private int totalPages;
     private const int PageSize = 10;
@@ -97,6 +98,13 @@ public partial class ReportViewModel : ObservableObject
     public ObservableCollection<ProfitPoint> CategoryProfit { get; } = new();
     public ObservableCollection<RankingPoint> TopProducts { get; } = new();
     public ObservableCollection<RankingPoint> PagedTopProducts { get; } = new();
+    public ObservableCollection<Expense> RecentExpenses { get; } = new();
+    public ObservableCollection<string> ExpenseCategories { get; } = new() { "Rent", "Utilities", "Batch", "Marketing", "Salaries", "Other" };
+
+    [ObservableProperty] private string newExpenseTitle = string.Empty;
+    [ObservableProperty] private decimal newExpenseAmount;
+    [ObservableProperty] private string newExpenseCategory = "Other";
+    [ObservableProperty] private bool isAddingExpense;
 
     [ObservableProperty] private bool isTopProductsSelected = true;
     [ObservableProperty] private bool isTopCategoriesSelected;
@@ -201,7 +209,7 @@ public partial class ReportViewModel : ObservableObject
         }
     }
 
-    public ObservableCollection<string> DatePresets { get; } = new();
+    public ObservableCollection<string> DatePresets { get; }
     public ObservableCollection<string> AvailablePeriods { get; }
 
     private void UpdateVisibility()
@@ -211,11 +219,8 @@ public partial class ReportViewModel : ObservableObject
         IsYearVisible = SelectedPeriod == "Year";
     }
 
-    [ObservableProperty]
-    private DateTime startDate;
-
-    [ObservableProperty]
-    private DateTime endDate;
+    [ObservableProperty] private DateTime startDate;
+    [ObservableProperty] private DateTime endDate;
 
     public ObservableCollection<string> Periods { get; }
 
@@ -227,7 +232,6 @@ public partial class ReportViewModel : ObservableObject
 
         try
         {
-            // Debounce slightly to allow multiple property changes to settle
             await Task.Delay(50, token);
 
             var data = await _reportService.GetReportDataAsync(StartDate, EndDate, SelectedPeriod, SelectedCategoryScope);
@@ -257,6 +261,7 @@ public partial class ReportViewModel : ObservableObject
             foreach (var p in data.CategoryProfit) CategoryProfit.Add(p);
 
             UpdatePagedRankings();
+            _ = LoadRecentExpensesAsync();
             RequestChartRefresh?.Invoke(this, EventArgs.Empty);
         }
         catch (OperationCanceledException) { }
@@ -287,9 +292,17 @@ public partial class ReportViewModel : ObservableObject
 
     private void UpdatePagedRankings()
     {
+        if (TopProducts.Count == 0)
+        {
+            TotalPages = 0;
+            CurrentPage = 1;
+            PagedTopProducts.Clear();
+            return;
+        }
+
         TotalPages = (int)Math.Ceiling(TopProducts.Count / (double)PageSize);
         if (CurrentPage < 1) CurrentPage = 1;
-        if (CurrentPage > TotalPages && TotalPages > 0) CurrentPage = TotalPages;
+        if (CurrentPage > TotalPages) CurrentPage = TotalPages;
 
         PagedTopProducts.Clear();
         var items = TopProducts.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
@@ -313,6 +326,54 @@ public partial class ReportViewModel : ObservableObject
         {
             CurrentPage--;
             UpdatePagedRankings();
+        }
+    }
+
+    [RelayCommand]
+    private async Task AddExpense()
+    {
+        if (string.IsNullOrWhiteSpace(NewExpenseTitle) || NewExpenseAmount <= 0) return;
+        
+        IsAddingExpense = true;
+        try
+        {
+            var expense = new Expense
+            {
+                Title = NewExpenseTitle,
+                Amount = NewExpenseAmount,
+                Category = NewExpenseCategory,
+                Date = DateTime.Now
+            };
+
+            await _expenseRepository.AddAsync(expense);
+            
+            NewExpenseTitle = string.Empty;
+            NewExpenseAmount = 0;
+            
+            await RefreshData();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error adding expense: {ex.Message}");
+        }
+        finally
+        {
+            IsAddingExpense = false;
+        }
+    }
+
+    public async Task LoadRecentExpensesAsync()
+    {
+        try
+        {
+            var expenses = await _expenseRepository.GetAsync(e => e.Date.Date >= StartDate.Date && e.Date.Date <= EndDate.Date);
+            RecentExpenses.Clear();
+            foreach (var e in expenses.OrderByDescending(x => x.Date).Take(5)) 
+                RecentExpenses.Add(e);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading recent expenses: {ex.Message}");
         }
     }
 }

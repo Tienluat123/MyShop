@@ -206,6 +206,7 @@ public partial class App : Application
             container.Register<IRepository<UserSetting>>(new Repository<UserSetting>(contextFactory));
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(contextFactory));
             container.Register<IRepository<LoyaltyTierConfig>>(new Repository<LoyaltyTierConfig>(contextFactory));
+            container.Register<IRepository<Expense>>(new Repository<Expense>(contextFactory));
 
             var dialogService = new DialogService();
             container.Register<IDialogService>(dialogService);
@@ -264,7 +265,8 @@ public partial class App : Application
             var reportService = new ReportService(
                 container.Get<IRepository<Order>>(),
                 container.Get<IRepository<Product>>(),
-                container.Get<IRepository<OrderDetail>>()
+                container.Get<IRepository<OrderDetail>>(),
+                container.Get<IRepository<Expense>>()
             );
             container.Register<IReportService>(reportService);
 
@@ -307,7 +309,8 @@ public partial class App : Application
 
             container.Register<ReportViewModel>(new ReportViewModel(
                 container.Get<IReportService>(),
-                container.Get<ICategoryService>()
+                container.Get<ICategoryService>(),
+                container.Get<IRepository<Expense>>()
             ));
 
             Services = container;
