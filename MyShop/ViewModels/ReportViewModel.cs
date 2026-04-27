@@ -50,6 +50,7 @@ public partial class ReportViewModel : ObservableObject
         for (int i = 1; i <= 12; i++) Months.Add(i);
 
         StartYear = EndYear = DateTime.Now.Year;
+        ApplyPreset();
         UpdateVisibility();
     }
 
@@ -59,7 +60,7 @@ public partial class ReportViewModel : ObservableObject
     [ObservableProperty] private decimal totalProfit;
 
     [ObservableProperty]
-    private string selectedPeriod = "Day";
+    private string selectedPeriod;
 
     [ObservableProperty] private bool isDayWeekVisible;
     [ObservableProperty] private bool isMonthVisible;
@@ -74,11 +75,11 @@ public partial class ReportViewModel : ObservableObject
     public ObservableCollection<int> Months { get; } = new();
 
     [ObservableProperty] private bool isCustomRangeVisible;
-    [ObservableProperty] private string selectedDatePreset = "Last 30 days";
-    [ObservableProperty] private string selectedAnalyticsMode = "Top Products";
+    [ObservableProperty] private string selectedDatePreset;
+    [ObservableProperty] private string selectedAnalyticsMode;
     [ObservableProperty] private string selectedCategoryScope = "All";
     [ObservableProperty] private bool isCategoryFilterEnabled;
-    [ObservableProperty] private string selectedTrendType = "Sales";
+    [ObservableProperty] private string selectedTrendType;
     [ObservableProperty] private int currentPage = 1;
     [ObservableProperty] private int totalPages;
     private const int PageSize = 10;
