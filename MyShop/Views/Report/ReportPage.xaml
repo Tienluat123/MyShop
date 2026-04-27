@@ -6,8 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:MyShop.Views.Report"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:MyShop.ViewModels"
     xmlns:models="using:MyShop.Models"
+    xmlns:viewmodels="using:MyShop.ViewModels"
     Name="RootPage"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
@@ -141,27 +141,27 @@
 
                     <local:MetricCard
                         Grid.Column="2"
+                        Color="{StaticResource WarningColor}"
                         Icon="&#xE7BF;"
                         Label="Orders"
-                        Color="{StaticResource WarningColor}"
                         Value="{x:Bind ViewModel.OrdersCount, Mode=OneWay}" />
                     <local:MetricCard
                         Grid.Column="3"
+                        Color="{StaticResource SecondaryColor}"
                         Icon="&#xE8B9;"
                         Label="Products"
-                        Color="{StaticResource SecondaryColor}"
                         Value="{x:Bind ViewModel.ProductsCount, Mode=OneWay}" />
                     <local:MetricCard
                         Grid.Column="0"
+                        Color="{StaticResource SuccessColor}"
                         Icon="&#xE8A1;"
                         Label="Revenue"
-                        Color="{StaticResource SuccessColor}"
                         Value="{x:Bind ViewModel.TotalRevenue, Mode=OneWay, Converter={StaticResource CurrencyConverter}}" />
                     <local:MetricCard
                         Grid.Column="1"
+                        Color="{StaticResource PrimaryColor}"
                         Icon="&#xE9D2;"
                         Label="Profit"
-                        Color="{StaticResource PrimaryColor}"
                         Value="{x:Bind ViewModel.TotalProfit, Mode=OneWay, Converter={StaticResource CurrencyConverter}}" />
                 </Grid>
 
@@ -181,10 +181,25 @@
                         <StackPanel Spacing="16">
                             <Grid>
                                 <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Performance Trends" />
-                                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
-                                    <RadioButton Content="Sales" GroupName="TrendType" IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Sales'}" Style="{StaticResource ToggleButtonStyle}" />
-                                    <RadioButton Content="Revenue" GroupName="TrendType" IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Revenue'}" Style="{StaticResource ToggleButtonStyle}" />
-                                    <RadioButton Content="Profit" GroupName="TrendType" IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Profit'}" Style="{StaticResource ToggleButtonStyle}" />
+                                <StackPanel
+                                    HorizontalAlignment="Right"
+                                    Orientation="Horizontal"
+                                    Spacing="8">
+                                    <RadioButton
+                                        Content="Sales"
+                                        GroupName="TrendType"
+                                        IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Sales'}"
+                                        Style="{StaticResource ToggleButtonStyle}" />
+                                    <RadioButton
+                                        Content="Revenue"
+                                        GroupName="TrendType"
+                                        IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Revenue'}"
+                                        Style="{StaticResource ToggleButtonStyle}" />
+                                    <RadioButton
+                                        Content="Profit"
+                                        GroupName="TrendType"
+                                        IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Profit'}"
+                                        Style="{StaticResource ToggleButtonStyle}" />
                                 </StackPanel>
                             </Grid>
                             <Border
@@ -192,7 +207,10 @@
                                 Padding="12"
                                 Background="#F8FAFC"
                                 CornerRadius="12">
-                                <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled">
+                                <ScrollViewer
+                                    HorizontalScrollBarVisibility="Auto"
+                                    HorizontalScrollMode="Enabled"
+                                    VerticalScrollMode="Disabled">
                                     <Canvas x:Name="TrendsCanvas" Height="300" VerticalAlignment="Top" />
                                 </ScrollViewer>
                             </Border>
@@ -211,10 +229,9 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <Grid>
+                        <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -247,99 +264,127 @@
                             </Border>
                         </Grid>
 
-                        <!--  Ranking List  -->
-                        <ItemsControl
-                            Grid.Row="1"
-                            ItemsSource="{x:Bind ViewModel.PagedTopProducts, Mode=OneWay}"
-                            Visibility="{x:Bind ViewModel.IsTopProductsSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="models:RankingPoint">
-                                    <Grid
-                                        Padding="0,12"
-                                        BorderBrush="{StaticResource SurfaceAlt}"
-                                        BorderThickness="0,0,0,1">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            FontWeight="Medium"
-                                            Text="{x:Bind Name}" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            Width="80"
-                                            VerticalAlignment="Center"
-                                            Style="{StaticResource CaptionTextStyle}"
-                                            Text="{x:Bind Volume}"
-                                            TextAlignment="Right" />
-                                        <TextBlock
-                                            Grid.Column="2"
-                                            Width="120"
-                                            VerticalAlignment="Center"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind Amount, Converter={StaticResource CurrencyConverter}}"
-                                            TextAlignment="Right" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <!--  Ranking Content Area  -->
+                        <Grid Grid.Row="1">
+                            <!--  Products Tab  -->
+                            <Grid Visibility="{x:Bind ViewModel.IsTopProductsSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="300" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
 
-                        <!--  Categories List  -->
-                        <ItemsControl
-                            Grid.Row="1"
-                            ItemsSource="{x:Bind ViewModel.CategoryProfit, Mode=OneWay}"
-                            Visibility="{x:Bind ViewModel.IsTopCategoriesSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="models:ProfitPoint">
-                                    <Grid
-                                        Padding="0,12"
-                                        BorderBrush="{StaticResource SurfaceAlt}"
-                                        BorderThickness="0,0,0,1">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Orientation="Horizontal" Spacing="12">
-                                            <Ellipse
-                                                Width="10"
-                                                Height="10"
-                                                Fill="{x:Bind Color}" />
-                                            <TextBlock FontWeight="Medium" Text="{x:Bind Category}" />
-                                        </StackPanel>
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind Amount, Converter={StaticResource CurrencyConverter}}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                <Canvas
+                                    x:Name="RankingChartCanvas"
+                                    Width="250"
+                                    Height="250"
+                                    Margin="0,20,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top" />
 
-                        <!--  Paging Controls  -->
-                        <Grid
-                            Grid.Row="2"
-                            Margin="0,16,0,0"
-                            Visibility="{x:Bind ViewModel.IsTopProductsSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="16">
-                                <Button
-                                    Command="{x:Bind ViewModel.PrevPageCommand, Mode=OneWay}"
-                                    Style="{StaticResource AppSecondaryButtonStyle}">
-                                    <FontIcon FontSize="14" Glyph="&#xE72B;" />
-                                </Button>
-                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="4">
-                                    <TextBlock Foreground="{StaticResource Gray500}" Text="Page" />
-                                    <TextBlock FontWeight="SemiBold" Text="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
-                                    <TextBlock Foreground="{StaticResource Gray500}" Text="of" />
-                                    <TextBlock FontWeight="SemiBold" Text="{x:Bind ViewModel.TotalPages, Mode=OneWay}" />
+                                <ItemsControl Grid.Column="1" ItemsSource="{x:Bind ViewModel.PagedTopProducts, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:RankingPoint">
+                                            <Grid
+                                                Padding="0,12"
+                                                BorderBrush="{StaticResource SurfaceAlt}"
+                                                BorderThickness="0,0,0,1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontWeight="Medium"
+                                                    Text="{x:Bind Name}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Width="80"
+                                                    VerticalAlignment="Center"
+                                                    Style="{StaticResource CaptionTextStyle}"
+                                                    Text="{x:Bind Volume}"
+                                                    TextAlignment="Right" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    Width="120"
+                                                    VerticalAlignment="Center"
+                                                    FontWeight="SemiBold"
+                                                    Text="{x:Bind Amount, Converter={StaticResource CurrencyConverter}}"
+                                                    TextAlignment="Right" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!--  Paging Controls  -->
+                                <StackPanel
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Margin="0,16,0,0"
+                                    HorizontalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="16">
+                                    <Button Command="{x:Bind ViewModel.PrevPageCommand, Mode=OneWay}" Style="{StaticResource AppSecondaryButtonStyle}">
+                                        <FontIcon FontSize="14" Glyph="&#xE72B;" />
+                                    </Button>
+                                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Foreground="{StaticResource Gray500}" Text="Page" />
+                                        <TextBlock FontWeight="SemiBold" Text="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+                                        <TextBlock Foreground="{StaticResource Gray500}" Text="of" />
+                                        <TextBlock FontWeight="SemiBold" Text="{x:Bind ViewModel.TotalPages, Mode=OneWay}" />
+                                    </StackPanel>
+                                    <Button Command="{x:Bind ViewModel.NextPageCommand, Mode=OneWay}" Style="{StaticResource AppSecondaryButtonStyle}">
+                                        <FontIcon FontSize="14" Glyph="&#xE72A;" />
+                                    </Button>
                                 </StackPanel>
-                                <Button
-                                    Command="{x:Bind ViewModel.NextPageCommand, Mode=OneWay}"
-                                    Style="{StaticResource AppSecondaryButtonStyle}">
-                                    <FontIcon FontSize="14" Glyph="&#xE72A;" />
-                                </Button>
-                            </StackPanel>
+                            </Grid>
+
+                            <!--  Categories Tab  -->
+                            <Grid Visibility="{x:Bind ViewModel.IsTopCategoriesSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="300" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Canvas
+                                    x:Name="CategoryChartCanvas"
+                                    Width="250"
+                                    Height="250"
+                                    Margin="0,20,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top" />
+
+                                <ItemsControl Grid.Column="1" ItemsSource="{x:Bind ViewModel.CategoryProfit, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:ProfitPoint">
+                                            <Grid
+                                                Padding="0,12"
+                                                BorderBrush="{StaticResource SurfaceAlt}"
+                                                BorderThickness="0,0,0,1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                    <Ellipse
+                                                        Width="10"
+                                                        Height="10"
+                                                        Fill="{x:Bind Color}" />
+                                                    <TextBlock FontWeight="Medium" Text="{x:Bind Category}" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    FontWeight="SemiBold"
+                                                    Text="{x:Bind Amount, Converter={StaticResource CurrencyConverter}}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Border>
