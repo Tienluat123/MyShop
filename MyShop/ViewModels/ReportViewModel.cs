@@ -16,13 +16,15 @@ public partial class ReportViewModel : ObservableObject
     private readonly IReportService _reportService;
     private readonly ICategoryService _categoryService;
     private readonly IRepository<Expense> _expenseRepository;
+    private readonly INotificationService _notificationService;
     private System.Threading.CancellationTokenSource? _cts;
 
-    public ReportViewModel(IReportService reportService, ICategoryService categoryService, IRepository<Expense> expenseRepository)
+    public ReportViewModel(IReportService reportService, ICategoryService categoryService, IRepository<Expense> expenseRepository, INotificationService notificationService)
     {
         _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
         _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         _expenseRepository = expenseRepository ?? throw new ArgumentNullException(nameof(expenseRepository));
+        _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         
         // Default filters
         DatePresets = new ObservableCollection<string>
@@ -103,7 +105,7 @@ public partial class ReportViewModel : ObservableObject
     public ObservableCollection<string> ExpenseCategories { get; } = new() { "Rent", "Utilities", "Batch", "Marketing", "Salaries", "Other" };
 
     [ObservableProperty] private string newExpenseTitle = string.Empty;
-    [ObservableProperty] private decimal newExpenseAmount;
+    [ObservableProperty] private double newExpenseAmount;
     [ObservableProperty] private string newExpenseCategory = "Other";
     [ObservableProperty] private bool isAddingExpense;
 
@@ -341,12 +343,15 @@ public partial class ReportViewModel : ObservableObject
             var expense = new Expense
             {
                 Title = NewExpenseTitle,
-                Amount = NewExpenseAmount,
+                Amount = (decimal)NewExpenseAmount,
                 Category = NewExpenseCategory,
-                Date = DateTime.Now
+                Date = DateTime.UtcNow,
+                IsEditing = false
             };
 
             await _expenseRepository.AddAsync(expense);
+            
+            _notificationService.ShowSuccess("Expense logged to Supabase!");
             
             NewExpenseTitle = string.Empty;
             NewExpenseAmount = 0;
@@ -355,6 +360,7 @@ public partial class ReportViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            _notificationService.ShowError($"Failed to sync: {ex.Message}");
             System.Diagnostics.Debug.WriteLine($"Error adding expense: {ex.Message}");
         }
         finally
@@ -367,7 +373,11 @@ public partial class ReportViewModel : ObservableObject
     {
         try
         {
-            var expenses = await _expenseRepository.GetAsync(e => e.Date.Date >= StartDate.Date && e.Date.Date <= EndDate.Date);
+            var startUtc = StartDate.ToUniversalTime();
+            var endUtc = EndDate.ToUniversalTime().AddDays(1).AddTicks(-1);
+            var expenses = await _expenseRepository.GetAsync(e => 
+                e.Date >= startUtc && e.Date <= endUtc);
+
             RecentExpenses.Clear();
             foreach (var e in expenses.OrderByDescending(x => x.Date).Take(5)) 
                 RecentExpenses.Add(e);

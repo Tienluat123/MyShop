@@ -310,7 +310,8 @@ public partial class App : Application
             container.Register<ReportViewModel>(new ReportViewModel(
                 container.Get<IReportService>(),
                 container.Get<ICategoryService>(),
-                container.Get<IRepository<Expense>>()
+                container.Get<IRepository<Expense>>(),
+                container.Get<INotificationService>()
             ));
 
             Services = container;

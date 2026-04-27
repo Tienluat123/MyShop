@@ -45,3 +45,5 @@ ON CONFLICT ("Id") DO UPDATE SET
     "Date" = EXCLUDED."Date",
     "Category" = EXCLUDED."Category",
     "IsEditing" = EXCLUDED."IsEditing";
+
+SELECT setval('"Expenses_Id_seq"', (SELECT MAX("Id") FROM "Expenses") + 1);

@@ -64,7 +64,8 @@ public class ReportService : IReportService
         data.Summary.ProductsCount = filteredDetails.Sum(od => od.Quantity);
 
         // Fetch Expenses for net profit
-        var expenses = await _expenseRepository.GetAsync(e => e.Date >= start && e.Date <= end);
+        var expenses = await _expenseRepository.GetAsync(e => 
+            e.Date >= start.ToUniversalTime() && e.Date <= end.ToUniversalTime());
         if (categoryScope == "All")
         {
             data.Summary.TotalProfit -= expenses.Sum(e => e.Amount);

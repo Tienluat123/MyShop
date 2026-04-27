@@ -457,18 +457,56 @@
                         BorderBrush="{StaticResource SurfaceAlt}"
                         BorderThickness="1"
                         CornerRadius="16">
-                        <StackPanel Spacing="16">
-                            <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Log Expense" />
-                            <TextBox Header="Expense Name" PlaceholderText="e.g. Electricity, Rent" Text="{x:Bind ViewModel.NewExpenseTitle, Mode=TwoWay}" />
-                            <Grid ColumnSpacing="12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <NumberBox Header="Amount" PlaceholderText="0.00" SmallChange="1000" Value="{x:Bind ViewModel.NewExpenseAmount, Mode=TwoWay, Converter={StaticResource CurrencyConverter}}" />
-                                <ComboBox Grid.Column="1" Header="Category" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.ExpenseCategories}" SelectedItem="{x:Bind ViewModel.NewExpenseCategory, Mode=TwoWay}" />
-                            </Grid>
-                            <Button HorizontalAlignment="Right" Command="{x:Bind ViewModel.AddExpenseCommand}" Content="Add Expense" CornerRadius="8" Style="{StaticResource AppPrimaryButtonStyle}" />
+                        <StackPanel Spacing="20">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Background="{StaticResource WarningSurface}"
+                                    CornerRadius="8">
+                                    <FontIcon
+                                        FontSize="16"
+                                        Foreground="{StaticResource BrandPrimary}"
+                                        Glyph="&#xE825;" />
+                                </Border>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource SubtitleTextStyle}"
+                                    Text="Log Overhead" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="16">
+                                <TextBox
+                                    Header="Description"
+                                    PlaceholderText="Rent, Utilities, Supplies..."
+                                    CornerRadius="8"
+                                    Text="{x:Bind ViewModel.NewExpenseTitle, Mode=TwoWay}" />
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <NumberBox
+                                        Header="Amount"
+                                        PlaceholderText="0.00"
+                                        CornerRadius="8"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.NewExpenseAmount, Mode=TwoWay}" />
+                                    <ComboBox
+                                        Grid.Column="1"
+                                        Header="Category"
+                                        CornerRadius="8"
+                                        HorizontalAlignment="Stretch"
+                                        ItemsSource="{x:Bind ViewModel.ExpenseCategories}"
+                                        SelectedItem="{x:Bind ViewModel.NewExpenseCategory, Mode=TwoWay}" />
+                                </Grid>
+                                <Button
+                                    HorizontalAlignment="Stretch"
+                                    Command="{x:Bind ViewModel.AddExpenseCommand}"
+                                    Content="Add to Records"
+                                    CornerRadius="8"
+                                    Style="{StaticResource AppPrimaryButtonStyle}" />
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
@@ -481,27 +519,27 @@
                         BorderThickness="1"
                         CornerRadius="16">
                         <StackPanel Spacing="16">
-                            <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Recent Overhead" />
+                            <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Recent History" />
                             <ItemsControl ItemsSource="{x:Bind ViewModel.RecentExpenses, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="models:Expense">
-                                        <Grid Padding="0,8" BorderBrush="{StaticResource SurfaceAlt}" BorderThickness="0,0,0,1">
+                                        <Grid Padding="0,12" BorderBrush="{StaticResource SurfaceAlt}" BorderThickness="0,0,0,1">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock FontWeight="Medium" Text="{x:Bind Title}" />
-                                                <TextBlock Style="{StaticResource CaptionMutedTextStyle}" Text="{x:Bind Category}" />
+                                                <TextBlock FontWeight="SemiBold" Text="{x:Bind Title}" />
+                                                <TextBlock Foreground="{StaticResource TextSecondary}" Style="{StaticResource CaptionTextStyle}" Text="{x:Bind Category}" />
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1" Margin="24,0" VerticalAlignment="Center" Foreground="{StaticResource Gray400}" Style="{StaticResource CaptionTextStyle}" Text="{x:Bind Date, Converter={StaticResource DateConverter}}" />
-                                            <TextBlock Grid.Column="2" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource DangerColor}" Text="{x:Bind Amount, Converter={StaticResource CurrencyConverter}}" />
+                                            <TextBlock Grid.Column="1" Margin="24,0" VerticalAlignment="Center" Style="{StaticResource CaptionMutedTextStyle}" Text="{x:Bind Date, Converter={StaticResource DateConverter}}" />
+                                            <TextBlock Grid.Column="2" VerticalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource Error}" Text="{x:Bind Amount, Converter={StaticResource CurrencyConverter}}" />
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock HorizontalAlignment="Center" IsHitTestVisible="False" Style="{StaticResource CaptionMutedTextStyle}" Text="Showing last 5 entries for current range" />
+                            <TextBlock HorizontalAlignment="Center" Margin="0,8,0,0" Opacity="0.5" Style="{StaticResource CaptionTextStyle}" Text="Showing last 5 entries for current selection" />
                         </StackPanel>
                     </Border>
                 </Grid>
