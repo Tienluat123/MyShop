@@ -5,6 +5,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 using MyShop.ViewModels;
 
 namespace MyShop.Views.ProductManagement.Components;
@@ -17,6 +18,12 @@ public sealed partial class ProductFormView : ContentDialog
     {
         this.InitializeComponent();
         this.DataContext = viewModel;
+        UpdateImagePreview(viewModel.ProductData.ImageUrl);
+    }
+
+    private void ImageUrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateImagePreview(ImageUrlTextBox.Text);
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -70,6 +77,7 @@ public sealed partial class ProductFormView : ContentDialog
             ViewModel.ProductData.ImageUrl = targetPath;
             ViewModel.ValidationMessage = "Image file selected successfully.";
             ViewModel.ValidateProductFormCommand.Execute(null);
+            UpdateImagePreview(targetPath);
         }
         catch (Exception ex)
         {
@@ -85,5 +93,49 @@ public sealed partial class ProductFormView : ContentDialog
         using var sourceStream = await sourceFile.OpenStreamForReadAsync();
         using var destinationStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
         await sourceStream.CopyToAsync(destinationStream);
+    }
+
+    private void UpdateImagePreview(string? imagePathOrUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imagePathOrUrl))
+        {
+            ImagePreview.Source = null;
+            ImagePreview.Visibility = Visibility.Collapsed;
+            ImagePreviewPlaceholder.Visibility = Visibility.Visible;
+            return;
+        }
+
+        try
+        {
+            Uri previewUri;
+            if (Uri.TryCreate(imagePathOrUrl.Trim(), UriKind.Absolute, out var absoluteUri))
+            {
+                previewUri = absoluteUri;
+            }
+            else
+            {
+                var fullPath = Path.GetFullPath(imagePathOrUrl.Trim());
+                if (!File.Exists(fullPath))
+                {
+                    ImagePreview.Source = null;
+                    ImagePreview.Visibility = Visibility.Collapsed;
+                    ImagePreviewPlaceholder.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                previewUri = new Uri(fullPath);
+            }
+
+            var bitmap = new BitmapImage(previewUri);
+            ImagePreview.Source = bitmap;
+            ImagePreview.Visibility = Visibility.Visible;
+            ImagePreviewPlaceholder.Visibility = Visibility.Collapsed;
+        }
+        catch
+        {
+            ImagePreview.Source = null;
+            ImagePreview.Visibility = Visibility.Collapsed;
+            ImagePreviewPlaceholder.Visibility = Visibility.Visible;
+        }
     }
 }
