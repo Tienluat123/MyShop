@@ -27,13 +27,15 @@ public class ReportService : IReportService
     {
         var data = new ReportData();
 
-        // 1. Fetch Summary Stats using high-level methods
-        data.Summary.ProductsCount = await _productRepository.CountAsync();
+        // Ensure we only care about the Date part for grouping logic
+        start = start.Date;
+        end = end.Date.AddDays(1).AddTicks(-1);
+
+        // 1. Fetch Summary Stats
         data.Summary.OrdersCount = await _orderRepository.CountAsync(o => 
             o.OrderDate >= start && o.OrderDate <= end && o.PaymentStatus == "Paid");
 
-        // 2. Fetch required data for complex calculations
-        // We fetch OrderDetails with Product and Category info for scoping and profit
+        // 2. Fetch Detailed Data
         var details = await _orderDetailRepository.GetAsync(
             od => od.Order!.OrderDate >= start && od.Order!.OrderDate <= end && od.Order!.PaymentStatus == "Paid",
             "Order", "Product.Category");
@@ -43,10 +45,9 @@ public class ReportService : IReportService
             ? details 
             : details.Where(od => od.Product?.Category?.Name == categoryScope).ToList();
 
-        // 3. Calculate Totals
+        // 3. Calculate Metrics
         if (categoryScope == "All")
         {
-            // For global scope, we can use the TotalAmount from Orders directly
             var orders = await _orderRepository.GetAsync(o => 
                 o.OrderDate >= start && o.OrderDate <= end && o.PaymentStatus == "Paid");
             data.Summary.TotalRevenue = orders.Sum(o => o.TotalAmount);
@@ -57,10 +58,11 @@ public class ReportService : IReportService
         }
 
         data.Summary.TotalProfit = filteredDetails.Sum(od => od.Quantity * (od.UnitPrice - od.UnitCostPrice));
+        data.Summary.ProductsCount = filteredDetails.Select(od => od.ProductId).Distinct().Count();
 
-        // 4. Trends (Day/Week/Month/Year)
-        data.SalesTrend = GroupByGranularity(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = d.Quantity }), granularity);
-        data.RevenueTrend = GroupByGranularity(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * d.UnitPrice) }), granularity);
+        // 4. Trends with Hole-Filling
+        data.SalesTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = d.Quantity }), start, end, granularity);
+        data.RevenueTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * d.UnitPrice) }), start, end, granularity);
 
         // 5. Rankings
         data.TopProducts = filteredDetails
@@ -75,9 +77,7 @@ public class ReportService : IReportService
             .Take(10)
             .ToList();
 
-        // 6. Category Leaderboard (Always global or relative to scope?)
-        // Usually, the pie chart shows category breakdown of the current scope or global.
-        // Let's keep it global for better context.
+        // 6. Category Leaders
         data.CategoryProfit = details
             .GroupBy(od => od.Product?.Category?.Name ?? "Others")
             .Select(g => new ProfitPoint
@@ -94,30 +94,64 @@ public class ReportService : IReportService
 
     private class TrendItem { public DateTime Date; public double Value; }
 
-    private List<TrendPoint> GroupByGranularity(IEnumerable<TrendItem> items, string granularity)
+    private List<TrendPoint> GroupAndFillHoles(IEnumerable<TrendItem> items, DateTime start, DateTime end, string granularity)
     {
-        return granularity switch
+        var grouped = (granularity switch
         {
-            "Day" => items.GroupBy(x => x.Date.Date)
-                          .OrderBy(g => g.Key)
-                          .Select(g => new TrendPoint(g.Key.ToString("dd/MM"), g.Sum(x => x.Value)))
-                          .ToList(),
-            "Week" => items.GroupBy(x => GetStartOfWeek(x.Date))
-                           .OrderBy(g => g.Key)
-                           .Select(g => new TrendPoint("W" + GetWeekOfYear(g.Key), g.Sum(x => x.Value)))
-                           .ToList(),
-            "Month" => items.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, 1))
-                            .OrderBy(g => g.Key)
-                            .Select(g => new TrendPoint(g.Key.ToString("MMM yy"), g.Sum(x => x.Value)))
-                            .ToList(),
-            "Year" => items.GroupBy(x => x.Date.Year)
-                           .OrderBy(g => g.Key)
-                           .Select(g => new TrendPoint(g.Key.ToString(), g.Sum(x => x.Value)))
-                           .ToList(),
+            "Day" => items.GroupBy(x => x.Date.Date),
+            "Week" => items.GroupBy(x => GetStartOfWeek(x.Date)),
+            "Month" => items.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, 1)),
+            "Year" => items.GroupBy(x => new DateTime(x.Date.Year, 1, 1)),
             _ => items.GroupBy(x => x.Date.Date)
-                      .Select(g => new TrendPoint(g.Key.ToShortDateString(), g.Sum(x => x.Value)))
-                      .ToList()
-        };
+        }).ToDictionary(g => g.Key, g => g.Sum(x => x.Value));
+
+        var result = new List<TrendPoint>();
+        var current = start.Date;
+
+        if (granularity == "Day")
+        {
+            while (current <= end.Date)
+            {
+                var val = grouped.ContainsKey(current) ? (double)grouped[current] : 0;
+                result.Add(new TrendPoint(current.ToString("dd/MM"), val));
+                current = current.AddDays(1);
+            }
+        }
+        else if (granularity == "Week")
+        {
+            current = GetStartOfWeek(current);
+            while (current <= end.Date)
+            {
+                var val = grouped.ContainsKey(current) ? (double)grouped[current] : 0;
+                result.Add(new TrendPoint("W" + GetWeekOfYear(current), val));
+                current = current.AddDays(7);
+            }
+        }
+        else if (granularity == "Month")
+        {
+            current = new DateTime(current.Year, current.Month, 1);
+            while (current <= end.Date)
+            {
+                var val = grouped.ContainsKey(current) ? (double)grouped[current] : 0;
+                result.Add(new TrendPoint(current.ToString("MMM"), val));
+                current = current.AddMonths(1);
+            }
+        }
+        else if (granularity == "Year")
+        {
+            int startYear = start.Year;
+            int endYear = end.Year;
+
+            for (int y = startYear; y <= endYear; y++)
+            {
+                var key = new DateTime(y, 1, 1);
+                var val = grouped.ContainsKey(key) ? grouped[key] : 0;
+
+                result.Add(new TrendPoint(y.ToString(), val));
+            }
+        }
+
+        return result;
     }
 
     private DateTime GetStartOfWeek(DateTime dt) => dt.AddDays(-(int)dt.DayOfWeek);

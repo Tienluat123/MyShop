@@ -57,11 +57,6 @@ public partial class ReportViewModel : ObservableObject
     [ObservableProperty]
     private string selectedPeriod;
 
-    partial void OnSelectedPeriodChanged(string value)
-    {
-        UpdateVisibility();
-    }
-
     [ObservableProperty] private bool isDayWeekVisible;
     [ObservableProperty] private bool isMonthVisible;
     [ObservableProperty] private bool isYearVisible;
@@ -79,6 +74,15 @@ public partial class ReportViewModel : ObservableObject
     [ObservableProperty] private string selectedAnalyticsMode;
     [ObservableProperty] private string selectedCategoryScope;
     [ObservableProperty] private bool isCategoryFilterEnabled;
+
+    partial void OnStartDateChanged(DateTime value) => _ = RefreshData();
+    partial void OnEndDateChanged(DateTime value) => _ = RefreshData();
+    partial void OnSelectedCategoryScopeChanged(string value) => _ = RefreshData();
+    partial void OnSelectedPeriodChanged(string value) 
+    {
+        UpdateVisibility();
+        _ = RefreshData();
+    }
 
     public ObservableCollection<TrendPoint> SalesTrend { get; } = new();
     public ObservableCollection<TrendPoint> RevenueData { get; } = new();
