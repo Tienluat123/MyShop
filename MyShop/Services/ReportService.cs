@@ -58,13 +58,14 @@ public class ReportService : IReportService
         }
 
         data.Summary.TotalProfit = filteredDetails.Sum(od => od.Quantity * (od.UnitPrice - od.UnitCostPrice));
-        data.Summary.ProductsCount = filteredDetails.Select(od => od.ProductId).Distinct().Count();
+        data.Summary.ProductsCount = filteredDetails.Sum(od => od.Quantity);
 
         // 4. Trends with Hole-Filling
         data.SalesTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = d.Quantity }), start, end, granularity);
         data.RevenueTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * d.UnitPrice) }), start, end, granularity);
+        data.ProfitTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * (d.UnitPrice - d.UnitCostPrice)) }), start, end, granularity);
 
-        // 5. Rankings
+        // 5. Rankings (All products with 1+ sales)
         data.TopProducts = filteredDetails
             .GroupBy(od => od.Product?.Name ?? "Unknown")
             .Select(g => new RankingPoint
@@ -73,8 +74,8 @@ public class ReportService : IReportService
                 Volume = g.Sum(od => od.Quantity),
                 Amount = g.Sum(od => (decimal)(od.Quantity * (od.UnitPrice - od.UnitCostPrice)))
             })
+            .Where(x => x.Volume > 0)
             .OrderByDescending(x => x.Amount)
-            .Take(10)
             .ToList();
 
         // 6. Category Leaders
@@ -141,12 +142,10 @@ public class ReportService : IReportService
         {
             int startYear = start.Year;
             int endYear = end.Year;
-
             for (int y = startYear; y <= endYear; y++)
             {
                 var key = new DateTime(y, 1, 1);
                 var val = grouped.ContainsKey(key) ? grouped[key] : 0;
-
                 result.Add(new TrendPoint(y.ToString(), val));
             }
         }

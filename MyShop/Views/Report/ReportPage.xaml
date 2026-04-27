@@ -17,6 +17,7 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:EqualityToBoolConverter x:Key="EqualityToBoolConverter" />
         <converters:CurrencyConverter x:Key="CurrencyConverter" />
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
     </Page.Resources>
 
     <Grid Background="{StaticResource BgPage}">
@@ -168,7 +169,6 @@
                 <Grid ColumnSpacing="24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <Border
@@ -179,40 +179,21 @@
                         BorderThickness="1"
                         CornerRadius="16">
                         <StackPanel Spacing="16">
-                            <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Sales Trends" />
+                            <Grid>
+                                <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Performance Trends" />
+                                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                                    <RadioButton Content="Sales" GroupName="TrendType" IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Sales'}" Style="{StaticResource ToggleButtonStyle}" />
+                                    <RadioButton Content="Revenue" GroupName="TrendType" IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Revenue'}" Style="{StaticResource ToggleButtonStyle}" />
+                                    <RadioButton Content="Profit" GroupName="TrendType" IsChecked="{Binding SelectedTrendType, Mode=TwoWay, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter='Profit'}" Style="{StaticResource ToggleButtonStyle}" />
+                                </StackPanel>
+                            </Grid>
                             <Border
-                                Height="300"
+                                Height="350"
                                 Padding="12"
                                 Background="#F8FAFC"
                                 CornerRadius="12">
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled">
-                                    <Canvas x:Name="SalesTrendCanvas" Height="200" VerticalAlignment="Top" />
-                                </ScrollViewer>
-                            </Border>
-                        </StackPanel>
-                    </Border>
-
-                    <Border
-                        Grid.Column="1"
-                        Padding="24"
-                        Background="{StaticResource SurfaceBackground}"
-                        BorderBrush="{StaticResource SurfaceAlt}"
-                        BorderThickness="1"
-                        CornerRadius="16">
-                        <StackPanel Spacing="16">
-                            <TextBlock Style="{StaticResource SubtitleTextStyle}" Text="Revenue Flow" />
-                            <Border
-                                Height="300"
-                                Padding="12"
-                                Background="#F8FAFC"
-                                CornerRadius="12">
-                                <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled">
-                                    <StackPanel
-                                        x:Name="RevenueBarPanel"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Bottom"
-                                        Orientation="Horizontal"
-                                        Spacing="12" />
+                                    <Canvas x:Name="TrendsCanvas" Height="300" VerticalAlignment="Top" />
                                 </ScrollViewer>
                             </Border>
                         </StackPanel>

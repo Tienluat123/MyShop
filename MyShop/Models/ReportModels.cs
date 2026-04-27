@@ -55,6 +55,7 @@ public class ReportData
     public ReportSummary Summary { get; set; } = new();
     public List<TrendPoint> SalesTrend { get; set; } = new();
     public List<TrendPoint> RevenueTrend { get; set; } = new();
+    public List<TrendPoint> ProfitTrend { get; set; } = new();
     public List<ProfitPoint> CategoryProfit { get; set; } = new();
     public List<RankingPoint> TopProducts { get; set; } = new();
 }

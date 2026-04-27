@@ -36,6 +36,7 @@ public partial class ReportViewModel : ObservableObject
 
         CategoryScopes = new ObservableCollection<string> { "All" };
         SelectedCategoryScope = "All";
+        SelectedTrendType = "Sales";
         _ = LoadCategoriesAsync();
 
         // Initialize Year/Month lists
@@ -74,6 +75,7 @@ public partial class ReportViewModel : ObservableObject
     [ObservableProperty] private string selectedAnalyticsMode;
     [ObservableProperty] private string selectedCategoryScope;
     [ObservableProperty] private bool isCategoryFilterEnabled;
+    [ObservableProperty] private string selectedTrendType;
 
     partial void OnStartDateChanged(DateTime value) => _ = RefreshData();
     partial void OnEndDateChanged(DateTime value) => _ = RefreshData();
@@ -85,7 +87,8 @@ public partial class ReportViewModel : ObservableObject
     }
 
     public ObservableCollection<TrendPoint> SalesTrend { get; } = new();
-    public ObservableCollection<TrendPoint> RevenueData { get; } = new();
+    public ObservableCollection<TrendPoint> RevenueTrend { get; } = new();
+    public ObservableCollection<TrendPoint> ProfitTrend { get; } = new();
     public ObservableCollection<ProfitPoint> CategoryProfit { get; } = new();
     public ObservableCollection<RankingPoint> TopProducts { get; } = new();
 
@@ -108,6 +111,11 @@ public partial class ReportViewModel : ObservableObject
         IsTopProductsSelected = value == "Top Products";
         IsTopCategoriesSelected = value == "Top Categories";
         if (!IsCategoryFilterEnabled) SelectedCategoryScope = "All";
+    }
+
+    partial void OnSelectedTrendTypeChanged(string value)
+    {
+        RequestChartRefresh?.Invoke(this, EventArgs.Empty);
     }
 
     public ObservableCollection<string> AnalyticsModes { get; }
@@ -221,8 +229,11 @@ public partial class ReportViewModel : ObservableObject
             SalesTrend.Clear();
             foreach (var p in data.SalesTrend) SalesTrend.Add(p);
 
-            RevenueData.Clear();
-            foreach (var p in data.RevenueTrend) RevenueData.Add(p);
+            RevenueTrend.Clear();
+            foreach (var p in data.RevenueTrend) RevenueTrend.Add(p);
+
+            ProfitTrend.Clear();
+            foreach (var p in data.ProfitTrend) ProfitTrend.Add(p);
 
             // 3. Rankings
             TopProducts.Clear();

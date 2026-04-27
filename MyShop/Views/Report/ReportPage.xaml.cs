@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -7,6 +8,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using MyShop.ViewModels;
 using Windows.UI;
+using MyShop.Models;
 
 namespace MyShop.Views.Report;
 
@@ -21,15 +23,13 @@ public sealed partial class ReportPage : Page
         this.DataContext = ViewModel;
         this.Loaded += ReportPage_Loaded;
         ViewModel.RequestChartRefresh += (s, e) => {
-            RenderSalesTrend();
-            RenderRevenueChart();
+            RenderPerformanceTrends();
         };
     }
 
     private void ReportPage_Loaded(object sender, RoutedEventArgs e)
     {
-        RenderSalesTrend();
-        RenderRevenueChart();
+        RenderPerformanceTrends();
     }
 
     private async void FilterButton_Click(object sender, RoutedEventArgs e)
@@ -49,103 +49,107 @@ public sealed partial class ReportPage : Page
         await ViewModel.RefreshData();
     }
 
-    private void RenderSalesTrend()
+    private void RenderPerformanceTrends()
     {
-        var trend = ViewModel.SalesTrend;
+        var canvas = TrendsCanvas;
+        if (canvas == null) return;
+        canvas.Children.Clear();
+
+        var salesTrend = ViewModel.SalesTrend;
+        var revenueTrend = ViewModel.RevenueTrend;
+        var profitTrend = ViewModel.ProfitTrend;
+
+        if (!salesTrend.Any()) return;
+
+        // Dynamic width for scrollability
+        var width = Math.Max(800, salesTrend.Count * 60);
+        canvas.Width = width;
+
+        // Spacing: Leave 40px at start and 80px at end (scroll bar margin)
+        double marginStart = 40;
+        double marginEnd = 80;
+        double chartWidth = width - marginStart - marginEnd;
+        double step = salesTrend.Count > 1 ? chartWidth / (salesTrend.Count - 1) : 0;
+
+        // Draw ONLY the selected series
+        switch (ViewModel.SelectedTrendType)
+        {
+            case "Revenue":
+                DrawSeries(canvas, ViewModel.RevenueTrend, Color.FromArgb(0xFF, 0x10, 0xB9, 0x81), "Revenue", marginStart, step);
+                break;
+            case "Profit":
+                DrawSeries(canvas, ViewModel.ProfitTrend, Color.FromArgb(0xFF, 0xA8, 0x55, 0xF7), "Profit", marginStart, step);
+                break;
+            default: // Sales
+                DrawSeries(canvas, ViewModel.SalesTrend, Color.FromArgb(0xFF, 0x3B, 0x82, 0xF6), "Sales", marginStart, step);
+                break;
+        }
+
+        // Draw Labels (only once)
+        for (int i = 0; i < salesTrend.Count; i++)
+        {
+            var x = marginStart + (i * step);
+            var label = new TextBlock
+            {
+                Text = salesTrend[i].Label,
+                FontSize = 10,
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                Margin = new Thickness(x - 20, 260, 0, 0),
+                TextAlignment = TextAlignment.Center,
+                Width = 40
+            };
+            canvas.Children.Add(label);
+        }
+    }
+
+    private void DrawSeries(Canvas canvas, IList<TrendPoint> trend, Color color, string type, double marginStart, double step)
+    {
         if (!trend.Any()) return;
 
-        var color = Color.FromArgb(0xFF, 0x3B, 0x82, 0xF6); // Blue-500
         var max = trend.Max(x => x.Value);
         if (max == 0) max = 1;
 
-        var canvas = SalesTrendCanvas;
-        canvas.Children.Clear();
-
         var points = new PointCollection();
-        // Calculate dynamic width: minimum 400, or 40px per data point
-        var width = Math.Max(400, trend.Count * 40);
-        canvas.Width = width;
-        var step = width / (trend.Count - 1);
+        var brush = new SolidColorBrush(color);
 
         for (int i = 0; i < trend.Count; i++)
         {
             var point = trend[i];
             var normalized = point.Value / max;
-            var x = i * step;
-            var y = 200 - (20 + normalized * 160);
+            var x = marginStart + (i * step);
+            var y = 250 - (20 + normalized * 200); // 250 is bottom-ish, 20 bottom margin, 200 height
             points.Add(new Windows.Foundation.Point(x, y));
 
-            // Small dot at each point
+            // Tooltip Hitbox
+            var hitBox = new Ellipse
+            {
+                Width = 24,
+                Height = 24,
+                Fill = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
+                Margin = new Thickness(x - 12, y - 12, 0, 0)
+            };
+            ToolTipService.SetToolTip(hitBox, $"{type} - {point.Label}: {point.Value:N0}");
+            canvas.Children.Add(hitBox);
+
+            // Visible dot
             var dot = new Ellipse
             {
                 Width = 6,
                 Height = 6,
-                Fill = new SolidColorBrush(color),
-                Margin = new Thickness(x - 3, y - 3, 0, 0)
+                Fill = brush,
+                Margin = new Thickness(x - 3, y - 3, 0, 0),
+                IsHitTestVisible = false
             };
             canvas.Children.Add(dot);
-            
-            // Label
-            var label = new TextBlock
-            {
-                Text = point.Label,
-                FontSize = 10,
-                Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                Margin = new Thickness(x - 10, 180, 0, 0)
-            };
-            canvas.Children.Add(label);
         }
 
         var polyline = new Polyline
         {
             Points = points,
-            Stroke = new SolidColorBrush(color),
-            StrokeThickness = 2
+            Stroke = brush,
+            StrokeThickness = 2,
+            IsHitTestVisible = false
         };
         canvas.Children.Add(polyline);
-    }
-
-    private void RenderRevenueChart()
-    {
-        var data = ViewModel.RevenueData;
-        if (!data.Any()) return;
-
-        var color = Color.FromArgb(0xFF, 0x10, 0xB9, 0x81); // Emerald-500
-        var max = data.Max(x => x.Value);
-        if (max == 0) max = 1;
-
-        var panel = RevenueBarPanel;
-        panel.Children.Clear();
-
-        foreach (var point in data)
-        {
-            var normalized = point.Value / max;
-            var height = 20 + normalized * 140;
-
-            var bar = new Border
-            {
-                Width = 40,
-                Height = height,
-                Background = new SolidColorBrush(color),
-                CornerRadius = new CornerRadius(4, 4, 0, 0),
-                VerticalAlignment = VerticalAlignment.Bottom
-            };
-            ToolTipService.SetToolTip(bar, $"{point.Label}: {point.Value:N0}");
-
-            var container = new StackPanel
-            {
-                Spacing = 8,
-                VerticalAlignment = VerticalAlignment.Bottom
-            };
-            container.Children.Add(bar);
-            container.Children.Add(new TextBlock
-            {
-                Text = point.Label,
-                FontSize = 10,
-                HorizontalAlignment = HorizontalAlignment.Center
-            });
-
-            panel.Children.Add(container);
-        }
     }
 }
