@@ -62,7 +62,9 @@ public sealed partial class ReportPage : Page
         canvas.Children.Clear();
 
         var points = new PointCollection();
-        var width = canvas.ActualWidth > 0 ? canvas.ActualWidth : 400; // Fallback width
+        // Calculate dynamic width: minimum 400, or 40px per data point
+        var width = Math.Max(400, trend.Count * 40);
+        canvas.Width = width;
         var step = width / (trend.Count - 1);
 
         for (int i = 0; i < trend.Count; i++)

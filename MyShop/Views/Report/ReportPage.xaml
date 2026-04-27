@@ -126,8 +126,6 @@
         <ScrollViewer
             Grid.Row="2"
             Padding="24"
-            HorizontalScrollBarVisibility="Auto"
-            HorizontalScrollMode="Enabled"
             VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="32">
 
@@ -187,7 +185,9 @@
                                 Padding="12"
                                 Background="#F8FAFC"
                                 CornerRadius="12">
-                                <Canvas x:Name="SalesTrendCanvas" />
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled">
+                                    <Canvas x:Name="SalesTrendCanvas" Height="200" VerticalAlignment="Top" />
+                                </ScrollViewer>
                             </Border>
                         </StackPanel>
                     </Border>
@@ -206,12 +206,14 @@
                                 Padding="12"
                                 Background="#F8FAFC"
                                 CornerRadius="12">
-                                <StackPanel
-                                    x:Name="RevenueBarPanel"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Bottom"
-                                    Orientation="Horizontal"
-                                    Spacing="12" />
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled">
+                                    <StackPanel
+                                        x:Name="RevenueBarPanel"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Bottom"
+                                        Orientation="Horizontal"
+                                        Spacing="12" />
+                                </ScrollViewer>
                             </Border>
                         </StackPanel>
                     </Border>
