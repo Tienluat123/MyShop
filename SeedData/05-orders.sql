@@ -53,7 +53,20 @@ INSERT INTO "Orders" ("Id", "CustomerId", "UserId", "OrderDate", "SubTotal", "Di
 (42, 2, 3, NOW() - INTERVAL '5 days', 40000, 0, 44000, 'Paid', 'Completed', 'Dine-in', 'Table 7', '', NULL, 4000, 0, ''),
 (43, 3, 3, NOW() - INTERVAL '6 days', 85000, 0, 93500, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 8500, 0, ''),
 (44, 4, 3, NOW() - INTERVAL '7 days', 95000, 10000, 93500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 8500, 0, ''),
-(45, 5, 3, NOW() - INTERVAL '8 days', 120000, 0, 132000, 'Paid', 'Completed', 'Dine-in', 'Table 5', '', NULL, 12000, 0, '')
+(45, 5, 3, NOW() - INTERVAL '8 days', 120000, 0, 132000, 'Paid', 'Completed', 'Dine-in', 'Table 5', '', NULL, 12000, 0, ''),
+-- MARCH 2026 SALES
+(100, 1, 2, NOW() - INTERVAL '30 days', 150000, 0, 165000, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 15000, 0, ''),
+(101, 2, 2, NOW() - INTERVAL '31 days', 80000, 5000, 83000, 'Paid', 'Completed', 'Dine-in', 'Table 1', '', NULL, 8000, 0, ''),
+(102, 3, 2, NOW() - INTERVAL '35 days', 220000, 0, 242000, 'Paid', 'Completed', 'Dine-in', 'Table 4', '', NULL, 22000, 0, ''),
+(103, 4, 3, NOW() - INTERVAL '40 days', 45000, 0, 49500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 4500, 0, ''),
+(104, 5, 3, NOW() - INTERVAL '45 days', 110000, 0, 121000, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 11000, 0, ''),
+-- FEBRUARY 2026 SALES
+(110, 1, 5, NOW() - INTERVAL '60 days', 300000, 20000, 310000, 'Paid', 'Completed', 'Dine-in', 'Table 10', 'Party', NULL, 30000, 0, ''),
+(111, 2, 5, NOW() - INTERVAL '65 days', 95000, 0, 104500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 9500, 0, ''),
+(112, 3, 5, NOW() - INTERVAL '70 days', 180000, 0, 198000, 'Paid', 'Completed', 'Dine-in', 'Table 3', '', NULL, 18000, 0, ''),
+-- JANUARY 2026 SALES
+(120, 4, 2, NOW() - INTERVAL '90 days', 120000, 0, 132000, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 12000, 0, ''),
+(121, 5, 2, NOW() - INTERVAL '95 days', 65000, 0, 71500, 'Paid', 'Completed', 'Dine-in', 'Table 5', '', NULL, 6500, 0, '')
 ON CONFLICT ("Id") DO UPDATE SET
     "CustomerId" = EXCLUDED."CustomerId",
     "UserId" = EXCLUDED."UserId",
@@ -122,7 +135,20 @@ INSERT INTO "OrderDetails" ("Id", "OrderId", "ProductId", "Quantity", "UnitPrice
 (55, 42, 19, 1, 35000, 12000, NULL),
 (56, 43, 20, 2, 65000, 28000, NULL),
 (57, 44, 21, 1, 60000, 25000, NULL), (58, 44, 1, 1, 30000, 10000, NULL),
-(59, 45, 2, 3, 45000, 18000, NULL)
+(59, 45, 2, 3, 45000, 18000, NULL),
+-- MARCH DETAILS
+(100, 100, 2, 2, 45000, 18000, NULL), (101, 100, 15, 1, 95000, 42000, NULL),
+(102, 101, 3, 1, 50000, 20000, NULL), (103, 101, 4, 1, 40000, 12000, NULL),
+(104, 102, 1, 2, 30000, 10000, NULL), (105, 102, 14, 2, 85000, 35000, NULL),
+(106, 103, 5, 1, 55000, 22000, NULL),
+(107, 104, 6, 1, 48000, 15000, NULL), (108, 104, 21, 1, 60000, 25000, NULL),
+-- FEBRUARY DETAILS
+(110, 110, 16, 4, 75000, 30000, NULL),
+(111, 111, 17, 2, 45000, 18000, NULL), (112, 111, 9, 1, 30000, 8000, NULL),
+(113, 112, 18, 3, 40000, 15000, NULL), (114, 112, 1, 2, 30000, 10000, NULL),
+-- JANUARY DETAILS
+(120, 120, 19, 2, 35000, 12000, NULL), (121, 120, 20, 1, 65000, 28000, NULL),
+(122, 121, 2, 1, 45000, 18000, NULL), (123, 121, 10, 1, 32000, 8000, NULL)
 ON CONFLICT ("Id") DO UPDATE SET
     "OrderId" = EXCLUDED."OrderId",
     "ProductId" = EXCLUDED."ProductId",
