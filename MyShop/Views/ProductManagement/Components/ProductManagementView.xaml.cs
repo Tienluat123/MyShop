@@ -20,19 +20,14 @@ public sealed partial class ProductManagementView : Page
         DataContext = e.Parameter as ProductManagementViewModel;
     }
 
-    private void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void PreviousButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (sender is not ComboBox comboBox)
-        {
-            return;
-        }
+        ViewModel?.PreviousPageCommand.Execute(null);
+    }
 
-        if (comboBox.SelectedValue is string sortKey &&
-            ViewModel?.SortProductsCommand != null &&
-            ViewModel.SortProductsCommand.CanExecute(sortKey))
-        {
-            ViewModel.SortProductsCommand.Execute(sortKey);
-        }
+    private void NextButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        ViewModel?.NextPageCommand.Execute(null);
     }
 
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)

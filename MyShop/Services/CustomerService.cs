@@ -1,5 +1,6 @@
 using MyShop.Data;
 using MyShop.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyShop.Services;
 
@@ -33,15 +34,16 @@ public class CustomerService : ICustomerService
 
             if (!string.IsNullOrWhiteSpace(paging?.SearchText))
             {
-                var keyword = paging.SearchText.ToLower().Trim();
+                var keyword = paging.SearchText.Trim();
                 filter = c =>
-                    c.Name.ToLower().Contains(keyword) ||
-                    c.Phone.Contains(keyword) ||
-                    (c.Email != null && c.Email.ToLower().Contains(keyword)) ||
-                    (c.Gender != null && c.Gender.ToLower().Contains(keyword));
+                    EF.Functions.ToTsVector("simple", c.Name).Matches(EF.Functions.PlainToTsQuery("simple", keyword)) ||
+                    EF.Functions.ILike(c.Name, $"%{keyword}%") ||
+                    EF.Functions.ILike(c.Phone, $"%{keyword}%") ||
+                    (c.Email != null && EF.Functions.ILike(c.Email, $"%{keyword}%")) ||
+                    (c.Gender != null && EF.Functions.ILike(c.Gender, $"%{keyword}%"));
             }
 
-            return await _repo.GetAllAsync(paging, filter, null);
+            return await _repo.GetAllAsync(paging, filter);
         }
         catch (Exception ex)
         {
@@ -99,12 +101,13 @@ public class CustomerService : ICustomerService
 
         try
         {
-            var keywordLower = keyword.ToLower();
-            // Sử dụng GetAsync với filter để lọc server-side
+            var keywordTrimmed = keyword.Trim();
+            // Sử dụng GetAsync với filter để lọc server-side bằng ILike
             var customers = await _repo.GetAsync(c =>
-                c.Name.ToLower().Contains(keywordLower) ||
-                c.Phone.Contains(keyword) ||
-                (c.Email != null && c.Email.ToLower().Contains(keywordLower))
+                EF.Functions.ToTsVector("simple", c.Name).Matches(EF.Functions.PlainToTsQuery("simple", keywordTrimmed)) ||
+                EF.Functions.ILike(c.Name, $"%{keywordTrimmed}%") ||
+                EF.Functions.ILike(c.Phone, $"%{keywordTrimmed}%") ||
+                (c.Email != null && EF.Functions.ILike(c.Email, $"%{keywordTrimmed}%"))
             );
             return customers;
         }

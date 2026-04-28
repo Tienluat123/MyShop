@@ -21,14 +21,9 @@ public class PagingRequest
     public string? SearchText { get; set; }
 
     /// <summary>
-    /// Cột sắp xếp (mặc định = null)
+    /// Chuỗi sắp xếp nhiều tiêu chí (ví dụ: "Status DESC, HourlyRate ASC")
     /// </summary>
-    public string? SortColumn { get; set; }
-
-    /// <summary>
-    /// Sắp xếp tăng dần (mặc định = false, tức là giảm dần)
-    /// </summary>
-    public bool SortAscending { get; set; } = false;
+    public string? SortBy { get; set; }
 
     /// <summary>
     /// Bộ lọc bổ sung (ví dụ: Role, Status)

@@ -79,8 +79,15 @@ public class ProductService : IProductService
                 // SearchText filter
                 if (!string.IsNullOrWhiteSpace(paging.SearchText))
                 {
-                    var keyword = paging.SearchText.ToLower().Trim();
-                    filters.Add(p => p.Name.ToLower().Contains(keyword));
+                    var keyword = paging.SearchText.Trim();
+                    // Kết hợp PostgreSQL Full-Text Search (ToTsVector) và Substring Matching (ILike)
+                    // FTS giúp tìm không cần đúng thứ tự từ (VD: "sữa cafe" tìm ra "cafe sữa")
+                    // ILike giúp tìm chuỗi con (VD: "caf" tìm ra "cafe")
+                    filters.Add(p =>
+                        EF.Functions.ToTsVector("simple", p.Name).Matches(EF.Functions.PlainToTsQuery("simple", keyword)) ||
+                        EF.Functions.ILike(p.Name, $"%{keyword}%") ||
+                        (p.Category != null && EF.Functions.ILike(p.Category.Name, $"%{keyword}%"))
+                    );
                 }
 
                 // Category filter from Dictionary
@@ -122,21 +129,7 @@ public class ProductService : IProductService
                 }
             }
 
-            // Build orderBy expression from paging sort info
-            Func<IQueryable<Product>, IOrderedQueryable<Product>>? orderBy = null;
-            if (paging != null && !string.IsNullOrWhiteSpace(paging.SortColumn))
-            {
-                orderBy = (paging.SortColumn, paging.SortAscending) switch
-                {
-                    ("Price", true)  => q => q.OrderBy(p => p.Price),
-                    ("Price", false) => q => q.OrderByDescending(p => p.Price),
-                    ("Name", true)   => q => q.OrderBy(p => p.Name),
-                    ("Name", false)  => q => q.OrderByDescending(p => p.Name),
-                    _                => q => q.OrderBy(p => p.Name) // default
-                };
-            }
-
-            return await _productRepository.GetAllAsync(paging, filter, orderBy, "Category");
+            return await _productRepository.GetAllAsync(paging, filter, "Category", "ProductImages");
         }
         catch (Exception ex)
         {
@@ -171,7 +164,8 @@ public class ProductService : IProductService
 
         try
         {
-            return await _productRepository.GetByIdAsync(id);
+            var items = await _productRepository.GetAsync(p => p.Id == id, "Category", "ProductImages");
+            return items.FirstOrDefault();
         }
         catch (Exception ex)
         {
@@ -192,7 +186,8 @@ public class ProductService : IProductService
         {
             return await _productRepository.GetAsync(
                 p => p.CategoryId == categoryId,
-                "Category");
+                "Category",
+                "ProductImages");
         }
         catch (Exception ex)
         {
@@ -214,7 +209,8 @@ public class ProductService : IProductService
             var keywordLower = keyword.ToLower();
             return await _productRepository.GetAsync(
                 p => p.Name.ToLower().Contains(keywordLower),
-                "Category");
+                "Category",
+                "ProductImages");
         }
         catch (Exception ex)
         {

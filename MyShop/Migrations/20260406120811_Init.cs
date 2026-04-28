@@ -12,7 +12,7 @@ namespace MyShop.Migrations
         {
 
         }
-
+    
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {

@@ -12,6 +12,35 @@
         <converters:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
         <converters:LoyaltyTierBrushConverter x:Key="LoyaltyTierBrushConverter"/>
         <converters:StringToBoolConverter x:Key="StringToBoolConverter"/>
+        <converters:SortIndicatorConverter x:Key="SortIndicatorConverter"/>
+
+        <!-- Style for sort header buttons - keeps color consistent on press/hover -->
+        <Style x:Key="SortHeaderButtonStyle"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="Gray"/>
+            <Setter Property="Padding"
+                    Value="0"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Background="{TemplateBinding Background}">
+                            <ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}"
+                                VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Page.Resources>
 
 
@@ -32,17 +61,20 @@
                   Padding="16,16,16,12"
                   ColumnSpacing="30">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <Button Grid.Column="1"
+                        HorizontalAlignment="Right"
                         Command="{x:Bind ViewModel.AddCustomerCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}"
+                        Background="#D97706"
                         Foreground="White"
-                        CornerRadius="12"
-                        Padding="14,8"
-                        Height="36">
+                        Height="35"
+                        Padding="20,0"
+                        CornerRadius="20"
+                        VerticalAlignment="Center"
+                        BorderThickness="0">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="8">
                         <FontIcon Glyph="&#xE710;"
@@ -52,44 +84,125 @@
                     </StackPanel>
                 </Button>
 
-                <Border Grid.Column="0"
-                        Background="#F0F0F0"
-                        CornerRadius="20"
-                        BorderThickness="1"
-                        BorderBrush="Gray"
-                        Padding="12,0,12,0"
-                        Height="36">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                    <Border HorizontalAlignment="Left"
+                            Background="#F0F0F0"
+                            CornerRadius="20"
+                            BorderThickness="1"
+                            BorderBrush="Gray"
+                            Padding="12,0,12,0"
+                            Height="35"
+                            Width="250">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <FontIcon Glyph="&#xE71E;"
-                                  FontSize="14"
-                                  Foreground="Gray"
-                                  VerticalAlignment="Center"/>
+                            <FontIcon Glyph="&#xE71E;"
+                                      FontSize="14"
+                                      Foreground="Gray"
+                                      VerticalAlignment="Center"/>
 
-                        <TextBox Grid.Column="1"
-                                 PlaceholderText="Search everything..."
-                                 Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Background="Transparent"
-                                 BorderThickness="0"
-                                 VerticalAlignment="Center"
-                                 Margin="0,3,0,0">
-                            <TextBox.Resources>
-                                <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
-                                <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
-                                <SolidColorBrush x:Key="TextControlBackground"
-                                                 Color="Transparent"/>
-                                <SolidColorBrush x:Key="TextControlBackgroundFocused"
-                                                 Color="Transparent"/>
-                                <SolidColorBrush x:Key="TextControlBackgroundPointerOver"
-                                                 Color="Transparent"/>
-                            </TextBox.Resources>
-                        </TextBox>
-                    </Grid>
-                </Border>
+                            <TextBox Grid.Column="1"
+                                     PlaceholderText="Search everything..."
+                                     Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     VerticalAlignment="Center"
+                                     Margin="0,3,0,0">
+                                <TextBox.Resources>
+                                    <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
+                                    <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                                    <SolidColorBrush x:Key="TextControlBackground"
+                                                     Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused"
+                                                     Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver"
+                                                     Color="Transparent"/>
+                                </TextBox.Resources>
+                            </TextBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- Advanced Sort Button -->
+                    <Button Background="White"
+                            Height="35"
+                            CornerRadius="20"
+                            BorderThickness="1"
+                            BorderBrush="#E0E0E0"
+                            Padding="16,0">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE8CB;" FontSize="14" Foreground="#4A4A4A"/>
+                            <TextBlock Text="Advanced Sort" Foreground="#4A4A4A" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Width="360" Spacing="12" Padding="4">
+                                    <TextBlock Text="Multi-Criteria Sorting" FontWeight="Bold" FontSize="16"/>
+                                    <TextBlock Text="Add multiple levels of sorting logic." FontSize="12" Foreground="Gray" TextWrapping="Wrap"/>
+
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.SortCriteriaList, Mode=OneWay}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:SortCriteriaItem">
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <ComboBox Grid.Column="0" 
+                                                              ItemsSource="{x:Bind AvailableColumns, Mode=OneWay}" 
+                                                              SelectedValue="{x:Bind ColumnName, Mode=TwoWay}" 
+                                                              HorizontalAlignment="Stretch" Margin="0,0,8,0"/>
+                                                    
+                                                    <ComboBox Grid.Column="1" 
+                                                              SelectedValue="{x:Bind Direction, Mode=TwoWay}"
+                                                              SelectedValuePath="Content"
+                                                              HorizontalAlignment="Stretch" Margin="0,0,8,0">
+                                                        <ComboBoxItem Content="ASC"/>
+                                                        <ComboBoxItem Content="DESC"/>
+                                                    </ComboBox>
+
+                                                    <Button Grid.Column="2" 
+                                                            Background="Transparent" 
+                                                            BorderThickness="0" 
+                                                            Padding="4" 
+                                                            Command="{Binding DataContext.RemoveSortCriteriaCommand, ElementName=PageRoot}"
+                                                            CommandParameter="{x:Bind}">
+                                                        <FontIcon Glyph="&#xE74D;" FontSize="14" Foreground="Red"/>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Button Content="+ Add Level"
+                                            Command="{x:Bind ViewModel.AddSortCriteriaCommand}"
+                                            Background="Transparent"
+                                            Foreground="#0078D7"
+                                            BorderThickness="0"
+                                            HorizontalAlignment="Left"/>
+
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" Content="Clear All"
+                                                Command="{x:Bind ViewModel.ClearMultiSortCommand}"
+                                                HorizontalAlignment="Stretch" Margin="0,0,4,0"/>
+                                        <Button Grid.Column="1" Content="Apply"
+                                                Command="{x:Bind ViewModel.ApplyMultiSortCommand}"
+                                                Style="{StaticResource AppPrimaryButtonStyle}"
+                                                HorizontalAlignment="Stretch" Margin="4,0,0,0"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
             </Grid>
 
             <!-- Table Section -->
@@ -122,70 +235,94 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Name -->
-                            <TextBlock Text="NAME"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"/>
+                            <Button Style="{StaticResource SortHeaderButtonStyle}"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="Name">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="NAME" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Name}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- Email -->
-                            <TextBlock Grid.Column="1"
-                                       Text="EMAIL"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"/>
+                            <Button Grid.Column="1" Style="{StaticResource SortHeaderButtonStyle}"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="Email">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="EMAIL" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Email}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- Gender -->
-                            <TextBlock Grid.Column="2"
-                                       Text="GENDER"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"/>
+                            <Button Grid.Column="2" Style="{StaticResource SortHeaderButtonStyle}"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="Gender">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="GENDER" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Gender}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- Birthday -->
-                            <TextBlock Grid.Column="3"
-                                       Text="BIRTHDAY"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"/>
+                            <Button Grid.Column="3" Style="{StaticResource SortHeaderButtonStyle}"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="Birthday">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="BIRTHDAY" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Birthday}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- Total Points -->
-                            <TextBlock Grid.Column="4"
-                                       Text="POINTS"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"
-                                       HorizontalAlignment="Right"/>
+                            <Button Grid.Column="4" Style="{StaticResource SortHeaderButtonStyle}" HorizontalAlignment="Right"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="TotalAccumulatedPoints">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="POINTS" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=TotalAccumulatedPoints}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- Available Points -->
-                            <TextBlock Grid.Column="5"
-                                       Text="AVAILABLE"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"
-                                       HorizontalAlignment="Right"/>
+                            <Button Grid.Column="5" Style="{StaticResource SortHeaderButtonStyle}" HorizontalAlignment="Right"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="CurrentAvailablePoints">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="AVAILABLE" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=CurrentAvailablePoints}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
-                            <!-- Tier & Status -->
-                            <TextBlock Grid.Column="6"
-                                       Text="TIER"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"/>
+                            <!-- Tier -->
+                            <Button Grid.Column="6" Style="{StaticResource SortHeaderButtonStyle}"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="TotalAccumulatedPoints">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="TIER" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=TotalAccumulatedPoints}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- Status -->
-                            <TextBlock Grid.Column="7"
-                                       Text="STATUS"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"
-                                       HorizontalAlignment="Center"/>
+                            <Button Grid.Column="7" Style="{StaticResource SortHeaderButtonStyle}" HorizontalAlignment="Center"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="Status">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="STATUS" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Status}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- Visits -->
-                            <TextBlock Grid.Column="8"
-                                       Text="VISITS"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Foreground="Gray"
-                                       HorizontalAlignment="Center"/>
+                            <Button Grid.Column="8" Style="{StaticResource SortHeaderButtonStyle}" HorizontalAlignment="Center"
+                                    Command="{x:Bind ViewModel.SortByColumnCommand}"
+                                    CommandParameter="TotalVisits">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="VISITS" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{x:Bind ViewModel.SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=TotalVisits}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- Actions -->
                             <TextBlock Grid.Column="9"

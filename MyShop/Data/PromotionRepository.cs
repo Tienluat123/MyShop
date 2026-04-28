@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 using MyShop.Models;
 
 namespace MyShop.Data;
@@ -61,40 +62,10 @@ public class PromotionRepository : IPromotionRepository
         paging.Validate();
         var totalItems = await query.CountAsync(ct);
 
-        // Apply sorting based on SortColumn and SortAscending
-        var sortedQuery = paging.SortColumn switch
-        {
-            "Code" => paging.SortAscending
-                ? query.OrderBy(p => p.PromoCode)
-                : query.OrderByDescending(p => p.PromoCode),
-
-            "Type" => paging.SortAscending
-                ? query.OrderBy(p => p.PromoType)
-                : query.OrderByDescending(p => p.PromoType),
-
-            "Value" => paging.SortAscending
-                ? query.OrderBy(p => p.DiscountValue)
-                : query.OrderByDescending(p => p.DiscountValue),
-
-            "Status" => paging.SortAscending
-                ? query.OrderBy(p => p.IsActive)
-                : query.OrderByDescending(p => p.IsActive),
-
-            "MinOrder" => paging.SortAscending
-                ? query.OrderBy(p => p.MinOrderAmount)
-                : query.OrderByDescending(p => p.MinOrderAmount),
-
-            "StartDate" => paging.SortAscending
-                ? query.OrderBy(p => p.StartDate)
-                : query.OrderByDescending(p => p.StartDate),
-
-            "Target" => paging.SortAscending
-                ? query.OrderBy(p => p.TargetAudience)
-                : query.OrderByDescending(p => p.TargetAudience),
-
-            // Mặc định sort theo PromoCode tăng dần
-            _ => query.OrderBy(p => p.PromoCode)
-        };
+        // Apply sorting based on SortBy
+        IQueryable<Promotion> sortedQuery = !string.IsNullOrWhiteSpace(paging.SortBy)
+            ? query.OrderBy(paging.SortBy)
+            : query.OrderBy(p => p.PromoCode);
 
         var items = await sortedQuery
             .Skip(paging.GetSkip())

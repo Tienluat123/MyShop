@@ -18,6 +18,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 FILES=(
     "01-categories.sql"
     "02-products.sql"
+    "02-product-images.sql"
     "03-customers.sql"
     "04-users.sql"
     "05-orders.sql"
@@ -51,6 +52,8 @@ psql -U "$DB_USER" -d "$DB_NAME" -h "$DB_HOST" -p "$DB_PORT" -c "
 SELECT 'Categories' as type, COUNT(*) as count FROM \"Categories\"
 UNION ALL
 SELECT 'Products', COUNT(*) FROM \"Products\"
+UNION ALL
+SELECT 'ProductImages', COUNT(*) FROM \"ProductImages\"
 UNION ALL
 SELECT 'Customers', COUNT(*) FROM \"Customers\"
 UNION ALL

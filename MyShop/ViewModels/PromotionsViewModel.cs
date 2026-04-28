@@ -223,6 +223,14 @@ public partial class PromotionsViewModel : ObservableObject
     [ObservableProperty]
     private string sortInfo = "Code|True";
 
+    [ObservableProperty]
+    private ObservableCollection<SortCriteriaItem> sortCriteriaList = new();
+
+    public ObservableCollection<string> AvailableSortColumns { get; } = new()
+    {
+        "Code", "Type", "Value", "Status", "MinOrder", "StartDate", "Target"
+    };
+
     partial void OnSortColumnNameChanged(string value) => UpdateSortInfo();
     partial void OnSortAscendingChanged(bool value) => UpdateSortInfo();
 
@@ -263,13 +271,50 @@ public partial class PromotionsViewModel : ObservableObject
             // Lấy PageSize từ cấu hình nếu chưa có hoặc load lại
             PageSize = await _configService.GetPageSizeAsync();
 
+            string sortProperty = "";
+            if (SortCriteriaList.Count > 0)
+            {
+                var sortStrings = new List<string>();
+                foreach (var item in SortCriteriaList)
+                {
+                    var dir = item.Direction;
+                    var mapped = item.ColumnName switch
+                    {
+                        "Code" => $"PromoCode {dir}",
+                        "Type" => $"PromoType {dir}",
+                        "Value" => $"DiscountValue {dir}",
+                        "Status" => $"IsActive {dir}",
+                        "MinOrder" => $"MinOrderAmount {dir}",
+                        "StartDate" => $"StartDate {dir}",
+                        "Target" => $"TargetAudience {dir}",
+                        _ => $"PromoCode {dir}"
+                    };
+                    sortStrings.Add(mapped);
+                }
+                sortProperty = string.Join(", ", sortStrings);
+            }
+            else
+            {
+                var direction = SortAscending ? "ASC" : "DESC";
+                sortProperty = SortColumnName switch
+                {
+                    "Code" => $"PromoCode {direction}",
+                    "Type" => $"PromoType {direction}",
+                    "Value" => $"DiscountValue {direction}",
+                    "Status" => $"IsActive {direction}",
+                    "MinOrder" => $"MinOrderAmount {direction}",
+                    "StartDate" => $"StartDate {direction}",
+                    "Target" => $"TargetAudience {direction}",
+                    _ => $"PromoCode {direction}"
+                };
+            }
+
             var request = new PagingRequest
             {
                 PageNumber = CurrentPage,
                 PageSize = PageSize,
                 SearchText = SearchQuery?.Trim(),
-                SortColumn = SortColumnName,
-                SortAscending = SortAscending,
+                SortBy = sortProperty,
                 Filters = new Dictionary<string, string>
                 {
                     { "Status", SelectedStatus }
@@ -407,6 +452,38 @@ public partial class PromotionsViewModel : ObservableObject
     }
 
 
+    // === MULTI-CRITERIA COMMANDS ===
+
+    [RelayCommand]
+    public void AddSortCriteria()
+    {
+        SortCriteriaList.Add(new SortCriteriaItem(AvailableSortColumns));
+    }
+
+    [RelayCommand]
+    public void RemoveSortCriteria(SortCriteriaItem item)
+    {
+        if (item != null && SortCriteriaList.Contains(item))
+        {
+            SortCriteriaList.Remove(item);
+        }
+    }
+
+    [RelayCommand]
+    public async Task ApplyMultiSort()
+    {
+        CurrentPage = 1;
+        await RefreshFromDatabaseAsync();
+    }
+
+    [RelayCommand]
+    public async Task ClearMultiSort()
+    {
+        SortCriteriaList.Clear();
+        CurrentPage = 1;
+        await RefreshFromDatabaseAsync();
+    }
+
     // === Paging Commands ===
 
     [RelayCommand]
@@ -458,6 +535,12 @@ public partial class PromotionsViewModel : ObservableObject
 
     // Auto-rebuild khi search thay đổi
     partial void OnSearchQueryChanged(string value)
+    {
+        CurrentPage = 1;
+        _ = RefreshFromDatabaseAsync();
+    }
+
+    partial void OnSelectedStatusChanged(string value)
     {
         CurrentPage = 1;
         _ = RefreshFromDatabaseAsync();

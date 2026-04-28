@@ -11,6 +11,8 @@ namespace MyShop.Views.Promotion.Components;
 /// </summary>
 public sealed partial class PromotionManagementView : Page
 {
+    public PromotionsViewModel? ViewModel => DataContext as PromotionsViewModel;
+
     public PromotionManagementView()
     {
         InitializeComponent();
