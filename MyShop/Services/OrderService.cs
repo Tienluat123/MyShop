@@ -237,8 +237,9 @@ public class OrderService : IOrderService
         if (order == null)
             throw new ArgumentNullException(nameof(order));
 
-        if (order.CustomerId < 0)
-            throw new ArgumentException("Phải chọn khách hàng hợp lệ", nameof(order.CustomerId));
+        // CustomerId is nullable, but if provided it should be positive (or the DB will fail)
+        if (order.CustomerId.HasValue && order.CustomerId.Value < 0)
+            throw new ArgumentException("CustomerId không hợp lệ", nameof(order.CustomerId));
 
         if (order.UserId <= 0)
             throw new ArgumentException("Phải chọn nhân viên hợp lệ", nameof(order.UserId));
@@ -254,9 +255,9 @@ public class OrderService : IOrderService
         if (order.TotalAmount < 0)
             throw new ArgumentException("Tổng tiền không được âm", nameof(order.TotalAmount));
 
-        if (order.CustomerId > 0)
+        if (order.CustomerId.HasValue)
         {
-            var customer = await _customerRepository.GetByIdAsync(order.CustomerId);
+            var customer = await _customerRepository.GetByIdAsync(order.CustomerId.Value);
             if (customer == null)
                 throw new InvalidOperationException($"Khách hàng với ID {order.CustomerId} không tồn tại");
         }

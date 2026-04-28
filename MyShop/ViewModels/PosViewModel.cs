@@ -68,7 +68,7 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder != null)
         {
-            _currentDraftOrder.CustomerId = value?.Id ?? 0;
+            _currentDraftOrder.CustomerId = value?.Id; // Now nullable, null means guest
             _currentDraftOrder.Customer = value;
         }
     }
@@ -369,7 +369,7 @@ public partial class PosViewModel : ObservableObject
 
         _currentDraftOrder = new Order
         {
-            CustomerId = 0, // Default Guest
+            CustomerId = null, // Guest
             UserId = 1,     // Default Staff
             PaymentStatus = "Draft",
             Type = OrderType,
@@ -680,7 +680,7 @@ public partial class PosViewModel : ObservableObject
 
         if (_currentDraftOrder != null)
         {
-            _currentDraftOrder.CustomerId = customer?.Id ?? 0;
+            _currentDraftOrder.CustomerId = customer?.Id;
             _currentDraftOrder.Customer = customer;
             subtotal = _currentDraftOrder.SubTotal;
             tax = _currentDraftOrder.TaxAmount;

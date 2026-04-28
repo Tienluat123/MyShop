@@ -8,7 +8,7 @@ public partial class Order : ObservableObject
     private int id;
 
     [ObservableProperty]
-    private int customerId;
+    private int? customerId;
 
     [ObservableProperty]
     private int userId; // Nhân viên xử lý
