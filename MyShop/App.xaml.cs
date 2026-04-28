@@ -268,10 +268,7 @@ public partial class App : Application
                 container.Get<IRepository<Category>>()
             ));
 
-            container.Register<IExcelCatalogImportService>(new ExcelCatalogImportService(
-                container.Get<IRepository<Category>>(),
-                container.Get<IRepository<Product>>()
-            ));
+            container.Register<IExcelCatalogImportService>(new ExcelCatalogImportService(contextFactory));
 
             container.Register<IScheduleService>(new ScheduleService(
                 container.Get<IRepository<WorkSchedule>>()

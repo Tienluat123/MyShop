@@ -13,12 +13,14 @@ public sealed partial class ManageProductPage : Page
 {
     private readonly IProductService _productService;
     private readonly IExcelCatalogImportService _excelCatalogImportService;
+    private readonly INotificationService _notificationService;
 
     public ManageProductPage()
     {
         InitializeComponent();
         _productService = ServiceContainer.Instance.Get<IProductService>();
         _excelCatalogImportService = ServiceContainer.Instance.Get<IExcelCatalogImportService>();
+        _notificationService = ServiceContainer.Instance.Get<INotificationService>();
         Loaded += ManageProductPage_Loaded;
     }
 
@@ -35,6 +37,7 @@ public sealed partial class ManageProductPage : Page
         var vm = new ProductManagementViewModel(
             productService: _productService,
             excelCatalogImportService: _excelCatalogImportService,
+            notificationService: _notificationService,
             onAddProduct: () => ShowFormDialog(false),
             onEditProduct: product => ShowFormDialog(true, product));
 

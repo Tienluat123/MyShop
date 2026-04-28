@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using MyShop.Data;
 using MyShop.Models;
 
@@ -9,30 +10,23 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
     private const string CategoriesSheet = "Categories";
     private const string ProductsSheet = "Products";
 
-    private static readonly string[] RequiredCategoryHeaders =
+    private static readonly string[][] RequiredCategoryHeaderGroups =
     [
-        "CategoryCode",
-        "Name",
-        "HasCustomization"
+        ["Name"]
     ];
 
-    private static readonly string[] RequiredProductHeaders =
+    private static readonly string[][] RequiredProductHeaderGroups =
     [
-        "ProductCode",
-        "Name",
-        "Price",
-        "CategoryCode"
+        ["Name"],
+        ["Price"],
+        ["Category", "CategoryCode"]
     ];
 
-    private readonly IRepository<Category> _categoryRepository;
-    private readonly IRepository<Product> _productRepository;
+    private readonly AppDbContextFactory _contextFactory;
 
-    public ExcelCatalogImportService(
-        IRepository<Category> categoryRepository,
-        IRepository<Product> productRepository)
+    public ExcelCatalogImportService(AppDbContextFactory contextFactory)
     {
-        _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
-        _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+        _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
     }
 
     public async Task<CatalogImportResult> ImportAsync(string filePath, CancellationToken cancellationToken = default)
@@ -79,8 +73,8 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
         {
             using var reader = new ExcelWorkbookReader(filePath);
 
-            ValidateSheetAndHeaders(reader, CategoriesSheet, RequiredCategoryHeaders, result);
-            ValidateSheetAndHeaders(reader, ProductsSheet, RequiredProductHeaders, result);
+            ValidateSheetAndHeaders(reader, CategoriesSheet, RequiredCategoryHeaderGroups, result);
+            ValidateSheetAndHeaders(reader, ProductsSheet, RequiredProductHeaderGroups, result);
 
             if (!result.Success)
             {
@@ -99,10 +93,20 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // TEMP: DB write is disabled. Keep only parse/validate for now.
-            // var categoryCodeToId = await UpsertCategories(categoryRows, result, cancellationToken);
-            // await UpsertProducts(productRows, categoryCodeToId, result, cancellationToken);
-            result.Warnings.Add("Database upsert is disabled (dry-run mode).");
+            await using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
+            var executionStrategy = context.Database.CreateExecutionStrategy();
+
+            await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
+                var categoriesByName = await UpsertCategoriesAsync(context, categoryRows, result, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
+                await UpsertProductsAsync(context, productRows, categoriesByName, result, cancellationToken);
+
+                await context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            });
 
             return result;
         }
@@ -126,7 +130,7 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
     private static void ValidateSheetAndHeaders(
         ExcelWorkbookReader reader,
         string sheetName,
-        IEnumerable<string> requiredHeaders,
+        IEnumerable<string[]> requiredHeaderGroups,
         CatalogImportResult result)
     {
         if (!reader.HasSheet(sheetName))
@@ -142,16 +146,16 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
         }
 
         var headers = reader.GetHeaders(sheetName);
-        foreach (var requiredHeader in requiredHeaders)
+        foreach (var requiredHeaderGroup in requiredHeaderGroups)
         {
-            if (!headers.Contains(requiredHeader, StringComparer.OrdinalIgnoreCase))
+            if (!requiredHeaderGroup.Any(header => headers.Contains(header, StringComparer.OrdinalIgnoreCase)))
             {
                 result.Errors.Add(new ImportError
                 {
                     Sheet = sheetName,
                     Row = 1,
-                    Column = requiredHeader,
-                    Message = $"Missing required header '{requiredHeader}'."
+                    Column = string.Join(" / ", requiredHeaderGroup),
+                    Message = $"Missing required header '{string.Join("' or '", requiredHeaderGroup)}'."
                 });
             }
         }
@@ -162,42 +166,40 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
         CatalogImportResult result)
     {
         var parsed = new List<CategoryImportRow>();
-        var seenCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in rows)
         {
-            var code = row.GetValue("CategoryCode");
             var name = row.GetValue("Name");
-            var hasCustomizationRaw = row.GetValue("HasCustomization");
-
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                result.Errors.Add(NewError(CategoriesSheet, row.RowNumber, "CategoryCode", "CategoryCode is required."));
-                continue;
-            }
-
             if (string.IsNullOrWhiteSpace(name))
             {
                 result.Errors.Add(NewError(CategoriesSheet, row.RowNumber, "Name", "Name is required."));
                 continue;
             }
 
-            if (!seenCodes.Add(code))
+            if (!seenNames.Add(name))
             {
-                result.Errors.Add(NewError(CategoriesSheet, row.RowNumber, "CategoryCode", "CategoryCode is duplicated in file."));
+                result.Errors.Add(NewError(CategoriesSheet, row.RowNumber, "Name", "Name is duplicated in file."));
                 continue;
             }
 
-            if (!TryParseBool(hasCustomizationRaw, out var hasCustomization))
+            var hasCustomizationRaw = row.GetValue("HasCustomization");
+            bool? hasCustomization = null;
+
+            if (!string.IsNullOrWhiteSpace(hasCustomizationRaw))
             {
-                result.Errors.Add(NewError(CategoriesSheet, row.RowNumber, "HasCustomization", "Use TRUE/FALSE or 1/0."));
-                continue;
+                if (!TryParseBool(hasCustomizationRaw, out var parsedHasCustomization))
+                {
+                    result.Errors.Add(NewError(CategoriesSheet, row.RowNumber, "HasCustomization", "Use TRUE/FALSE, 1/0, yes/no."));
+                    continue;
+                }
+
+                hasCustomization = parsedHasCustomization;
             }
 
             parsed.Add(new CategoryImportRow
             {
                 RowNumber = row.RowNumber,
-                CategoryCode = code,
                 Name = name,
                 HasCustomization = hasCustomization,
                 IconKey = NullIfEmpty(row.GetValue("IconKey")),
@@ -213,20 +215,13 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
         CatalogImportResult result)
     {
         var parsed = new List<ProductImportRow>();
-        var seenCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seenKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in rows)
         {
-            var productCode = row.GetValue("ProductCode");
             var name = row.GetValue("Name");
-            var categoryCode = row.GetValue("CategoryCode");
             var priceRaw = row.GetValue("Price");
-
-            if (string.IsNullOrWhiteSpace(productCode))
-            {
-                result.Errors.Add(NewError(ProductsSheet, row.RowNumber, "ProductCode", "ProductCode is required."));
-                continue;
-            }
+            var categoryName = GetFirstValue(row, "Category", "CategoryCode");
 
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -234,25 +229,24 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
                 continue;
             }
 
-            if (string.IsNullOrWhiteSpace(categoryCode))
+            if (string.IsNullOrWhiteSpace(categoryName))
             {
-                result.Errors.Add(NewError(ProductsSheet, row.RowNumber, "CategoryCode", "CategoryCode is required."));
+                result.Errors.Add(NewError(ProductsSheet, row.RowNumber, "Category", "Category is required."));
                 continue;
             }
 
-            if (!seenCodes.Add(productCode))
+            var productKey = BuildProductKey(name, categoryName);
+            if (!seenKeys.Add(productKey))
             {
-                result.Errors.Add(NewError(ProductsSheet, row.RowNumber, "ProductCode", "ProductCode is duplicated in file."));
+                result.Errors.Add(NewError(ProductsSheet, row.RowNumber, "Name", "Product name and category are duplicated in file."));
                 continue;
             }
 
-            if (!decimal.TryParse(priceRaw, NumberStyles.Number, CultureInfo.InvariantCulture, out var price))
+            if (!decimal.TryParse(priceRaw, NumberStyles.Number, CultureInfo.InvariantCulture, out var price)
+                && !decimal.TryParse(priceRaw, NumberStyles.Number, CultureInfo.CurrentCulture, out price))
             {
-                if (!decimal.TryParse(priceRaw, NumberStyles.Number, CultureInfo.CurrentCulture, out price))
-                {
-                    result.Errors.Add(NewError(ProductsSheet, row.RowNumber, "Price", "Price is invalid."));
-                    continue;
-                }
+                result.Errors.Add(NewError(ProductsSheet, row.RowNumber, "Price", "Price is invalid."));
+                continue;
             }
 
             if (price < 0)
@@ -264,9 +258,8 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
             parsed.Add(new ProductImportRow
             {
                 RowNumber = row.RowNumber,
-                ProductCode = productCode,
                 Name = name,
-                CategoryCode = categoryCode,
+                CategoryName = categoryName,
                 Price = price,
                 ImagePath = NullIfEmpty(row.GetValue("ImagePath"))
             });
@@ -280,30 +273,31 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
         List<ProductImportRow> products,
         CatalogImportResult result)
     {
-        var categoryCodes = categories
-            .Select(c => c.CategoryCode)
+        var categoryNames = categories
+            .Select(c => c.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         foreach (var product in products)
         {
-            if (!categoryCodes.Contains(product.CategoryCode))
+            if (!categoryNames.Contains(product.CategoryName))
             {
                 result.Errors.Add(NewError(
                     ProductsSheet,
                     product.RowNumber,
-                    "CategoryCode",
-                    $"CategoryCode '{product.CategoryCode}' was not found in Categories sheet."));
+                    "Category",
+                    $"Category '{product.CategoryName}' was not found in Categories sheet."));
             }
         }
     }
 
-    private async Task<Dictionary<string, int>> UpsertCategories(
+    private static async Task<Dictionary<string, Category>> UpsertCategoriesAsync(
+        AppDbContext context,
         List<CategoryImportRow> rows,
         CatalogImportResult result,
         CancellationToken cancellationToken)
     {
-        var categoryCodeToId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var existingCategories = await _categoryRepository.GetAsync();
+        var categoryByName = new Dictionary<string, Category>(StringComparer.OrdinalIgnoreCase);
+        var existingCategories = await context.Categories.ToListAsync(cancellationToken);
         var existingByName = existingCategories.ToDictionary(c => c.Name, StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in rows)
@@ -312,46 +306,59 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
 
             if (existingByName.TryGetValue(row.Name, out var existing))
             {
-                var hasChanges = existing.HasCustomization != row.HasCustomization
-                    || !string.Equals(existing.IconKey, row.IconKey, StringComparison.Ordinal)
-                    || !string.Equals(existing.Description, row.Description, StringComparison.Ordinal);
+                var hasChanges = false;
+
+                if (row.HasCustomization.HasValue && existing.HasCustomization != row.HasCustomization.Value)
+                {
+                    existing.HasCustomization = row.HasCustomization.Value;
+                    hasChanges = true;
+                }
+
+                if (row.IconKey != null && !string.Equals(existing.IconKey, row.IconKey, StringComparison.Ordinal))
+                {
+                    existing.IconKey = row.IconKey;
+                    hasChanges = true;
+                }
+
+                if (row.Description != null && !string.Equals(existing.Description, row.Description, StringComparison.Ordinal))
+                {
+                    existing.Description = row.Description;
+                    hasChanges = true;
+                }
 
                 if (hasChanges)
                 {
-                    existing.HasCustomization = row.HasCustomization;
-                    existing.IconKey = row.IconKey;
-                    existing.Description = row.Description;
-                    await _categoryRepository.UpdateAsync(existing);
                     result.CategoriesUpdated++;
                 }
 
-                categoryCodeToId[row.CategoryCode] = existing.Id;
+                categoryByName[row.Name] = existing;
                 continue;
             }
 
-            var created = await _categoryRepository.AddAsync(new Category
+            var created = new Category
             {
                 Name = row.Name,
-                HasCustomization = row.HasCustomization,
+                HasCustomization = row.HasCustomization ?? false,
                 IconKey = row.IconKey,
                 Description = row.Description
-            });
+            };
 
+            context.Categories.Add(created);
             result.CategoriesInserted++;
-            categoryCodeToId[row.CategoryCode] = created.Id;
-            existingByName[row.Name] = created;
+            categoryByName[row.Name] = created;
         }
 
-        return categoryCodeToId;
+        return categoryByName;
     }
 
-    private async Task UpsertProducts(
+    private static async Task UpsertProductsAsync(
+        AppDbContext context,
         List<ProductImportRow> rows,
-        Dictionary<string, int> categoryCodeToId,
+        Dictionary<string, Category> categoriesByName,
         CatalogImportResult result,
         CancellationToken cancellationToken)
     {
-        var existingProducts = await _productRepository.GetAsync();
+        var existingProducts = await context.Products.ToListAsync(cancellationToken);
         var existingByNameAndCategory = existingProducts.ToDictionary(
             p => BuildProductKey(p.Name, p.CategoryId),
             StringComparer.OrdinalIgnoreCase);
@@ -360,36 +367,44 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var categoryId = categoryCodeToId[row.CategoryCode];
-            var productKey = BuildProductKey(row.Name, categoryId);
+            if (!categoriesByName.TryGetValue(row.CategoryName, out var category))
+            {
+                continue;
+            }
+
+            var productKey = BuildProductKey(row.Name, category.Id);
 
             if (existingByNameAndCategory.TryGetValue(productKey, out var existing))
             {
-                var hasChanges = existing.Price != row.Price
-                    || !string.Equals(existing.ImagePath, row.ImagePath, StringComparison.Ordinal)
-                    || existing.CategoryId != categoryId;
+                var hasChanges = existing.Price != row.Price || existing.CategoryId != category.Id;
+
+                if (row.ImagePath != null && !string.Equals(existing.ImagePath, row.ImagePath, StringComparison.Ordinal))
+                {
+                    existing.ImagePath = row.ImagePath;
+                    hasChanges = true;
+                }
 
                 if (hasChanges)
                 {
                     existing.Price = row.Price;
-                    existing.ImagePath = row.ImagePath;
-                    existing.CategoryId = categoryId;
-                    await _productRepository.UpdateAsync(existing);
+                    existing.CategoryId = category.Id;
                     result.ProductsUpdated++;
                 }
 
                 continue;
             }
 
-            var created = await _productRepository.AddAsync(new Product
+            var created = new Product
             {
                 Name = row.Name,
-                CategoryId = categoryId,
+                CategoryId = category.Id,
                 Price = row.Price,
                 ImagePath = row.ImagePath
-            });
+            };
 
+            context.Products.Add(created);
             result.ProductsInserted++;
+            result.InsertedProductNames.Add(row.Name);
             existingByNameAndCategory[productKey] = created;
         }
     }
@@ -397,6 +412,25 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
     private static string BuildProductKey(string name, int categoryId)
     {
         return $"{name}|{categoryId}";
+    }
+
+    private static string BuildProductKey(string name, string categoryName)
+    {
+        return $"{name}|{categoryName}";
+    }
+
+    private static string GetFirstValue(ExcelRowData row, params string[] headerNames)
+    {
+        foreach (var headerName in headerNames)
+        {
+            var value = row.GetValue(headerName);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return string.Empty;
     }
 
     private static bool TryParseBool(string raw, out bool value)

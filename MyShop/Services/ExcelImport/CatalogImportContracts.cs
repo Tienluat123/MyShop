@@ -11,6 +11,7 @@ public sealed class CatalogImportResult
     public int CategoriesUpdated { get; set; }
     public int ProductsInserted { get; set; }
     public int ProductsUpdated { get; set; }
+    public List<string> InsertedProductNames { get; } = new();
 
     public List<ImportError> Errors { get; } = new();
     public List<string> Warnings { get; } = new();
