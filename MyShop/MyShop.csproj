@@ -45,6 +45,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="System.Linq.Dynamic.Core" />
     <PackageReference Include="Tmds.DBus.Protocol" />
   </ItemGroup>
 

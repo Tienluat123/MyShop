@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Linq.Dynamic.Core;
 using MyShop.Models;
 namespace MyShop.Data;
 
@@ -67,10 +68,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     public async Task<PagedResult<TEntity>> GetAllAsync(
         PagingRequest? paging = null,
         Expression<Func<TEntity, bool>>? filter = null,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         params string[] includes)
     {
-        return await GetAllAsyncWithIncludes(paging, filter, orderBy, includes);
+        return await GetAllAsyncWithIncludes(paging, filter, includes);
     }
 
     /// <summary>
@@ -174,7 +174,6 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     public async Task<PagedResult<TEntity>> GetAllAsyncWithIncludes(
         PagingRequest? paging = null,
         Expression<Func<TEntity, bool>>? filter = null,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         params string[] includes)
     {
         return await ExecuteAsync(async context =>
@@ -192,9 +191,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             // If no pagination, get all
             if (paging == null)
             {
-                // Apply orderBy if provided, else no ordering
-                IQueryable<TEntity> unpagedQuery = orderBy != null ? orderBy(query) : query;
-                var allItems = await unpagedQuery.ToListAsync();
+                var allItems = await query.ToListAsync();
                 return new PagedResult<TEntity>
                 {
                     Items = allItems,
@@ -213,8 +210,10 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             // Count total items (MUST be after filter is applied)
             var totalItems = await query.CountAsync();
 
-            // Apply orderBy before Skip/Take
-            IQueryable<TEntity> sortedQuery = orderBy != null ? orderBy(query) : query;
+            // Apply orderBy string if provided before Skip/Take
+            IQueryable<TEntity> sortedQuery = !string.IsNullOrWhiteSpace(paging.SortBy) 
+                ? query.OrderBy(paging.SortBy) 
+                : query;
 
             // Get items with Skip/Take
             var items = await sortedQuery

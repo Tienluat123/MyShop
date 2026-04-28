@@ -67,6 +67,14 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
     [NotifyPropertyChangedFor(nameof(SortInfo))]
     private bool sortAscending = false;
 
+    [ObservableProperty]
+    private ObservableCollection<SortCriteriaItem> sortCriteriaList = new();
+
+    public ObservableCollection<string> AvailableSortColumns { get; } = new()
+    {
+        "FullName", "Phone", "Role", "Status", "HourlyRate", "TotalHours", "LastMonthSalary", "FinalSalary"
+    };
+
     // --- LOADING STATE ---
     [ObservableProperty]
     private bool isLoading = false;
@@ -140,13 +148,52 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
             PageSize = await _configService.GetPageSizeAsync();
 
             // Build paging request with all filters
+            string sortProperty = "";
+            if (SortCriteriaList.Count > 0)
+            {
+                var sortStrings = new List<string>();
+                foreach (var item in SortCriteriaList)
+                {
+                    var dir = item.Direction;
+                    var mapped = item.ColumnName switch
+                    {
+                        "FullName" => $"User.FirstName {dir}, User.LastName {dir}",
+                        "Phone" => $"User.Phone {dir}",
+                        "Role" => $"User.Role {dir}",
+                        "Status" => $"User.IsActive {dir}",
+                        "HourlyRate" => $"User.HourlyRate {dir}",
+                        "TotalHours" => $"CurrentHours {dir}",
+                        "LastMonthSalary" => $"User.HourlyRate * LastMonthHours {dir}",
+                        "FinalSalary" => $"User.HourlyRate * CurrentHours {dir}",
+                        _ => $"CurrentHours {dir}"
+                    };
+                    sortStrings.Add(mapped);
+                }
+                sortProperty = string.Join(", ", sortStrings);
+            }
+            else
+            {
+                var direction = SortAscending ? "ASC" : "DESC";
+                sortProperty = SortColumn switch
+                {
+                    "FullName" => $"User.FirstName {direction}, User.LastName {direction}",
+                    "Phone" => $"User.Phone {direction}",
+                    "Role" => $"User.Role {direction}",
+                    "Status" => $"User.IsActive {direction}",
+                    "HourlyRate" => $"User.HourlyRate {direction}",
+                    "TotalHours" => $"CurrentHours {direction}",
+                    "LastMonthSalary" => $"User.HourlyRate * LastMonthHours {direction}",
+                    "FinalSalary" => $"User.HourlyRate * CurrentHours {direction}",
+                    _ => "CurrentHours DESC"
+                };
+            }
+
             var request = new PagingRequest
             {
                 PageNumber = CurrentPage,
                 PageSize = PageSize,
                 SearchText = SearchText?.Trim(),
-                SortColumn = SortColumn,
-                SortAscending = SortAscending,
+                SortBy = sortProperty,
                 Filters = new Dictionary<string, string>
                 {
                     { "Role", SelectedRole == "All Roles" ? "" : SelectedRole },
@@ -268,6 +315,38 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
     {
         if (CurrentPage < TotalPages)
             CurrentPage++;
+    }
+
+    // --- MULTI-CRITERIA COMMANDS ---
+
+    [RelayCommand]
+    public void AddSortCriteria()
+    {
+        SortCriteriaList.Add(new SortCriteriaItem(AvailableSortColumns));
+    }
+
+    [RelayCommand]
+    public void RemoveSortCriteria(SortCriteriaItem item)
+    {
+        if (item != null && SortCriteriaList.Contains(item))
+        {
+            SortCriteriaList.Remove(item);
+        }
+    }
+
+    [RelayCommand]
+    public async Task ApplyMultiSort()
+    {
+        CurrentPage = 1;
+        await LoadEmployeesAsync();
+    }
+
+    [RelayCommand]
+    public async Task ClearMultiSort()
+    {
+        SortCriteriaList.Clear();
+        CurrentPage = 1;
+        await LoadEmployeesAsync();
     }
 
     // --- XAML COMPATIBILITY ---

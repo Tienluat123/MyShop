@@ -101,13 +101,12 @@ public partial class ProductManagementViewModel : ObservableObject
                     { "MinPrice", MinPrice?.ToString() ?? "" },
                     { "MaxPrice", MaxPrice?.ToString() ?? "" }
                 },
-                SortColumn = SortOption switch
+                SortBy = SortOption switch
                 {
-                    "PriceAsc" => "Price",
-                    "PriceDesc" => "Price",
-                    _ => "Name"
-                },
-                SortAscending = SortOption != "PriceDesc"
+                    "PriceAsc" => "Price ASC",
+                    "PriceDesc" => "Price DESC",
+                    _ => "Name ASC"
+                }
             };
 
             var result = await _productService.GetAll(request);

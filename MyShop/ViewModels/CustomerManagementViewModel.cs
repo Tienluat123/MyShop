@@ -60,6 +60,14 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
     [NotifyPropertyChangedFor(nameof(SortInfo))]
     private bool sortAscending = true;
 
+    [ObservableProperty]
+    private ObservableCollection<SortCriteriaItem> sortCriteriaList = new();
+
+    public ObservableCollection<string> AvailableSortColumns { get; } = new()
+    {
+        "Name", "Phone", "Email", "Gender", "Birthday", "Tier", "Status", "TotalVisits", "TotalAccumulatedPoints"
+    };
+
     public CustomerManagementViewModel(
         ICustomerService customerService,
         INotificationService notificationService,
@@ -109,13 +117,28 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
             // Fetch PageSize from config
             PageSize = await _configService.GetPageSizeAsync();
 
+            string sortProperty = "";
+            if (SortCriteriaList.Count > 0)
+            {
+                var sortStrings = new List<string>();
+                foreach (var item in SortCriteriaList)
+                {
+                    sortStrings.Add($"{item.ColumnName} {item.Direction}");
+                }
+                sortProperty = string.Join(", ", sortStrings);
+            }
+            else
+            {
+                var direction = SortAscending ? "ASC" : "DESC";
+                sortProperty = $"{SortColumn} {direction}";
+            }
+
             var request = new PagingRequest
             {
                 PageNumber = CurrentPage,
                 PageSize = PageSize,
                 SearchText = SearchText?.Trim(),
-                SortColumn = SortColumn,
-                SortAscending = SortAscending
+                SortBy = sortProperty
             };
 
             var result = await _customerService.GetAll(request);
@@ -201,6 +224,38 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
     {
         if (CurrentPage < TotalPages)
             CurrentPage++;
+    }
+
+    // --- MULTI-CRITERIA COMMANDS ---
+
+    [RelayCommand]
+    public void AddSortCriteria()
+    {
+        SortCriteriaList.Add(new SortCriteriaItem(AvailableSortColumns));
+    }
+
+    [RelayCommand]
+    public void RemoveSortCriteria(SortCriteriaItem item)
+    {
+        if (item != null && SortCriteriaList.Contains(item))
+        {
+            SortCriteriaList.Remove(item);
+        }
+    }
+
+    [RelayCommand]
+    public async Task ApplyMultiSort()
+    {
+        CurrentPage = 1;
+        await LoadCustomersAsync();
+    }
+
+    [RelayCommand]
+    public async Task ClearMultiSort()
+    {
+        SortCriteriaList.Clear();
+        CurrentPage = 1;
+        await LoadCustomersAsync();
     }
 
     // --- ACTION COMMANDS ---

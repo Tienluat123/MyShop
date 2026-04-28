@@ -41,7 +41,7 @@ public class CustomerService : ICustomerService
                     (c.Gender != null && c.Gender.ToLower().Contains(keyword));
             }
 
-            return await _repo.GetAllAsync(paging, filter, null);
+            return await _repo.GetAllAsync(paging, filter);
         }
         catch (Exception ex)
         {
