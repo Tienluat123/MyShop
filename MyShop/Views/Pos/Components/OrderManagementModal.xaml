@@ -285,7 +285,7 @@
                                     Grid.Column="1"
                                     Orientation="Horizontal"
                                     Spacing="4"
-                                    Visibility="{Binding FulfillmentStatus, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Active'}">
+                                    Visibility="{Binding DataContext.Filter, ElementName=ModalRoot, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='Active'}">
                                     <FontIcon
                                         Foreground="{StaticResource TextMuted}"
                                         Glyph="&#xE916;"
@@ -294,6 +294,21 @@
                                         FontWeight="Bold"
                                         Style="{StaticResource CaptionMutedTextStyle}"
                                         Text="{Binding CreatedAt, Converter={StaticResource TimeAgoConverter}}" />
+                                </StackPanel>
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Spacing="4"
+                                    Visibility="{Binding DataContext.Filter, ElementName=ModalRoot, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='History'}">
+                                    <FontIcon
+                                        Foreground="{StaticResource TextMuted}"
+                                        Glyph="&#xE916;"
+                                        Style="{StaticResource IconBodyStyle}" />
+                                    <TextBlock
+                                        FontWeight="Bold"
+                                        Style="{StaticResource CaptionMutedTextStyle}"
+                                        Text="{Binding CreatedAt, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:dd/MM/yyyy HH:mm}'}" />
                                 </StackPanel>
                             </Grid>
 
