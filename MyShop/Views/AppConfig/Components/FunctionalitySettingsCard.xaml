@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Visibility="Collapsed"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -113,26 +114,6 @@
                     Margin="0,0,0,20"/>
             <Border Style="{StaticResource DividerStyle}"/>
 
-            <!-- Auto Save Last Screen -->
-            <Grid Style="{StaticResource SettingRowStyle}"
-                    Margin="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0"
-                        VerticalAlignment="Center">
-                    <TextBlock Text="Auto Save Last Screen"
-                               Style="{StaticResource FieldLabelStyle}"
-                            Margin="0"/>
-                    <TextBlock Text="Automatically open the last visited screen when you log in again."
-                               Style="{StaticResource SectionDescStyle}"/>
-                </StackPanel>
-                <ToggleSwitch Grid.Column="1"
-                              Style="{StaticResource ConfigToggleStyle}"
-                              IsOn="{Binding AutoSaveLastScreen, Mode=TwoWay}"
-                              VerticalAlignment="Center"/>
-            </Grid>
         </StackPanel>
     </Border>
 </UserControl>

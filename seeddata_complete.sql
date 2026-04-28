@@ -285,8 +285,7 @@ INSERT INTO "AppConfigs" ("SettingKey", "SettingValue", "Description") VALUES
 ('Address', '123 Đường ABC,Quận XYZ, TP.HCM', 'Địa chỉ cửa hàng'),
 ('ShopCode', 'MS001', 'Mã cửa hàng'),
 ('ContactEmail', 'contact@myshop.com', 'Email liên hệ'),
-('ItemsPerPage', '20', 'Số lượng mục hiển thị trên mỗi trang'),
-('AutoSaveLastScreen', 'True', 'Tự động lưu màn hình gần nhất')
+('ItemsPerPage', '20', 'Số lượng mục hiển thị trên mỗi trang')
 ON CONFLICT DO NOTHING;
 
 -- ===== 07-LOYALTY-RULES =====

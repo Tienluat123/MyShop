@@ -22,9 +22,6 @@ public partial class ConfigViewModel : ObservableObject
     [ObservableProperty]
     private int _itemsPerPageIndex = 2; // default: 20 items
 
-    // ===== Functionality Settings =====
-    [ObservableProperty] private bool _autoSaveLastScreen = true;
-
     // ===== Validation =====
     [ObservableProperty] private string _validationMessage = string.Empty;
     [ObservableProperty] private bool _hasValidationError = false;
@@ -38,7 +35,6 @@ public partial class ConfigViewModel : ObservableObject
     private const string KeyShopCode = "ShopCode";
     private const string KeyContactEmail = "ContactEmail";
     private const string KeyItemsPerPage = "ItemsPerPage";
-    private const string KeyAutoSaveLastScreen = "AutoSaveLastScreen";
 
     public ConfigViewModel(IAppConfigService configService)
     {
@@ -59,9 +55,6 @@ public partial class ConfigViewModel : ObservableObject
 
             var itemsPerPageStr = await _configService.GetAsync(KeyItemsPerPage, "20");
             ItemsPerPage = int.TryParse(itemsPerPageStr, out var ipp) ? ipp : 20;
-
-            var autoSaveStr = await _configService.GetAsync(KeyAutoSaveLastScreen, "True");
-            AutoSaveLastScreen = autoSaveStr.Equals("True", StringComparison.OrdinalIgnoreCase);
 
             // Sync ComboBox index with loaded itemsPerPage
             var idx = Array.IndexOf(PageSizeOptions, ItemsPerPage);
@@ -97,7 +90,6 @@ public partial class ConfigViewModel : ObservableObject
             await _configService.SetAsync(KeyShopCode, ShopCode);
             await _configService.SetAsync(KeyContactEmail, ContactEmail);
             await _configService.SetAsync(KeyItemsPerPage, ItemsPerPage.ToString());
-            await _configService.SetAsync(KeyAutoSaveLastScreen, AutoSaveLastScreen.ToString());
 
             ClearValidation();
         }
