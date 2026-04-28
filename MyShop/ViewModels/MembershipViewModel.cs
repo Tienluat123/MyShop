@@ -90,7 +90,11 @@ public partial class MembershipViewModel : ObservableObject
             {
                 foreach (var customer in result.Items)
                 {
-                    _allCustomers.Add(customer);
+                    // Hide guest/anonymous accounts
+                    if (customer.Id > 0)
+                    {
+                        _allCustomers.Add(customer);
+                    }
                 }
             }
             OnSearchQueryChanged(SearchQuery);
