@@ -130,7 +130,9 @@ public partial class ProductManagementViewModel : ObservableObject
                     Id = p.Id,
                     Name = p.Name,
                     Category = p.Category?.Name ?? "",
-                    SellingPrice = p.Price
+                    SellingPrice = p.Price,
+                    PrimaryImageUrl = p.PrimaryImageUrl,
+                    SecondaryImageUrls = p.SecondaryImageUrls
                 });
             }
 

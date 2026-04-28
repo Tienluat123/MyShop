@@ -143,19 +143,46 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- Product Image/Icon -->
-                                            <Border Grid.Column="0"
-                                                    Width="48"
-                                                    Height="48"
-                                                    CornerRadius="10"
-                                                    Background="#F3F4F6"
-                                                    VerticalAlignment="Center">
-                                                <FontIcon Glyph="&#xEB9F;"
-                                                          Foreground="#D1D5DB"
-                                                          FontSize="20"
-                                                          VerticalAlignment="Center"
-                                                          HorizontalAlignment="Center"/>
-                                            </Border>
+                                            <!-- Product image gallery -->
+                                            <StackPanel Grid.Column="0"
+                                                        VerticalAlignment="Center"
+                                                        Spacing="6">
+                                                <Border Width="48"
+                                                        Height="48"
+                                                        CornerRadius="10"
+                                                    Background="#F3F4F6">
+                                                    <Grid>
+                                                        <FontIcon Glyph="&#xEB9F;"
+                                                                  Foreground="#D1D5DB"
+                                                                  FontSize="20"
+                                                                  VerticalAlignment="Center"
+                                                                  HorizontalAlignment="Center"/>
+                                                        <Image Source="{x:Bind PrimaryImageUrl}"
+                                                               Stretch="UniformToFill"
+                                                               Visibility="{x:Bind HasPrimaryImage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                    </Grid>
+                                                </Border>
+
+                                                <ItemsControl ItemsSource="{x:Bind SecondaryImageUrls}"
+                                                              Visibility="{x:Bind HasSecondaryImages, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="x:String">
+                                                            <Border Width="22"
+                                                                    Height="22"
+                                                                    CornerRadius="6"
+                                                                    Background="#F3F4F6">
+                                                                <Image Source="{x:Bind}"
+                                                                       Stretch="UniformToFill"/>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
 
                                             <!-- Product Details -->
                                             <StackPanel Grid.Column="1"

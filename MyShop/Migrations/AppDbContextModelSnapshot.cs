@@ -338,6 +338,47 @@ namespace MyShop.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("MyShop.Models.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique()
+                        .HasFilter("\"IsPrimary\" = TRUE");
+
+                    b.HasIndex("ProductId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("ProductImages", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductImages_SortOrder_1_3", "\"SortOrder\" >= 1 AND \"SortOrder\" <= 3");
+                        });
+                });
+
             modelBuilder.Entity("MyShop.Models.Promotion", b =>
                 {
                     b.Property<int>("Id")
@@ -556,6 +597,17 @@ namespace MyShop.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("MyShop.Models.ProductImage", b =>
+                {
+                    b.HasOne("MyShop.Models.Product", "Product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("MyShop.Models.UserSetting", b =>
                 {
                     b.HasOne("MyShop.Models.User", "User")
@@ -596,6 +648,8 @@ namespace MyShop.Migrations
             modelBuilder.Entity("MyShop.Models.Product", b =>
                 {
                     b.Navigation("OrderDetails");
+
+                    b.Navigation("ProductImages");
                 });
 
             modelBuilder.Entity("MyShop.Models.Promotion", b =>

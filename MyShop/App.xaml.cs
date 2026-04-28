@@ -207,6 +207,7 @@ public partial class App : Application
             container.Register<IRepository<WorkSchedule>>(new Repository<WorkSchedule>(contextFactory));
             container.Register<IRepository<LoyaltyTierConfig>>(new Repository<LoyaltyTierConfig>(contextFactory));
             container.Register<IRepository<Expense>>(new Repository<Expense>(contextFactory));
+            container.Register<IRepository<ProductImage>>(new Repository<ProductImage>(contextFactory));
 
             var dialogService = new DialogService();
             container.Register<IDialogService>(dialogService);

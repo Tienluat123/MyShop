@@ -128,15 +128,15 @@ public class ProductService : IProductService
             {
                 orderBy = (paging.SortColumn, paging.SortAscending) switch
                 {
-                    ("Price", true)  => q => q.OrderBy(p => p.Price),
+                    ("Price", true) => q => q.OrderBy(p => p.Price),
                     ("Price", false) => q => q.OrderByDescending(p => p.Price),
-                    ("Name", true)   => q => q.OrderBy(p => p.Name),
-                    ("Name", false)  => q => q.OrderByDescending(p => p.Name),
-                    _                => q => q.OrderBy(p => p.Name) // default
+                    ("Name", true) => q => q.OrderBy(p => p.Name),
+                    ("Name", false) => q => q.OrderByDescending(p => p.Name),
+                    _ => q => q.OrderBy(p => p.Name) // default
                 };
             }
 
-            return await _productRepository.GetAllAsync(paging, filter, orderBy, "Category");
+            return await _productRepository.GetAllAsync(paging, filter, orderBy, "Category", "ProductImages");
         }
         catch (Exception ex)
         {
@@ -171,7 +171,8 @@ public class ProductService : IProductService
 
         try
         {
-            return await _productRepository.GetByIdAsync(id);
+            var items = await _productRepository.GetAsync(p => p.Id == id, "Category", "ProductImages");
+            return items.FirstOrDefault();
         }
         catch (Exception ex)
         {
@@ -192,7 +193,8 @@ public class ProductService : IProductService
         {
             return await _productRepository.GetAsync(
                 p => p.CategoryId == categoryId,
-                "Category");
+                "Category",
+                "ProductImages");
         }
         catch (Exception ex)
         {
@@ -214,7 +216,8 @@ public class ProductService : IProductService
             var keywordLower = keyword.ToLower();
             return await _productRepository.GetAsync(
                 p => p.Name.ToLower().Contains(keywordLower),
-                "Category");
+                "Category",
+                "ProductImages");
         }
         catch (Exception ex)
         {
