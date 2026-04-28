@@ -397,7 +397,7 @@ public class OrderService : IOrderService
 
             if (endDate.HasValue)
             {
-                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
                 filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
@@ -433,7 +433,7 @@ public class OrderService : IOrderService
 
             if (endDate.HasValue)
             {
-                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
                 filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
@@ -552,7 +552,7 @@ public class OrderService : IOrderService
 
             if (endDate.HasValue)
             {
-                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
                 filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
@@ -595,25 +595,44 @@ public class OrderService : IOrderService
 
         if (endDate.HasValue)
         {
-            var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+            var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
             filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
         }
 
         return await _orderRepository.CountAsync(filter);
     }
 
-    /// <summary>
-    /// Helper: Combine two Expression<Func<T, bool>> using AND operator
-    /// </summary>
     private static Expression<Func<Order, bool>> CombineFilters(
         Expression<Func<Order, bool>> expr1,
         Expression<Func<Order, bool>> expr2)
     {
-        var parameter = Expression.Parameter(typeof(Order));
-        var invokedExpr = Expression.Invoke(expr2, parameter);
-        var lambdaExpr = Expression.Lambda<Func<Order, bool>>(
-            Expression.AndAlso(expr1.Body, invokedExpr),
+        var parameter = Expression.Parameter(typeof(Order), "o");
+
+        var leftVisitor = new ParameterReplaceVisitor(expr1.Parameters[0], parameter);
+        var left = leftVisitor.Visit(expr1.Body);
+
+        var rightVisitor = new ParameterReplaceVisitor(expr2.Parameters[0], parameter);
+        var right = rightVisitor.Visit(expr2.Body);
+
+        return Expression.Lambda<Func<Order, bool>>(
+            Expression.AndAlso(left, right),
             parameter);
-        return lambdaExpr;
+    }
+
+    private class ParameterReplaceVisitor : ExpressionVisitor
+    {
+        private readonly ParameterExpression _from;
+        private readonly ParameterExpression _to;
+
+        public ParameterReplaceVisitor(ParameterExpression from, ParameterExpression to)
+        {
+            _from = from;
+            _to = to;
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            return node == _from ? _to : base.VisitParameter(node);
+        }
     }
 }

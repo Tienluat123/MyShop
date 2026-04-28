@@ -215,6 +215,15 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task ClearDateFilter()
+    {
+        SearchStartDate = null;
+        SearchEndDate = null;
+        CurrentPageHistory = 1;
+        await LoadOrders();
+    }
+
+    [RelayCommand]
     private void ViewOrderDetail(PosOrder order)
     {
         if (order != null)

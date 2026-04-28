@@ -194,6 +194,11 @@
                             Command="{Binding SearchByDateRangeCommand}"
                             Content="Search"
                             Style="{StaticResource PrimaryButtonStyle}" />
+
+                        <Button
+                            Command="{Binding ClearDateFilterCommand}"
+                            Content="Clear"
+                            Style="{StaticResource AppSecondaryButtonStyle}" />
                     </StackPanel>
                 </Grid>
             </Border>
