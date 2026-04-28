@@ -615,9 +615,11 @@ public partial class PosViewModel : ObservableObject
         totalDiscount = Math.Min(totalDiscount, Subtotal);
         DiscountAmount = totalDiscount;
 
-        // Visual values (Post-discount)
+        // Cart Summary values (Tax is decoupled from promotions here for stable UI)
+        Tax = Math.Max(0, Subtotal * TAX_RATE);
+        
+        // Final Payment Value
         var postDiscountBase = Subtotal - totalDiscount;
-        Tax = Math.Max(0, postDiscountBase * TAX_RATE);
         Total = Math.Max(0, postDiscountBase + Tax);
 
         if (_currentDraftOrder != null)
