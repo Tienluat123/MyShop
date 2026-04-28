@@ -602,19 +602,22 @@ public partial class PosViewModel : ObservableObject
         totalDiscount = Math.Min(totalDiscount, Subtotal);
         DiscountAmount = totalDiscount;
 
-        // Cart values (Pre-discount)
-        Tax = Subtotal * TAX_RATE;
-        Total = Subtotal + Tax;
+        // Visual values (Post-discount)
+        var postDiscountBase = Subtotal - totalDiscount;
+        Tax = Math.Max(0, postDiscountBase * TAX_RATE);
+        Total = Math.Max(0, postDiscountBase + Tax);
 
         if (_currentDraftOrder != null)
         {
-            _currentDraftOrder.DiscountAmount = totalDiscount;
+            _currentDraftOrder.DiscountAmount = promoDiscount;
+            _currentDraftOrder.ManualAdjustment = LoyaltyDiscount;
+            _currentDraftOrder.ManualAdjustmentReason = LoyaltyDiscount > 0 ? $"Redeemed {PointsToRedeem} points" : "";
             _currentDraftOrder.SubTotal = Subtotal;
 
             // Payment values (Post-discount)
-            var postDiscountBase = Subtotal - totalDiscount;
-            var paymentTax = postDiscountBase * TAX_RATE;
-            var paymentTotal = postDiscountBase + paymentTax;
+            postDiscountBase = Subtotal - totalDiscount;
+            var paymentTax = Math.Max(0, postDiscountBase * TAX_RATE);
+            var paymentTotal = Math.Max(0, postDiscountBase + paymentTax);
 
             _currentDraftOrder.TaxAmount = paymentTax;
             _currentDraftOrder.TotalAmount = paymentTotal;

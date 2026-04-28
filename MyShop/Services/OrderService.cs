@@ -246,7 +246,9 @@ public class OrderService : IOrderService
         if (order.OrderDetails?.Any() == true)
         {
             order.SubTotal = order.OrderDetails.Sum(od => od.Quantity * od.UnitPrice);
-            order.TotalAmount = order.SubTotal - order.DiscountAmount;
+            
+            var discountBase = order.SubTotal - order.DiscountAmount - order.ManualAdjustment;
+            order.TotalAmount = discountBase + order.TaxAmount;
         }
 
         if (order.TotalAmount < 0)

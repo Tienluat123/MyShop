@@ -53,12 +53,28 @@ public partial class PaymentViewModel : ObservableObject
         _order = order ?? throw new ArgumentNullException(nameof(order));
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         
+        // Use order values or fallback to passed discount
         Subtotal = order.SubTotal;
-        Tax = order.TaxAmount;
-        LoyaltyDiscount = loyaltyDiscount;
-        PromoDiscount = Math.Max(0, order.DiscountAmount - loyaltyDiscount);
-        Total = order.TotalAmount;
+        PromoDiscount = order.DiscountAmount;
+        LoyaltyDiscount = Math.Max(order.ManualAdjustment, loyaltyDiscount);
         
+        // Standard Tax Rate (align with PosViewModel)
+        const decimal TAX_RATE = 0.0875m;
+        
+        // Calculate correctly: (Subtotal - Discounts) + Tax
+        var discountBase = Math.Max(0, Subtotal - PromoDiscount - LoyaltyDiscount);
+        Tax = discountBase * TAX_RATE;
+        Total = discountBase + Tax;
+        
+        // Ensure the order object reflects these final calculated values
+        _order.TaxAmount = Tax;
+        _order.TotalAmount = Total;
+        _order.ManualAdjustment = LoyaltyDiscount;
+        if (string.IsNullOrEmpty(_order.ManualAdjustmentReason) && LoyaltyDiscount > 0)
+        {
+            _order.ManualAdjustmentReason = "Loyalty Points Redemption";
+        }
+
         OrderIdentifier = $"ORDER-{order.Id}";
         
         PaymentMethods.Add(new PaymentMethodItem { Method = PaymentMethod.Cash, Label = "Cash", IconKey = "IconBanknote", Glyph = "\uE825", IsSelected = true });
