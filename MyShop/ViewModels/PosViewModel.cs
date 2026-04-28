@@ -62,6 +62,18 @@ public partial class PosViewModel : ObservableObject
     partial void OnLoyaltyDiscountChanged(decimal value) => CalculateTotals();
 
     [ObservableProperty]
+    private Customer? selectedCustomer;
+
+    partial void OnSelectedCustomerChanged(Customer? value)
+    {
+        if (_currentDraftOrder != null)
+        {
+            _currentDraftOrder.CustomerId = value?.Id ?? 0;
+            _currentDraftOrder.Customer = value;
+        }
+    }
+
+    [ObservableProperty]
     private int pointsToRedeem;
 
     public string TotalFormatted => $"Total: {Total:F2}";
@@ -357,7 +369,7 @@ public partial class PosViewModel : ObservableObject
 
         _currentDraftOrder = new Order
         {
-            CustomerId = 1, // Default Guest
+            CustomerId = 0, // Default Guest
             UserId = 1,     // Default Staff
             PaymentStatus = "Draft",
             Type = OrderType,
@@ -668,6 +680,8 @@ public partial class PosViewModel : ObservableObject
 
         if (_currentDraftOrder != null)
         {
+            _currentDraftOrder.CustomerId = customer?.Id ?? 0;
+            _currentDraftOrder.Customer = customer;
             subtotal = _currentDraftOrder.SubTotal;
             tax = _currentDraftOrder.TaxAmount;
             total = _currentDraftOrder.TotalAmount;
@@ -730,6 +744,7 @@ public partial class PosViewModel : ObservableObject
         var completedOrder = _currentDraftOrder;
         _currentDraftOrder = null;
         Order.Clear();
+        SelectedCustomer = null;
         LoyaltyDiscount = 0;
         PointsToRedeem = 0;
         CalculateTotals();

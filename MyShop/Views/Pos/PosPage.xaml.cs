@@ -51,6 +51,9 @@ public sealed partial class PosPage : Page
 
             await memberModal.ShowAsync();
 
+            // Sync customer association early to ensure it's saved in Supabase
+            ViewModel.SelectedCustomer = selectedCustomer;
+
             if (selectedCustomer != null)
             {
                 ViewModel.PointsToRedeem = memberModal.ViewModel.PointsToRedeem;
