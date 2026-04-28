@@ -70,6 +70,7 @@ public partial class PosViewModel : ObservableObject
         {
             _currentDraftOrder.CustomerId = value?.Id; // Now nullable, null means guest
             _currentDraftOrder.Customer = value;
+            _ = SaveDraftOrder();
         }
     }
 
