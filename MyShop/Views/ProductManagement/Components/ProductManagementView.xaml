@@ -10,318 +10,374 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:CurrencyConverter x:Key="CurrencyConverter"/>
+        <converters:SortIndicatorConverter x:Key="SortIndicatorConverter"/>
+
+        <Style x:Key="SortHeaderButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="Gray"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Background="{TemplateBinding Background}">
+                            <ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}"
+                                VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Page.Resources>
 
-    <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="16,12,16,20"
-                        Spacing="16">
-                <Border Background="#FFFFFF"
-                        BorderBrush="#E5E7EB"
+    <Border Margin="16,12,16,16"
+            Background="White"
+            CornerRadius="12"
+            BorderThickness="1"
+            BorderBrush="#EEEEEE">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Top Action Bar -->
+            <Grid Grid.Row="0"
+                  Padding="16,16,16,12"
+                  ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- Search -->
+                    <ColumnDefinition Width="Auto"/> <!-- Category Filter -->
+                    <ColumnDefinition Width="Auto"/> <!-- Advanced Sort -->
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/> <!-- Import -->
+                    <ColumnDefinition Width="Auto"/> <!-- Add Product -->
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        HorizontalAlignment="Left"
+                        Background="#F0F0F0"
+                        CornerRadius="20"
                         BorderThickness="1"
-                        CornerRadius="14"
-                        Padding="16">
-                    <StackPanel Spacing="16">
-                        <!-- Categories and Actions -->
-                        <StackPanel Spacing="12">
-                            <ComboBox Width="220"
-                                      ItemsSource="{Binding Categories}"
-                                      SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
-                                      PlaceholderText="Filter by category"
-                                      HorizontalAlignment="Left"
-                                      CornerRadius="12"/>
+                        BorderBrush="Gray"
+                        Padding="12,0,12,0"
+                        Height="35"
+                        Width="250">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE71E;"
+                                  FontSize="14"
+                                  Foreground="Gray"
+                                  VerticalAlignment="Center"/>
 
-                                <Button Grid.Column="0"
-                                        Command="{Binding AddProductCommand}"
-                                        Background="#BB4D00"
-                                        BorderBrush="#BB4D00"
-                                        Foreground="White"
-                                        CornerRadius="12"
-                                        Padding="14,8">
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="8">
-                                        <FontIcon Glyph="&#xE710;"/>
-                                        <TextBlock Text="Add a Product"
-                                                   FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </Button>
+                        <TextBox Grid.Column="1"
+                                 PlaceholderText="Search product..."
+                                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 VerticalAlignment="Center"
+                                 Margin="0,3,0,0">
+                            <TextBox.Resources>
+                                <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
+                                <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                                <SolidColorBrush x:Key="TextControlBackground" Color="Transparent"/>
+                                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
+                                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
+                            </TextBox.Resources>
+                        </TextBox>
+                    </Grid>
+                </Border>
 
-                                <Button Grid.Column="2"
-                                        Background="#FFFFFF"
-                                        BorderBrush="#D97706"
-                                        Foreground="#D97706"
-                                        CornerRadius="12"
-                                        Padding="14,8">
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="8">
-                                        <FontIcon Glyph="&#xE898;"/>
-                                        <TextBlock Text="Import Excel/Access"
-                                                   FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </Button>
+                <ComboBox Grid.Column="1"
+                          Width="160"
+                          ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                          PlaceholderText="Filter by category"
+                          Height="35"
+                          CornerRadius="18"
+                          VerticalAlignment="Center"/>
 
-                                <Grid Grid.Column="3"
-                                      Margin="18,0,0,0">
-                                    <TextBox Padding="40,10,10,10"
-                                             Background="#F8FAFC"
-                                             BorderBrush="#E5E7EB"
-                                             CornerRadius="12"
-                                             PlaceholderText="Search menu..."
-                                             Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                    <FontIcon Glyph="&#xE721;"
-                                              Foreground="#94A3B8"
-                                              Margin="14,0,0,0"
-                                              HorizontalAlignment="Left"
-                                              VerticalAlignment="Center"/>
-                                </Grid>
-                            </Grid>
+                <!-- Advanced Sort Button -->
+                <Button Grid.Column="2"
+                        Background="White"
+                        Height="35"
+                        CornerRadius="20"
+                        BorderThickness="1"
+                        BorderBrush="#E0E0E0"
+                        Padding="16,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE8CB;" FontSize="14" Foreground="#4A4A4A"/>
+                        <TextBlock Text="Advanced Sort" Foreground="#4A4A4A" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button.Flyout>
+                        <Flyout>
+                            <StackPanel Width="360" Spacing="12" Padding="4">
+                                <TextBlock Text="Multi-Criteria Sorting" FontWeight="Bold" FontSize="16"/>
+                                <TextBlock Text="Add multiple levels of sorting logic." FontSize="12" Foreground="Gray" TextWrapping="Wrap"/>
 
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="8">
-                                <TextBox Width="100"
-                                         PlaceholderText="Min"
-                                         Text="{Binding MinPrice, Mode=TwoWay}"/>
-                                <TextBox Width="100"
-                                         PlaceholderText="Max"
-                                         Text="{Binding MaxPrice, Mode=TwoWay}"/>
-                                <Button Content="Apply"
-                                        Command="{Binding FilterByPriceRangeCommand}"/>
-                                <ComboBox Width="160"
-                                          SelectedValue="{Binding SortOption, Mode=TwoWay}"
-                                          SelectionChanged="SortComboBox_SelectionChanged"
-                                          SelectedValuePath="Tag">
-                                    <ComboBoxItem Content="Name" Tag="Name"/>
-                                    <ComboBoxItem Content="Price ↑" Tag="PriceAsc"/>
-                                    <ComboBoxItem Content="Price ↓" Tag="PriceDesc"/>
-                                </ComboBox>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
-
-                        <TextBlock Text="{Binding ErrorMessage}"
-                                   Foreground="#B91C1C"
-                                   FontSize="12"
-                                   TextWrapping="WrapWholeWords"/>
-
-                        <Border Background="#FFFBEB"
-                                BorderBrush="#FDE68A"
-                                BorderThickness="1"
-                                CornerRadius="10"
-                                Padding="14,10"
-                                Visibility="{Binding HasNoData, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Text="No data found for current search/filter."
-                                       Foreground="#92400E"
-                                       FontSize="13"/>
-                        </Border>
-
-                        <ItemsRepeater ItemsSource="{Binding DisplayProducts}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Vertical"
-                                             Spacing="12"/>
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
-                                <DataTemplate x:DataType="viewModels:ProductListEntry">
-                                    <Border Background="White"
-                                            BorderBrush="#E5E7EB"
-                                            BorderThickness="1"
-                                            CornerRadius="10"
-                                            Padding="16">
-                                        <Grid ColumnSpacing="16">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <!-- Product image gallery -->
-                                            <StackPanel Grid.Column="0"
-                                                        VerticalAlignment="Center"
-                                                        Spacing="6">
-                                                <Border Width="48"
-                                                        Height="48"
-                                                        CornerRadius="10"
-                                                    Background="#F3F4F6">
-                                                    <Grid>
-                                                        <FontIcon Glyph="&#xEB9F;"
-                                                                  Foreground="#D1D5DB"
-                                                                  FontSize="20"
-                                                                  VerticalAlignment="Center"
-                                                                  HorizontalAlignment="Center"/>
-                                                        <Image Source="{x:Bind PrimaryImageUrl}"
-                                                               Stretch="UniformToFill"
-                                                               Visibility="{x:Bind HasPrimaryImage, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                                    </Grid>
-                                                </Border>
-
-                                                <ItemsControl ItemsSource="{x:Bind SecondaryImageUrls}"
-                                                              Visibility="{x:Bind HasSecondaryImages, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" Spacing="4"/>
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate x:DataType="x:String">
-                                                            <Border Width="22"
-                                                                    Height="22"
-                                                                    CornerRadius="6"
-                                                                    Background="#F3F4F6">
-                                                                <Image Source="{x:Bind}"
-                                                                       Stretch="UniformToFill"/>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
-
-                                            <!-- Product Details -->
-                                            <StackPanel Grid.Column="1"
-                                                        VerticalAlignment="Center"
-                                                        Spacing="4">
-                                                <StackPanel Orientation="Horizontal"
-                                                            Spacing="12">
-                                                    <TextBlock Text="{x:Bind Name}"
-                                                               Style="{StaticResource BodyTextStyle}"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="#1F2937"/>
-                                                    <Border Background="#E0E7FF"
-                                                            CornerRadius="6"
-                                                            Padding="8,4">
-                                                        <TextBlock Text="{x:Bind Category}"
-                                                                   FontSize="12"
-                                                                   FontWeight="SemiBold"
-                                                                   Foreground="#4F46E5"/>
-                                                    </Border>
-                                                </StackPanel>
-                                                <TextBlock Text="{x:Bind Code}"
-                                                           Style="{StaticResource CaptionTextStyle}"
-                                                           Foreground="#9CA3AF"/>
-                                            </StackPanel>
-
-                                            <!-- Selling Price -->
-                                            <StackPanel Grid.Column="2"
-                                                        VerticalAlignment="Center"
-                                                        Orientation="Vertical"
-                                                        Spacing="2">
-                                                <TextBlock Text="Selling Price"
-                                                           Style="{StaticResource CaptionTextStyle}"
-                                                           Foreground="#6B7280"/>
-                                                <TextBlock Text="{x:Bind SellingPriceText}"
-                                                           Style="{StaticResource BodyTextStyle}"
-                                                           FontWeight="Bold"
-                                                           Foreground="#1F2937"/>
-                                            </StackPanel>
-
-                                            <!-- Actions -->
-                                            <StackPanel Grid.Column="3"
-                                                        Orientation="Horizontal"
-                                                        Spacing="8"
-                                                        VerticalAlignment="Center">
-                                                <Button Background="Transparent"
-                                                        BorderThickness="0"
-                                                    Padding="8"
-                                                    Command="{Binding DataContext.GoToProductDetailCommand, ElementName=PageRoot}"
-                                                    CommandParameter="{Binding}">
-                                                    <FontIcon Glyph="&#xE72A;"
-                                                              FontSize="16"
-                                                              Foreground="#6B7280"/>
-                                                </Button>
-                                                <Button Background="Transparent"
-                                                        BorderThickness="0"
-                                                        Padding="8"
-                                                        Command="{Binding DataContext.EditProductCommand, ElementName=PageRoot}"
-                                                        CommandParameter="{Binding}">
-                                                    <FontIcon Glyph="&#xE70F;"
-                                                              FontSize="16"
-                                                              Foreground="#6B7280"/>
-                                                </Button>
-                                                <Button Background="Transparent"
-                                                        BorderThickness="0"
-                                                        Padding="8"
-                                                    Click="DeleteButton_Click">
-                                                    <FontIcon Glyph="&#xE74D;"
-                                                              FontSize="16"
-                                                              Foreground="#EF4444"/>
-                                                </Button>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
-
-                        <MenuFlyoutSeparator Background="#E5E7EB" Margin="-16,0"/>
-
-                        <!-- Paging section -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="{Binding PagingSummary}"
-                                       Foreground="#64748B"
-                                       VerticalAlignment="Center"/>
-
-                            <StackPanel Grid.Column="1"
-                                        Orientation="Horizontal"
-                                        Spacing="8">
-                                <Button Command="{Binding PreviousPageCommand}"
-                                        Background="#FFFFFF"
-                                        BorderBrush="#E5E7EB"
-                                        CornerRadius="8"
-                                        Width="32"
-                                        Height="32">
-                                    <FontIcon Glyph="&#xE76B;"
-                                              Foreground="#94A3B8"
-                                              FontSize="12"/>
-                                </Button>
-                                <ItemsControl ItemsSource="{Binding PageNumbers}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal"
-                                                        Spacing="6"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
+                                <ItemsControl ItemsSource="{Binding SortCriteriaList, Mode=OneWay}">
                                     <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="x:Int32">
-                                            <Button Command="{Binding DataContext.LoadPageCommand, ElementName=PageRoot}"
-                                                    CommandParameter="{Binding}"
-                                                    Width="32"
-                                                    Height="32"
-                                                    CornerRadius="8"
-                                                    Background="#FFFFFF"
-                                                    BorderBrush="#E5E7EB"
-                                                    Foreground="#4B5563"
-                                                    Content="{Binding}"/>
+                                        <DataTemplate x:DataType="viewModels:SortCriteriaItem">
+                                            <Grid Margin="0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <ComboBox Grid.Column="0" 
+                                                          ItemsSource="{Binding AvailableColumns, Mode=OneWay}" 
+                                                          SelectedValue="{Binding ColumnName, Mode=TwoWay}" 
+                                                          HorizontalAlignment="Stretch" Margin="0,0,8,0"/>
+                                                
+                                                <ComboBox Grid.Column="1" 
+                                                          SelectedValue="{Binding Direction, Mode=TwoWay}"
+                                                          SelectedValuePath="Content"
+                                                          HorizontalAlignment="Stretch" Margin="0,0,8,0">
+                                                    <ComboBoxItem Content="ASC"/>
+                                                    <ComboBoxItem Content="DESC"/>
+                                                </ComboBox>
+
+                                                <Button Grid.Column="2" 
+                                                        Background="Transparent" 
+                                                        BorderThickness="0" 
+                                                        Padding="4" 
+                                                        Command="{Binding DataContext.RemoveSortCriteriaCommand, ElementName=PageRoot}"
+                                                        CommandParameter="{Binding}">
+                                                    <FontIcon Glyph="&#xE74D;" FontSize="14" Foreground="Red"/>
+                                                </Button>
+                                            </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <Button Command="{Binding NextPageCommand}"
-                                        Background="#FFFFFF"
-                                        BorderBrush="#E5E7EB"
-                                        CornerRadius="8"
-                                        Width="32"
-                                        Height="32">
-                                    <FontIcon Glyph="&#xE76C;"
-                                              Foreground="#94A3B8"
-                                              FontSize="12"/>
-                                </Button>
+
+                                <Button Content="+ Add Level"
+                                        Command="{Binding AddSortCriteriaCommand}"
+                                        Background="Transparent"
+                                        Foreground="#0078D7"
+                                        BorderThickness="0"
+                                        HorizontalAlignment="Left"/>
+
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Content="Clear All"
+                                            Command="{Binding ClearMultiSortCommand}"
+                                            HorizontalAlignment="Stretch" Margin="0,0,4,0"/>
+                                    <Button Grid.Column="1" Content="Apply"
+                                            Command="{Binding ApplyMultiSortCommand}"
+                                            Style="{StaticResource AppPrimaryButtonStyle}"
+                                            HorizontalAlignment="Stretch" Margin="4,0,0,0"/>
+                                </Grid>
                             </StackPanel>
-                        </Grid>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+
+                <Button Grid.Column="4"
+                        Background="#FFFFFF"
+                        BorderBrush="#D97706"
+                        Foreground="#D97706"
+                        Height="35"
+                        CornerRadius="18"
+                        Padding="14,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE898;" FontSize="14"/>
+                        <TextBlock Text="Import Excel/Access" FontWeight="SemiBold"/>
                     </StackPanel>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
-    </Grid>
+                </Button>
+
+                <Button Grid.Column="5"
+                        Command="{Binding AddProductCommand}"
+                        Background="#0078D4"
+                        BorderBrush="#0078D4"
+                        Foreground="White"
+                        Height="35"
+                        CornerRadius="18"
+                        Padding="14,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE710;" FontSize="14"/>
+                        <TextBlock Text="Add Product" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Table Section -->
+            <Border Grid.Row="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header Row -->
+                    <Border Grid.Row="0"
+                            Background="#FAFAFA"
+                            Padding="16,12"
+                            BorderBrush="#EEEEEE"
+                            BorderThickness="0,0,0,1">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/> <!-- Image -->
+                                <ColumnDefinition Width="2*"/> <!-- Name -->
+                                <ColumnDefinition Width="1*"/> <!-- Category -->
+                                <ColumnDefinition Width="1*"/> <!-- Code -->
+                                <ColumnDefinition Width="1*"/> <!-- Price -->
+                                <ColumnDefinition Width="100"/> <!-- Actions -->
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="IMAGE" FontSize="11" FontWeight="Bold" Foreground="Gray" VerticalAlignment="Center"/>
+
+                            <!-- Name -->
+                            <Button Grid.Column="1" Style="{StaticResource SortHeaderButtonStyle}"
+                                    Command="{Binding SortByColumnCommand}"
+                                    CommandParameter="Name">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="NAME" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{Binding SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Name}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Category -->
+                            <Button Grid.Column="2" Style="{StaticResource SortHeaderButtonStyle}"
+                                    Command="{Binding SortByColumnCommand}"
+                                    CommandParameter="Category">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="CATEGORY" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{Binding SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Category}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Code -->
+                            <TextBlock Grid.Column="3" Text="CODE" FontSize="11" FontWeight="Bold" Foreground="Gray" VerticalAlignment="Center"/>
+
+                            <!-- Price -->
+                            <Button Grid.Column="4" Style="{StaticResource SortHeaderButtonStyle}"
+                                    Command="{Binding SortByColumnCommand}"
+                                    CommandParameter="Price">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="PRICE" FontSize="11" FontWeight="Bold"/>
+                                    <FontIcon Glyph="{Binding SortInfo, Mode=OneWay, Converter={StaticResource SortIndicatorConverter}, ConverterParameter=Price}" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Actions -->
+                            <TextBlock Grid.Column="5"
+                                       Text="ACTIONS"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       Foreground="Gray"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Data Rows -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <Border Background="#FFFBEB"
+                                    BorderBrush="#FDE68A"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Margin="16"
+                                    Padding="14,10"
+                                    Visibility="{Binding HasNoData, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="No products found."
+                                           Foreground="#92400E"
+                                           FontSize="13"/>
+                            </Border>
+
+                            <ItemsControl ItemsSource="{Binding DisplayProducts, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:ProductListEntry">
+                                        <Border BorderBrush="#F9F9F9"
+                                                BorderThickness="0,0,0,1"
+                                                Padding="16,10">
+                                            <Grid ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="2*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Image -->
+                                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="8" Background="#F3F4F6" HorizontalAlignment="Left">
+                                                    <Grid>
+                                                        <FontIcon Glyph="&#xEB9F;" Foreground="#D1D5DB" FontSize="20"/>
+                                                        <Image Source="{Binding PrimaryImageUrl}" Stretch="UniformToFill" Visibility="{Binding HasPrimaryImage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                    </Grid>
+                                                </Border>
+
+                                                <!-- Name -->
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap"/>
+
+                                                <!-- Category -->
+                                                <Border Grid.Column="2" Background="#E0E7FF" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding Category}" FontSize="12" FontWeight="SemiBold" Foreground="#4F46E5"/>
+                                                </Border>
+
+                                                <!-- Code -->
+                                                <TextBlock Grid.Column="3" Text="{Binding Code}" VerticalAlignment="Center" FontSize="12" Foreground="#6B7280"/>
+
+                                                <!-- Price -->
+                                                <TextBlock Grid.Column="4" Text="{Binding SellingPriceText}" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="#1F2937"/>
+
+                                                <!-- Actions -->
+                                                <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Button Background="Transparent" BorderThickness="0" Padding="8"
+                                                            Command="{Binding DataContext.GoToProductDetailCommand, ElementName=PageRoot}" CommandParameter="{Binding}">
+                                                        <FontIcon Glyph="&#xE72A;" FontSize="16" Foreground="#6B7280"/>
+                                                    </Button>
+                                                    <Button Background="Transparent" BorderThickness="0" Padding="8"
+                                                            Command="{Binding DataContext.EditProductCommand, ElementName=PageRoot}" CommandParameter="{Binding}">
+                                                        <FontIcon Glyph="&#xE70F;" FontSize="16" Foreground="#107C10"/>
+                                                    </Button>
+                                                    <Button Background="Transparent" BorderThickness="0" Padding="8"
+                                                            Click="DeleteButton_Click">
+                                                        <FontIcon Glyph="&#xE74D;" FontSize="16" Foreground="#E81123"/>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Paging Controls -->
+                    <Border Grid.Row="2" Background="White" Padding="10" BorderBrush="#EEEEEE" BorderThickness="0,1,0,0">
+                        <Grid ColumnSpacing="12" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0" Content="←" Click="PreviousButton_Click" Height="30" Padding="16,0" CornerRadius="8" Background="#F0F0F0" Foreground="#333333"/>
+                            
+                            <TextBlock Grid.Column="1" Text="{Binding PageInfoDisplay, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#555555"/>
+                            
+                            <Button Grid.Column="2" Content="→" Click="NextButton_Click" Height="30" Padding="16,0" CornerRadius="8" Background="#0078D4" Foreground="White"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </Page>

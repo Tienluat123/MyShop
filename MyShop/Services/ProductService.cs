@@ -122,21 +122,7 @@ public class ProductService : IProductService
                 }
             }
 
-            // Build orderBy expression from paging sort info
-            Func<IQueryable<Product>, IOrderedQueryable<Product>>? orderBy = null;
-            if (paging != null && !string.IsNullOrWhiteSpace(paging.SortColumn))
-            {
-                orderBy = (paging.SortColumn, paging.SortAscending) switch
-                {
-                    ("Price", true) => q => q.OrderBy(p => p.Price),
-                    ("Price", false) => q => q.OrderByDescending(p => p.Price),
-                    ("Name", true) => q => q.OrderBy(p => p.Name),
-                    ("Name", false) => q => q.OrderByDescending(p => p.Name),
-                    _ => q => q.OrderBy(p => p.Name) // default
-                };
-            }
-
-            return await _productRepository.GetAllAsync(paging, filter, orderBy, "Category", "ProductImages");
+            return await _productRepository.GetAllAsync(paging, filter, "Category", "ProductImages");
         }
         catch (Exception ex)
         {

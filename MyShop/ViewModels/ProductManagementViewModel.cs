@@ -8,10 +8,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics;
 
 namespace MyShop.ViewModels;
 
-public partial class ProductManagementViewModel : ObservableObject
+public partial class ProductManagementViewModel : ListManagementViewModelBase
 {
     private readonly IProductService _productService;
     private readonly IAppConfigService _configService;
@@ -56,7 +57,23 @@ public partial class ProductManagementViewModel : ObservableObject
     private double? maxPrice;
 
     [ObservableProperty]
-    private string sortOption = "Name"; // Name | PriceAsc | PriceDesc
+    private string pageInfoDisplay = "Page 1 / 1";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortInfo))]
+    private string sortColumn = "Name";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortInfo))]
+    private bool sortAscending = true;
+
+    [ObservableProperty]
+    private ObservableCollection<SortCriteriaItem> sortCriteriaList = new();
+
+    public ObservableCollection<string> AvailableSortColumns { get; } = new()
+    {
+        "Name", "Price", "Category"
+    };
 
     [ObservableProperty]
     private string errorMessage = string.Empty;
@@ -90,6 +107,23 @@ public partial class ProductManagementViewModel : ObservableObject
             // Xử lý PageSize từ cấu hình
             PageSize = await _configService.GetPageSizeAsync();
 
+            // Handle sorting
+            string sortProperty = "";
+            if (SortCriteriaList.Count > 0)
+            {
+                var sortStrings = new List<string>();
+                foreach (var item in SortCriteriaList)
+                {
+                    sortStrings.Add($"{item.ColumnName} {item.Direction}");
+                }
+                sortProperty = string.Join(", ", sortStrings);
+            }
+            else
+            {
+                var direction = SortAscending ? "ASC" : "DESC";
+                sortProperty = $"{SortColumn} {direction}";
+            }
+
             var request = new PagingRequest
             {
                 PageNumber = CurrentPage,
@@ -101,12 +135,7 @@ public partial class ProductManagementViewModel : ObservableObject
                     { "MinPrice", MinPrice?.ToString() ?? "" },
                     { "MaxPrice", MaxPrice?.ToString() ?? "" }
                 },
-                SortBy = SortOption switch
-                {
-                    "PriceAsc" => "Price ASC",
-                    "PriceDesc" => "Price DESC",
-                    _ => "Name ASC"
-                }
+                SortBy = sortProperty
             };
 
             var result = await _productService.GetAll(request);
@@ -120,6 +149,8 @@ public partial class ProductManagementViewModel : ObservableObject
             PageNumbers.Clear();
             for (int i = 1; i <= TotalPages; i++)
                 PageNumbers.Add(i);
+
+            PageInfoDisplay = $"Page {CurrentPage} / {TotalPages}";
 
             DisplayProducts.Clear();
             foreach (var p in result.Items)
@@ -176,9 +207,52 @@ public partial class ProductManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task SortProducts(string sortBy)
+    public void AddSortCriteria()
     {
-        SortOption = sortBy;
+        SortCriteriaList.Add(new SortCriteriaItem(AvailableSortColumns));
+    }
+
+    [RelayCommand]
+    public void RemoveSortCriteria(SortCriteriaItem item)
+    {
+        if (item != null && SortCriteriaList.Contains(item))
+        {
+            SortCriteriaList.Remove(item);
+        }
+    }
+
+    [RelayCommand]
+    public async Task ApplyMultiSort()
+    {
+        CurrentPage = 1;
+        await LoadProducts();
+    }
+
+    [RelayCommand]
+    public async Task ClearMultiSort()
+    {
+        SortCriteriaList.Clear();
+        CurrentPage = 1;
+        await LoadProducts();
+    }
+
+    public string SortInfo => $"{SortColumn}|{SortAscending}";
+
+    [RelayCommand]
+    private async Task SortByColumn(string columnName)
+    {
+        if (string.IsNullOrWhiteSpace(columnName)) return;
+
+        if (SortColumn == columnName)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortColumn = columnName;
+            SortAscending = true;
+        }
+
         CurrentPage = 1;
         await LoadProducts();
     }
@@ -257,10 +331,6 @@ public partial class ProductManagementViewModel : ObservableObject
         _ = LoadProducts();
     }
 
-    partial void OnSortOptionChanged(string value)
-    {
-        _ = LoadProducts();
-    }
 
     partial void OnMinPriceChanged(double? value)
     {
