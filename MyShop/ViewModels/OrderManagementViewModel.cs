@@ -63,6 +63,24 @@ public partial class OrderManagementViewModel : ObservableObject
 
     [ObservableProperty]
     private string _selectedStatusFilter = string.Empty;
+    
+    [ObservableProperty]
+    private bool _isEditingDetail;
+
+    [ObservableProperty]
+    private string _editTableNumber = string.Empty;
+
+    [ObservableProperty]
+    private string _editNotes = string.Empty;
+
+    [ObservableProperty]
+    private PaymentStatus _editPaymentStatus;
+
+    [ObservableProperty]
+    private FulfillmentStatus _editFulfillmentStatus;
+
+    public ObservableCollection<PaymentStatus> PaymentStatusOptions { get; } = new(Enum.GetValues<PaymentStatus>());
+    public ObservableCollection<FulfillmentStatus> FulfillmentStatusOptions { get; } = new(Enum.GetValues<FulfillmentStatus>());
 
     public Action? ScrollToTopAction { get; set; }
 
@@ -230,6 +248,57 @@ public partial class OrderManagementViewModel : ObservableObject
         {
             SelectedOrderDetails = order;
             IsOrderDetailOpen = true;
+            IsEditingDetail = false; // Reset to view mode
+        }
+    }
+
+    [RelayCommand]
+    private void EditOrderDetail()
+    {
+        if (SelectedOrderDetails == null) return;
+
+        EditTableNumber = SelectedOrderDetails.Table ?? string.Empty;
+        EditNotes = SelectedOrderDetails.Notes ?? string.Empty;
+        EditPaymentStatus = SelectedOrderDetails.PaymentStatus;
+        EditFulfillmentStatus = SelectedOrderDetails.FulfillmentStatus;
+
+        IsEditingDetail = true;
+    }
+
+    [RelayCommand]
+    private void CancelEditOrderDetail()
+    {
+        IsEditingDetail = false;
+    }
+
+    [RelayCommand]
+    private async Task SaveOrderDetail()
+    {
+        if (SelectedOrderDetails == null) return;
+
+        try
+        {
+            int numericId = ExtractId(SelectedOrderDetails.OrderId);
+            var order = await _orderService.GetById(numericId);
+            if (order == null) return;
+
+            order.TableNumber = EditTableNumber;
+            order.Notes = EditNotes;
+            order.PaymentStatus = EditPaymentStatus.ToString();
+            order.FulfillmentStatus = EditFulfillmentStatus.ToString();
+
+            await _orderService.Update(order);
+            IsEditingDetail = false;
+            
+            await LoadOrders();
+            
+            // Refresh detail view
+            var updated = DisplayOrders.FirstOrDefault(o => o.OrderId == SelectedOrderDetails.OrderId);
+            if (updated != null) SelectedOrderDetails = updated;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Save failed: {ex.Message}");
         }
     }
 
@@ -238,6 +307,7 @@ public partial class OrderManagementViewModel : ObservableObject
     {
         IsOrderDetailOpen = false;
         SelectedOrderDetails = null;
+        IsEditingDetail = false;
     }
 
     [RelayCommand]
@@ -279,12 +349,17 @@ public partial class OrderManagementViewModel : ObservableObject
             PaymentStatus = MapToPaymentStatus(order.PaymentStatus),
             FulfillmentStatus = MapToFulfillmentStatus(order.FulfillmentStatus),
             CreatedAt = order.OrderDate,
+            Type = order.Type,
+            Table = order.TableNumber,
+            Notes = order.Notes,
+            Tax = order.TaxAmount,
+            Discount = order.DiscountAmount + order.ManualAdjustment,
+            Subtotal = order.SubTotal,
+            Total = order.TotalAmount
         };
 
         if (order.OrderDetails != null)
         {
-            decimal computedSubtotal = 0;
-
             foreach (var detail in order.OrderDetails)
             {
                 var product = detail.Product
@@ -297,12 +372,7 @@ public partial class OrderManagementViewModel : ObservableObject
                     Quantity = detail.Quantity,
                     BasePrice = detail.UnitPrice
                 });
-
-                computedSubtotal += detail.UnitPrice * detail.Quantity;
             }
-
-            posOrder.Subtotal = computedSubtotal;
-            posOrder.Total = computedSubtotal;
         }
 
         return posOrder;

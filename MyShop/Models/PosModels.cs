@@ -113,6 +113,12 @@ public partial class PosOrder : ObservableObject
     private DateTime _createdAt = DateTime.Now;
 
     [ObservableProperty]
+    private string _notes = "";
+
+    [ObservableProperty]
+    private decimal _discount;
+
+    [ObservableProperty]
     private string? _customerId;
 
     [ObservableProperty]
