@@ -17,6 +17,12 @@ public partial class PromoViewModel : ObservableObject
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
+    [ObservableProperty]
+    private decimal _orderTotal;
+
+    [ObservableProperty]
+    private string? _customerTier;
+
     public ObservableCollection<Promotion> ActivePromotions { get; } = new();
 
     public event Action<Promotion?>? PromotionSelected;
@@ -42,14 +48,15 @@ public partial class PromoViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(PromoCodeEntry)) return;
 
-        var promo = await _promoService.GetByCodeAsync(PromoCodeEntry);
-        if (promo != null)
+        var result = await _promoService.ApplyPromotionAsync(PromoCodeEntry, OrderTotal, CustomerTier);
+        if (result.Success)
         {
+            var promo = await _promoService.GetByCodeAsync(PromoCodeEntry);
             PromotionSelected?.Invoke(promo);
         }
         else
         {
-            ErrorMessage = "Invalid or expired promo code.";
+            ErrorMessage = result.ErrorMessage ?? "Mã khuyến mãi không hợp lệ hoặc không đủ điều kiện.";
         }
     }
 

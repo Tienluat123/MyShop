@@ -61,7 +61,7 @@ public sealed partial class PosPage : Page
             }
 
             // 2. Promotion Selection
-            var promoModal = new PromoSelectionModal();
+            var promoModal = new PromoSelectionModal(ViewModel.Subtotal, ViewModel.SelectedCustomer?.Tier.ToString());
             promoModal.XamlRoot = this.XamlRoot;
 
             Models.Promotion? selectedPromo = null;
