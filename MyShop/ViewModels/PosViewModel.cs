@@ -17,6 +17,7 @@ public partial class PosViewModel : ObservableObject
     private readonly ICategoryService _categoryService;
     private readonly IOrderService _orderService;
     private readonly IPromotionService _promoService;
+    private readonly ILoyaltyService _loyaltyService;
 
     private Order? _currentDraftOrder;
 
@@ -55,6 +56,14 @@ public partial class PosViewModel : ObservableObject
     [ObservableProperty]
     private string? tableNumber;
 
+    [ObservableProperty]
+    private decimal loyaltyDiscount;
+
+    partial void OnLoyaltyDiscountChanged(decimal value) => CalculateTotals();
+
+    [ObservableProperty]
+    private int pointsToRedeem;
+
     public string TotalFormatted => $"Total: {Total:F2}";
 
     public event EventHandler<OrderItem>? EditItemRequested;
@@ -65,7 +74,8 @@ public partial class PosViewModel : ObservableObject
         App.Services.GetRequiredService<IProductService>(),
         App.Services.GetRequiredService<ICategoryService>(),
         App.Services.GetRequiredService<IOrderService>(),
-        App.Services.GetRequiredService<IPromotionService>())
+        App.Services.GetRequiredService<IPromotionService>(),
+        App.Services.GetRequiredService<ILoyaltyService>())
     {
     }
 
@@ -73,12 +83,14 @@ public partial class PosViewModel : ObservableObject
         IProductService productService,
         ICategoryService categoryService,
         IOrderService orderService,
-        IPromotionService promoService)
+        IPromotionService promoService,
+        ILoyaltyService loyaltyService)
     {
         _productService = productService ?? throw new ArgumentNullException(nameof(productService));
         _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         _promoService = promoService ?? throw new ArgumentNullException(nameof(promoService));
+        _loyaltyService = loyaltyService ?? throw new ArgumentNullException(nameof(loyaltyService));
 
         // Initial data loading
         InitializeAsync();
@@ -569,22 +581,26 @@ public partial class PosViewModel : ObservableObject
     {
         Subtotal = Order.Sum(i => i.TotalPrice);
 
-        decimal discount = 0;
+        decimal promoDiscount = 0;
         if (_currentDraftOrder?.Promotion != null)
         {
             var promo = _currentDraftOrder.Promotion;
             if (promo.PromoType == "Percent")
             {
-                discount = Subtotal * (promo.DiscountValue / 100m);
+                promoDiscount = Subtotal * (promo.DiscountValue / 100m);
             }
             else
             {
-                discount = promo.DiscountValue;
+                promoDiscount = promo.DiscountValue;
             }
-
-            // Cap discount at subtotal
-            discount = Math.Min(discount, Subtotal);
         }
+
+        // Combine promo discount and loyalty redemption discount
+        decimal totalDiscount = promoDiscount + LoyaltyDiscount;
+        
+        // Cap discount at subtotal
+        totalDiscount = Math.Min(totalDiscount, Subtotal);
+        DiscountAmount = totalDiscount;
 
         // Cart values (Pre-discount)
         Tax = Subtotal * TAX_RATE;
@@ -592,11 +608,11 @@ public partial class PosViewModel : ObservableObject
 
         if (_currentDraftOrder != null)
         {
-            _currentDraftOrder.DiscountAmount = discount;
+            _currentDraftOrder.DiscountAmount = totalDiscount;
             _currentDraftOrder.SubTotal = Subtotal;
 
             // Payment values (Post-discount)
-            var postDiscountBase = Subtotal - discount;
+            var postDiscountBase = Subtotal - totalDiscount;
             var paymentTax = postDiscountBase * TAX_RATE;
             var paymentTotal = postDiscountBase + paymentTax;
 
@@ -639,7 +655,7 @@ public partial class PosViewModel : ObservableObject
         }
     }
 
-    public PosOrder? FinalizeOrder(PaymentMethod method, Customer? customer = null)
+    public async Task<PosOrder?> FinalizeOrderAsync(PaymentMethod method, Customer? customer = null)
     {
         if (!Order.Any()) return null;
 
@@ -652,6 +668,32 @@ public partial class PosViewModel : ObservableObject
             subtotal = _currentDraftOrder.SubTotal;
             tax = _currentDraftOrder.TaxAmount;
             total = _currentDraftOrder.TotalAmount;
+        }
+
+        // 1. Handle Point Redemption if any
+        if (customer != null && PointsToRedeem > 0)
+        {
+            try 
+            {
+                await _loyaltyService.RedeemPointsAsync(customer, PointsToRedeem);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Redeem error: {ex.Message}");
+            }
+        }
+
+        // 2. Handle Point Reward (Calculated on final amount)
+        if (customer != null)
+        {
+            try
+            {
+                await _loyaltyService.CalculatePointsAsync(customer, subtotal - DiscountAmount);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Reward points error: {ex.Message}");
+            }
         }
 
         var newOrder = new PosOrder
@@ -685,6 +727,8 @@ public partial class PosViewModel : ObservableObject
         var completedOrder = _currentDraftOrder;
         _currentDraftOrder = null;
         Order.Clear();
+        LoyaltyDiscount = 0;
+        PointsToRedeem = 0;
         CalculateTotals();
 
         if (completedOrder != null)

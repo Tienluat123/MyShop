@@ -15,6 +15,18 @@ public partial class PaymentViewModel : ObservableObject
     private decimal _total;
 
     [ObservableProperty]
+    private decimal _subtotal;
+
+    [ObservableProperty]
+    private decimal _tax;
+
+    [ObservableProperty]
+    private decimal _promoDiscount;
+
+    [ObservableProperty]
+    private decimal _loyaltyDiscount;
+
+    [ObservableProperty]
     private string _orderIdentifier = "";
 
     [ObservableProperty]
@@ -36,12 +48,17 @@ public partial class PaymentViewModel : ObservableObject
     private readonly IOrderService _orderService;
     private readonly Order _order;
 
-    public PaymentViewModel(Order order, IOrderService orderService)
+    public PaymentViewModel(Order order, IOrderService orderService, decimal loyaltyDiscount = 0)
     {
         _order = order ?? throw new ArgumentNullException(nameof(order));
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         
+        Subtotal = order.SubTotal;
+        Tax = order.TaxAmount;
+        LoyaltyDiscount = loyaltyDiscount;
+        PromoDiscount = Math.Max(0, order.DiscountAmount - loyaltyDiscount);
         Total = order.TotalAmount;
+        
         OrderIdentifier = $"ORDER-{order.Id}";
         
         PaymentMethods.Add(new PaymentMethodItem { Method = PaymentMethod.Cash, Label = "Cash", IconKey = "IconBanknote", Glyph = "\uE825", IsSelected = true });

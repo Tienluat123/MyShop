@@ -21,7 +21,10 @@ public partial class MembershipViewModel : ObservableObject
     private string _searchQuery = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowSearchView))]
     private bool _showRegister;
+
+    public bool ShowSearchView => !ShowRegister && !ShowRedeemView;
 
     [ObservableProperty]
     private string _newName = "";
@@ -29,26 +32,48 @@ public partial class MembershipViewModel : ObservableObject
     [ObservableProperty]
     private string _newPhone = "";
 
+    [ObservableProperty]
+    private Customer? _selectedMember;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowSearchView))]
+    private bool _showRedeemView;
+
+    [ObservableProperty]
+    private int _pointsToRedeem;
+
+    [ObservableProperty]
+    private decimal _discountAmount;
+
+    [ObservableProperty]
+    private int _redemptionRate = 100; // Default if not loaded yet
+
     public ObservableCollection<Customer> FilteredCustomers { get; } = new();
 
     public event Action<Customer?>? MemberSelected;
 
     private readonly ICustomerService _customerService;
+    private readonly ILoyaltyService _loyaltyService;
 
-    public MembershipViewModel() : this(App.Services.GetRequiredService<ICustomerService>())
+    public MembershipViewModel() : this(
+        App.Services.GetRequiredService<ICustomerService>(),
+        App.Services.GetRequiredService<ILoyaltyService>())
     {
     }
 
-    public MembershipViewModel(ICustomerService customerService)
+    public MembershipViewModel(ICustomerService customerService, ILoyaltyService loyaltyService)
     {
         _customerService = customerService;
+        _loyaltyService = loyaltyService;
         _ = LoadCustomersAsync();
+        _ = LoadRedemptionRate();
     }
 
     [RelayCommand]
     private void ToggleRegister()
     {
         ShowRegister = !ShowRegister;
+        if (ShowRegister) ShowRedeemView = false;
         NewName = "";
         NewPhone = "";
     }
@@ -83,7 +108,48 @@ public partial class MembershipViewModel : ObservableObject
     [RelayCommand]
     private void SelectMember(Customer? customer)
     {
-        MemberSelected?.Invoke(customer);
+        if (customer == null)
+        {
+            MemberSelected?.Invoke(null);
+            return;
+        }
+
+        SelectedMember = customer;
+        PointsToRedeem = 0;
+        DiscountAmount = 0;
+        ShowRedeemView = true;
+    }
+
+    [RelayCommand]
+    private void ConfirmSelection()
+    {
+        // This is called when user wants to just select the member WITHOUT redeeming points
+        MemberSelected?.Invoke(SelectedMember);
+    }
+
+    [RelayCommand]
+    private void ConfirmRedemption()
+    {
+        // Validation happens in UI or here
+        if (PointsToRedeem > SelectedMember?.CurrentAvailablePoints)
+        {
+            // Error handling could be added here
+            return;
+        }
+        
+        // We pass the selection back. The actual deduction happens at checkout Finalize
+        // But we can pass the intended points to use via a property or event
+        MemberSelected?.Invoke(SelectedMember);
+    }
+
+    private async Task LoadRedemptionRate()
+    {
+        RedemptionRate = await _loyaltyService.GetRedemptionRateAsync();
+    }
+
+    partial void OnPointsToRedeemChanged(int value)
+    {
+        DiscountAmount = value * RedemptionRate;
     }
 
     [RelayCommand]

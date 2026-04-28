@@ -51,6 +51,12 @@ public sealed partial class PosPage : Page
 
             await memberModal.ShowAsync();
 
+            if (selectedCustomer != null)
+            {
+                ViewModel.PointsToRedeem = memberModal.ViewModel.PointsToRedeem;
+                ViewModel.LoyaltyDiscount = memberModal.ViewModel.DiscountAmount;
+            }
+
             // 2. Promotion Selection
             var promoModal = new PromoSelectionModal();
             promoModal.XamlRoot = this.XamlRoot;
@@ -65,7 +71,7 @@ public sealed partial class PosPage : Page
             await ViewModel.ApplyPromotion(selectedPromo);
 
             // 3. Payment Checkout
-            var paymentModal = new PaymentModal(ViewModel.CurrentDraftOrder, App.Services.GetRequiredService<IOrderService>());
+            var paymentModal = new PaymentModal(ViewModel.CurrentDraftOrder, App.Services.GetRequiredService<IOrderService>(), ViewModel.LoyaltyDiscount);
             paymentModal.XamlRoot = this.XamlRoot;
 
             bool isPaid = false;
@@ -81,7 +87,7 @@ public sealed partial class PosPage : Page
 
             if (isPaid)
             {
-                var finalizedOrder = ViewModel.FinalizeOrder(selectedMethod, selectedCustomer);
+                var finalizedOrder = await ViewModel.FinalizeOrderAsync(selectedMethod, selectedCustomer);
 
                 if (finalizedOrder != null)
                 {
