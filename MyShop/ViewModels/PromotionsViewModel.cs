@@ -539,4 +539,10 @@ public partial class PromotionsViewModel : ObservableObject
         CurrentPage = 1;
         _ = RefreshFromDatabaseAsync();
     }
+
+    partial void OnSelectedStatusChanged(string value)
+    {
+        CurrentPage = 1;
+        _ = RefreshFromDatabaseAsync();
+    }
 }

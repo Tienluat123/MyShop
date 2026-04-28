@@ -79,8 +79,15 @@ public class ProductService : IProductService
                 // SearchText filter
                 if (!string.IsNullOrWhiteSpace(paging.SearchText))
                 {
-                    var keyword = paging.SearchText.ToLower().Trim();
-                    filters.Add(p => p.Name.ToLower().Contains(keyword));
+                    var keyword = paging.SearchText.Trim();
+                    // Kết hợp PostgreSQL Full-Text Search (ToTsVector) và Substring Matching (ILike)
+                    // FTS giúp tìm không cần đúng thứ tự từ (VD: "sữa cafe" tìm ra "cafe sữa")
+                    // ILike giúp tìm chuỗi con (VD: "caf" tìm ra "cafe")
+                    filters.Add(p =>
+                        EF.Functions.ToTsVector("simple", p.Name).Matches(EF.Functions.PlainToTsQuery("simple", keyword)) ||
+                        EF.Functions.ILike(p.Name, $"%{keyword}%") ||
+                        (p.Category != null && EF.Functions.ILike(p.Category.Name, $"%{keyword}%"))
+                    );
                 }
 
                 // Category filter from Dictionary

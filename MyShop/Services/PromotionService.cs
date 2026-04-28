@@ -1,5 +1,6 @@
 using MyShop.Data;
 using MyShop.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace MyShop.Services;
@@ -86,11 +87,14 @@ public class PromotionService : IPromotionService
             {
                 var filters = new List<Expression<Func<Promotion, bool>>>();
 
-                // SearchText
                 if (!string.IsNullOrWhiteSpace(paging.SearchText))
                 {
-                    var keyword = paging.SearchText.ToLower().Trim();
-                    filters.Add(p => p.PromoCode.ToLower().Contains(keyword));
+                    var keyword = paging.SearchText.Trim();
+                    filters.Add(p => 
+                        EF.Functions.ToTsVector("simple", p.PromoCode).Matches(EF.Functions.PlainToTsQuery("simple", keyword)) ||
+                        EF.Functions.ILike(p.PromoCode, $"%{keyword}%") ||
+                        (p.TargetAudience != null && EF.Functions.ILike(p.TargetAudience, $"%{keyword}%"))
+                    );
                 }
 
                 // Status Filter from Dictionary

@@ -82,12 +82,13 @@ public class EmployeeService : IEmployeeService
 
         if (!string.IsNullOrEmpty(paging.SearchText))
         {
-            var searchLower = paging.SearchText.ToLower();
+            var searchStr = paging.SearchText.Trim();
             baseQuery = baseQuery.Where(x =>
-                (x.User.FirstName ?? "").ToLower().Contains(searchLower) ||
-                (x.User.LastName ?? "").ToLower().Contains(searchLower) ||
-                (x.User.Username ?? "").ToLower().Contains(searchLower) ||
-                (x.User.Phone ?? "").ToLower().Contains(searchLower));
+                EF.Functions.ToTsVector("simple", x.User.Username ?? "").Matches(EF.Functions.PlainToTsQuery("simple", searchStr)) ||
+                EF.Functions.ILike(x.User.FirstName ?? "", $"%{searchStr}%") ||
+                EF.Functions.ILike(x.User.LastName ?? "", $"%{searchStr}%") ||
+                EF.Functions.ILike(x.User.Username ?? "", $"%{searchStr}%") ||
+                EF.Functions.ILike(x.User.Phone ?? "", $"%{searchStr}%"));
         }
 
         if (paging.Filters?.ContainsKey("Role") == true && !string.IsNullOrEmpty(paging.Filters["Role"]))

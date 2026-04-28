@@ -200,8 +200,8 @@
 
                 <Button Grid.Column="5"
                         Command="{Binding AddProductCommand}"
-                        Background="#0078D4"
-                        BorderBrush="#0078D4"
+                        Background="#D97706"
+                        BorderBrush="#D97706"
                         Foreground="White"
                         Height="35"
                         CornerRadius="18"
@@ -230,10 +230,9 @@
                             BorderThickness="0,0,0,1">
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80"/> <!-- Image -->
+                                <ColumnDefinition Width="140"/> <!-- Image -->
                                 <ColumnDefinition Width="2*"/> <!-- Name -->
                                 <ColumnDefinition Width="1*"/> <!-- Category -->
-                                <ColumnDefinition Width="1*"/> <!-- Code -->
                                 <ColumnDefinition Width="1*"/> <!-- Price -->
                                 <ColumnDefinition Width="100"/> <!-- Actions -->
                             </Grid.ColumnDefinitions>
@@ -260,11 +259,8 @@
                                 </StackPanel>
                             </Button>
 
-                            <!-- Code -->
-                            <TextBlock Grid.Column="3" Text="CODE" FontSize="11" FontWeight="Bold" Foreground="Gray" VerticalAlignment="Center"/>
-
                             <!-- Price -->
-                            <Button Grid.Column="4" Style="{StaticResource SortHeaderButtonStyle}"
+                            <Button Grid.Column="3" Style="{StaticResource SortHeaderButtonStyle}"
                                     Command="{Binding SortByColumnCommand}"
                                     CommandParameter="Price">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
@@ -274,7 +270,7 @@
                             </Button>
 
                             <!-- Actions -->
-                            <TextBlock Grid.Column="5"
+                            <TextBlock Grid.Column="4"
                                        Text="ACTIONS"
                                        FontSize="11"
                                        FontWeight="Bold"
@@ -307,21 +303,39 @@
                                                 Padding="16,10">
                                             <Grid ColumnSpacing="8">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="140"/>
                                                     <ColumnDefinition Width="2*"/>
-                                                    <ColumnDefinition Width="1*"/>
                                                     <ColumnDefinition Width="1*"/>
                                                     <ColumnDefinition Width="1*"/>
                                                     <ColumnDefinition Width="100"/>
                                                 </Grid.ColumnDefinitions>
 
                                                 <!-- Image -->
-                                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="8" Background="#F3F4F6" HorizontalAlignment="Left">
-                                                    <Grid>
-                                                        <FontIcon Glyph="&#xEB9F;" Foreground="#D1D5DB" FontSize="20"/>
-                                                        <Image Source="{Binding PrimaryImageUrl}" Stretch="UniformToFill" Visibility="{Binding HasPrimaryImage, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                                    </Grid>
-                                                </Border>
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                    <!-- Primary Image -->
+                                                    <Border Width="40" Height="40" CornerRadius="6" Background="#F3F4F6">
+                                                        <Grid>
+                                                            <FontIcon Glyph="&#xEB9F;" Foreground="#D1D5DB" FontSize="16"/>
+                                                            <Image Source="{Binding PrimaryImageUrl}" Stretch="UniformToFill" Visibility="{Binding HasPrimaryImage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                        </Grid>
+                                                    </Border>
+                                                    
+                                                    <!-- Secondary Images -->
+                                                    <ItemsControl ItemsSource="{Binding SecondaryImageUrls}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="x:String">
+                                                                <Border Width="40" Height="40" CornerRadius="6" Background="#F3F4F6">
+                                                                    <Image Source="{Binding}" Stretch="UniformToFill"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
 
                                                 <!-- Name -->
                                                 <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap"/>
@@ -331,14 +345,11 @@
                                                     <TextBlock Text="{Binding Category}" FontSize="12" FontWeight="SemiBold" Foreground="#4F46E5"/>
                                                 </Border>
 
-                                                <!-- Code -->
-                                                <TextBlock Grid.Column="3" Text="{Binding Code}" VerticalAlignment="Center" FontSize="12" Foreground="#6B7280"/>
-
                                                 <!-- Price -->
-                                                <TextBlock Grid.Column="4" Text="{Binding SellingPriceText}" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="#1F2937"/>
+                                                <TextBlock Grid.Column="3" Text="{Binding SellingPriceText}" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="#1F2937"/>
 
                                                 <!-- Actions -->
-                                                <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <Button Background="Transparent" BorderThickness="0" Padding="8"
                                                             Command="{Binding DataContext.GoToProductDetailCommand, ElementName=PageRoot}" CommandParameter="{Binding}">
                                                         <FontIcon Glyph="&#xE72A;" FontSize="16" Foreground="#6B7280"/>

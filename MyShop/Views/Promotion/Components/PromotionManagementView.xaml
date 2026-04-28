@@ -51,80 +51,95 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- ===== Row 0: Actions: Add Button + Search ===== -->
-                <Grid Grid.Row="0" Padding="16,16,16,12">
+                <!-- ===== Top Action Bar ===== -->
+                <Grid Grid.Row="0"
+                      Padding="16,16,16,12"
+                      ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="Auto"/> <!-- Search -->
+                        <ColumnDefinition Width="Auto"/> <!-- Status Filter -->
+                        <ColumnDefinition Width="Auto"/> <!-- Advanced Sort -->
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/> <!-- Add Promotion -->
                     </Grid.ColumnDefinitions>
 
-                    <!-- Add Promotion Button -->
-                    <Button Grid.Column="0"
-                            Command="{Binding AddPromotionCommand}"
-                            Background="#BB4D00"
-                            BorderBrush="#BB4D00"
-                            Foreground="White"
-                            CornerRadius="12"
-                            Padding="14,8">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE710;"/>
-                            <TextBlock Text="Add Promotion" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-
                     <!-- Search Box -->
-                    <Grid Grid.Column="2">
-                        <TextBox Padding="40,10,10,10"
-                                 Background="#F8FAFC"
-                                 BorderBrush="#E5E7EB"
-                                 CornerRadius="12"
-                                 PlaceholderText="Search by promotion code..."
-                                 Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                        <FontIcon Glyph="&#xE721;"
-                                  Foreground="#94A3B8"
-                                  Margin="14,0,0,0"
-                                  HorizontalAlignment="Left"
-                                  VerticalAlignment="Center"/>
-                    </Grid>
-                </Grid>
-
-                <!-- ===== Row 1: Filter by Status Buttons ===== -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="16,0,16,12">
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="All"
-                            Content="All"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="Active"
-                            Content="Active"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="Upcoming"
-                            Content="Upcoming"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="Expired"
-                            Content="Expired"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-                    <Button Command="{Binding FilterByStatusCommand}"
-                            CommandParameter="Inactive"
-                            Content="Inactive"
-                            CornerRadius="8"
-                            Padding="12,6"/>
-
-                    <!-- Advanced Sort Button -->
-                    <Button Background="White"
+                    <Border Grid.Column="0"
+                            HorizontalAlignment="Left"
+                            Background="#F0F0F0"
+                            CornerRadius="20"
+                            BorderThickness="1"
+                            BorderBrush="Gray"
+                            Padding="12,0,12,0"
                             Height="35"
-                            CornerRadius="8"
+                            Width="250">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon Glyph="&#xE71E;"
+                                      FontSize="14"
+                                      Foreground="Gray"
+                                      VerticalAlignment="Center"/>
+
+                            <TextBox Grid.Column="1"
+                                     PlaceholderText="Search by promotion code..."
+                                     Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     VerticalAlignment="Center"
+                                     Margin="0,3,0,0">
+                                <TextBox.Resources>
+                                    <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
+                                    <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                                    <SolidColorBrush x:Key="TextControlBackground" Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent"/>
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent"/>
+                                </TextBox.Resources>
+                            </TextBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- Status Filter -->
+                    <Border Grid.Column="1"
+                            Background="White"
+                            Height="35"
+                            CornerRadius="20"
                             BorderThickness="1"
                             BorderBrush="#E0E0E0"
-                            Padding="16,0"
-                            Margin="16,0,0,0">
+                            Padding="12,0,4,0">
+                        <ComboBox PlaceholderText="All Status"
+                                  SelectedValue="{x:Bind ViewModel.SelectedStatus, Mode=TwoWay}"
+                                  SelectedValuePath="Content"
+                                  Width="120"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  VerticalAlignment="Center">
+                            <ComboBox.Resources>
+                                <Thickness x:Key="ComboBoxBorderThemeThickness">0</Thickness>
+                                <Thickness x:Key="ComboBoxBorderThemeThicknessFocused">0</Thickness>
+                                <SolidColorBrush x:Key="ComboBoxBackground" Color="Transparent"/>
+                                <SolidColorBrush x:Key="ComboBoxBackgroundFocused" Color="Transparent"/>
+                                <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="Transparent"/>
+                            </ComboBox.Resources>
+                            <ComboBoxItem Content="All"/>
+                            <ComboBoxItem Content="Active"/>
+                            <ComboBoxItem Content="Upcoming"/>
+                            <ComboBoxItem Content="Expired"/>
+                            <ComboBoxItem Content="Inactive"/>
+                        </ComboBox>
+                    </Border>
+
+                    <!-- Advanced Sort Button -->
+                    <Button Grid.Column="2"
+                            Background="White"
+                            Height="35"
+                            CornerRadius="20"
+                            BorderThickness="1"
+                            BorderBrush="#E0E0E0"
+                            Padding="16,0">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <FontIcon Glyph="&#xE8CB;" FontSize="14" Foreground="#4A4A4A"/>
                             <TextBlock Text="Advanced Sort" Foreground="#4A4A4A" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -195,7 +210,22 @@
                             </Flyout>
                         </Button.Flyout>
                     </Button>
-                </StackPanel>
+
+                    <!-- Add Promotion Button -->
+                    <Button Grid.Column="4"
+                            Command="{Binding AddPromotionCommand}"
+                            Background="#D97706"
+                            BorderThickness="0"
+                            Foreground="White"
+                            Height="35"
+                            CornerRadius="18"
+                            Padding="14,0">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE710;" FontSize="14"/>
+                            <TextBlock Text="Add Promotion" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
 
                 <!-- ===== Row 2: Table Header with Sortable Columns ===== -->
                 <Border Grid.Row="2"
