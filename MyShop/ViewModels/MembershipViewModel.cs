@@ -1,15 +1,21 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using MyShop.Models;
+using MyShop.Services;
 
 namespace MyShop.ViewModels;
 
 public partial class MembershipViewModel : ObservableObject
 {
     private readonly ObservableCollection<Customer> _allCustomers = new();
+
+    [ObservableProperty]
+    private bool _isLoading;
 
     [ObservableProperty]
     private string _searchQuery = "";
@@ -27,9 +33,16 @@ public partial class MembershipViewModel : ObservableObject
 
     public event Action<Customer?>? MemberSelected;
 
-    public MembershipViewModel()
+    private readonly ICustomerService _customerService;
+
+    public MembershipViewModel() : this(App.Services.GetRequiredService<ICustomerService>())
     {
-        LoadMockCustomers();
+    }
+
+    public MembershipViewModel(ICustomerService customerService)
+    {
+        _customerService = customerService;
+        _ = LoadCustomersAsync();
     }
 
     [RelayCommand]
@@ -40,10 +53,31 @@ public partial class MembershipViewModel : ObservableObject
         NewPhone = "";
     }
 
-    private void LoadMockCustomers()
+    private async Task LoadCustomersAsync()
     {
-        _allCustomers.Add(new Customer { Id = 1, Name = "Nguyen Van A", Phone = "0901234567", TotalAccumulatedPoints = 150, CurrentAvailablePoints = 150, Tier = LoyaltyTier.Bronze });
-        _allCustomers.Add(new Customer { Id = 2, Name = "Tran Thi B", Phone = "0912345678", TotalAccumulatedPoints = 320, CurrentAvailablePoints = 320, Tier = LoyaltyTier.Silver });
+        IsLoading = true;
+        try
+        {
+            // Increase PageSize to 100 for better local search coverage
+            var result = await _customerService.GetAll(new MyShop.Data.PagingRequest { PageSize = 100 });
+            _allCustomers.Clear();
+            if (result?.Items != null)
+            {
+                foreach (var customer in result.Items)
+                {
+                    _allCustomers.Add(customer);
+                }
+            }
+            OnSearchQueryChanged(SearchQuery);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading customers: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     [RelayCommand]
@@ -53,31 +87,59 @@ public partial class MembershipViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Register()
+    private async Task RegisterAsync()
     {
         if (string.IsNullOrEmpty(NewName) || string.IsNullOrEmpty(NewPhone)) return;
 
         var newCust = new Customer
         {
-            Id = (int)DateTime.Now.Ticks,
             Name = NewName,
             Phone = NewPhone,
             TotalAccumulatedPoints = 0,
             CurrentAvailablePoints = 0,
-            Tier = LoyaltyTier.Bronze
+            Tier = LoyaltyTier.Bronze,
+            Status = "Active"
         };
-        MemberSelected?.Invoke(newCust);
+
+        try
+        {
+            newCust = await _customerService.Add(newCust);
+            _allCustomers.Insert(0, newCust);
+            OnSearchQueryChanged(SearchQuery);
+            MemberSelected?.Invoke(newCust);
+            ToggleRegister();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Register error: {ex.Message}");
+        }
     }
 
     partial void OnSearchQueryChanged(string value)
     {
         FilteredCustomers.Clear();
-        if (value.Length < 2) return;
+        
+        string query = (value ?? "").Trim().ToLower();
 
-        var filtered = _allCustomers.Where(c =>
-            (c.Name != null && c.Name.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
-            (c.Phone != null && c.Phone.Contains(value)));
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            foreach (var c in _allCustomers) FilteredCustomers.Add(c);
+            OnPropertyChanged(nameof(FilteredCustomers));
+            return;
+        }
 
-        foreach (var c in filtered) FilteredCustomers.Add(c);
+        foreach (var c in _allCustomers)
+        {
+            bool match = (c.Name?.ToLower()?.Contains(query) == true) ||
+                         (c.Phone?.Contains(query) == true);
+            
+            if (match)
+            {
+                FilteredCustomers.Add(c);
+            }
+        }
+
+        OnPropertyChanged(nameof(FilteredCustomers));
+        System.Diagnostics.Debug.WriteLine($"Member Search: '{query}' found {FilteredCustomers.Count} items.");
     }
 }

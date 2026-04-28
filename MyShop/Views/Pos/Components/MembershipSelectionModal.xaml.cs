@@ -14,7 +14,6 @@ public sealed partial class MembershipSelectionModal : ContentDialog
         ViewModel = new MembershipViewModel();
         DataContext = ViewModel;
 
-        SearchBox.SetBinding(TextBox.TextProperty, new Binding { Path = new PropertyPath("SearchQuery"), Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
         SkipButton.Command = ViewModel.SelectMemberCommand;
         
         ViewModel.MemberSelected += (member) => this.Hide();
