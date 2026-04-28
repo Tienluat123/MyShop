@@ -20,6 +20,7 @@ public partial class ProductFormViewModel : ObservableObject
     private readonly ProductListEntry? editingProduct;
     private readonly IProductService productService;
     private readonly IRepository<Product> productRepository;
+    private readonly IRepository<ProductImage> productImageRepository;
     private readonly IRepository<Category> categoryRepository;
 
     [ObservableProperty]
@@ -56,6 +57,7 @@ public partial class ProductFormViewModel : ObservableObject
         editingProduct = product;
         productService = container.Get<IProductService>();
         productRepository = container.Get<IRepository<Product>>();
+        productImageRepository = container.Get<IRepository<ProductImage>>();
         categoryRepository = container.Get<IRepository<Category>>();
 
         _ = LoadCategoriesFromRepository(); // Fire and forget for initialization
@@ -71,7 +73,10 @@ public partial class ProductFormViewModel : ObservableObject
                 Name = product.Name,
                 Category = product.Category,
                 CostPrice = product.CostPrice.ToString("N0"),
-                SellingPrice = product.SellingPrice.ToString("N0")
+                SellingPrice = product.SellingPrice.ToString("N0"),
+                ImageUrl = product.PrimaryImageUrl ?? string.Empty,
+                SecondaryImageUrl1 = product.SecondaryImageUrls.ElementAtOrDefault(0) ?? string.Empty,
+                SecondaryImageUrl2 = product.SecondaryImageUrls.ElementAtOrDefault(1) ?? string.Empty
             };
         }
         else
@@ -172,7 +177,7 @@ public partial class ProductFormViewModel : ObservableObject
 
             if (IsEditMode && editingProduct is not null)
             {
-                var existing = await productRepository.GetByIdAsync(editingProduct.Id);
+                var existing = await productService.GetById(editingProduct.Id);
                 if (existing is null)
                 {
                     IsFormValid = false;
@@ -183,18 +188,19 @@ public partial class ProductFormViewModel : ObservableObject
                 existing.Name = ProductData.Name.Trim();
                 existing.CategoryId = category.Id;
                 existing.Price = sellingPrice;
-                existing.ImagePath = string.IsNullOrWhiteSpace(ProductData.ImageUrl) ? existing.ImagePath : ProductData.ImageUrl;
                 await productService.Update(existing);
+                await UpsertProductImages(existing.Id);
             }
             else
             {
-                await productService.Add(new Product
+                var created = await productService.Add(new Product
                 {
                     Name = ProductData.Name.Trim(),
                     CategoryId = category.Id,
-                    Price = sellingPrice,
-                    ImagePath = string.IsNullOrWhiteSpace(ProductData.ImageUrl) ? null : ProductData.ImageUrl
+                    Price = sellingPrice
                 });
+
+                await UpsertProductImages(created.Id);
             }
 
             onSaved();
@@ -204,6 +210,54 @@ public partial class ProductFormViewModel : ObservableObject
         {
             IsFormValid = false;
             ValidationMessage = $"Save failed: {ex.Message}";
+        }
+    }
+
+    private async Task UpsertProductImages(int productId)
+    {
+        await UpsertProductImageAtSortOrder(productId, ProductData.ImageUrl, 1, true);
+        await UpsertProductImageAtSortOrder(productId, ProductData.SecondaryImageUrl1, 2, false);
+        await UpsertProductImageAtSortOrder(productId, ProductData.SecondaryImageUrl2, 3, false);
+    }
+
+    private async Task UpsertProductImageAtSortOrder(int productId, string? imageUrl, int sortOrder, bool isPrimary)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return;
+        }
+
+        var normalizedUrl = imageUrl.Trim();
+        var existingImages = await productImageRepository.GetAsync(pi => pi.ProductId == productId);
+
+        var targetImage = existingImages.FirstOrDefault(pi => pi.SortOrder == sortOrder);
+        if (targetImage is null)
+        {
+            await productImageRepository.AddAsync(new ProductImage
+            {
+                ProductId = productId,
+                ImageUrl = normalizedUrl,
+                SortOrder = sortOrder,
+                IsPrimary = isPrimary,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        else
+        {
+            targetImage.ImageUrl = normalizedUrl;
+            targetImage.SortOrder = sortOrder;
+            targetImage.IsPrimary = isPrimary;
+            await productImageRepository.UpdateAsync(targetImage);
+        }
+
+        if (isPrimary)
+        {
+            var refreshedImages = await productImageRepository.GetAsync(pi => pi.ProductId == productId);
+            foreach (var duplicatePrimary in refreshedImages.Where(pi => pi.SortOrder != sortOrder && pi.IsPrimary))
+            {
+                duplicatePrimary.IsPrimary = false;
+                await productImageRepository.UpdateAsync(duplicatePrimary);
+            }
         }
     }
 

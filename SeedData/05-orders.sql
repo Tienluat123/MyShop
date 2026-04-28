@@ -1,6 +1,6 @@
 -- ===== ORDERS & ORDER DETAILS =====
 -- Sample Coffee Shop Transactions - Dual Status Schema
--- Last modified: 2026-04-04
+-- Last modified: 2026-04-26
 
 -- ORDERS
 INSERT INTO "Orders" ("Id", "CustomerId", "UserId", "OrderDate", "SubTotal", "DiscountAmount", "TotalAmount", "PaymentStatus", "FulfillmentStatus", "Type", "TableNumber", "Notes", "PromotionId", "TaxAmount", "ManualAdjustment", "ManualAdjustmentReason") VALUES
@@ -53,7 +53,36 @@ INSERT INTO "Orders" ("Id", "CustomerId", "UserId", "OrderDate", "SubTotal", "Di
 (42, 2, 3, NOW() - INTERVAL '5 days', 40000, 0, 44000, 'Paid', 'Completed', 'Dine-in', 'Table 7', '', NULL, 4000, 0, ''),
 (43, 3, 3, NOW() - INTERVAL '6 days', 85000, 0, 93500, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 8500, 0, ''),
 (44, 4, 3, NOW() - INTERVAL '7 days', 95000, 10000, 93500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 8500, 0, ''),
-(45, 5, 3, NOW() - INTERVAL '8 days', 120000, 0, 132000, 'Paid', 'Completed', 'Dine-in', 'Table 5', '', NULL, 12000, 0, '')
+(45, 5, 3, NOW() - INTERVAL '8 days', 120000, 0, 132000, 'Paid', 'Completed', 'Dine-in', 'Table 5', '', NULL, 12000, 0, ''),
+-- MARCH 2026 SALES
+(100, 1, 2, NOW() - INTERVAL '30 days', 150000, 0, 165000, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 15000, 0, ''),
+(101, 2, 2, NOW() - INTERVAL '31 days', 80000, 5000, 83000, 'Paid', 'Completed', 'Dine-in', 'Table 1', '', NULL, 8000, 0, ''),
+(102, 3, 2, NOW() - INTERVAL '35 days', 220000, 0, 242000, 'Paid', 'Completed', 'Dine-in', 'Table 4', '', NULL, 22000, 0, ''),
+(103, 4, 3, NOW() - INTERVAL '40 days', 45000, 0, 49500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 4500, 0, ''),
+(104, 5, 3, NOW() - INTERVAL '45 days', 110000, 0, 121000, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 11000, 0, ''),
+-- APRIL 2026 SALES (1/4 - 18/4)
+(200, 1, 2, NOW() - INTERVAL '26 days', 120000, 0, 132000, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 12000, 0, ''),
+(201, 2, 2, NOW() - INTERVAL '25 days', 45000, 0, 49500, 'Paid', 'Completed', 'Dine-in', 'Table 3', 'Birthday', NULL, 4500, 0, ''),
+(202, 3, 3, NOW() - INTERVAL '24 days', 280000, 20000, 286000, 'Paid', 'Completed', 'Dine-in', 'Table 1', 'Group', NULL, 26000, 0, ''),
+(203, 4, 3, NOW() - INTERVAL '22 days', 55000, 0, 60500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 5500, 0, ''),
+(204, 5, 5, NOW() - INTERVAL '21 days', 95000, 0, 104500, 'Paid', 'Completed', 'Dine-in', 'Table 5', '', NULL, 9500, 0, ''),
+(205, 1, 5, NOW() - INTERVAL '19 days', 35000, 0, 38500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 3500, 0, ''),
+(206, 2, 2, NOW() - INTERVAL '18 days', 150000, 10000, 154000, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 14000, 0, ''),
+(207, 3, 2, NOW() - INTERVAL '16 days', 60000, 0, 66000, 'Paid', 'Completed', 'Dine-in', 'Table 8', '', NULL, 6000, 0, ''),
+(208, 4, 3, NOW() - INTERVAL '15 days', 95000, 0, 104500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 9500, 0, ''),
+(209, 5, 3, NOW() - INTERVAL '14 days', 125000, 15000, 121000, 'Paid', 'Completed', 'Dine-in', 'Table 4', '', NULL, 11000, 0, ''),
+(210, 1, 5, NOW() - INTERVAL '13 days', 45000, 0, 49500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 4500, 0, ''),
+(211, 2, 5, NOW() - INTERVAL '12 days', 85000, 0, 93500, 'Paid', 'Completed', 'Dine-in', 'Table 1', '', NULL, 8500, 0, ''),
+(212, 3, 2, NOW() - INTERVAL '11 days', 110000, 0, 121000, 'Paid', 'Completed', 'Dine-in', 'Table 6', '', NULL, 11000, 0, ''),
+(213, 4, 2, NOW() - INTERVAL '10 days', 52000, 0, 57200, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 5200, 0, ''),
+(214, 5, 2, NOW() - INTERVAL '9 days', 75000, 5000, 77000, 'Paid', 'Completed', 'Dine-in', 'Table 2', '', NULL, 7000, 0, ''),
+-- FEBRUARY 2026 SALES
+(110, 1, 5, NOW() - INTERVAL '60 days', 300000, 20000, 310000, 'Paid', 'Completed', 'Dine-in', 'Table 10', 'Party', NULL, 30000, 0, ''),
+(111, 2, 5, NOW() - INTERVAL '65 days', 95000, 0, 104500, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 9500, 0, ''),
+(112, 3, 5, NOW() - INTERVAL '70 days', 180000, 0, 198000, 'Paid', 'Completed', 'Dine-in', 'Table 3', '', NULL, 18000, 0, ''),
+-- JANUARY 2026 SALES
+(120, 4, 2, NOW() - INTERVAL '90 days', 120000, 0, 132000, 'Paid', 'Completed', 'Takeaway', '', '', NULL, 12000, 0, ''),
+(121, 5, 2, NOW() - INTERVAL '95 days', 65000, 0, 71500, 'Paid', 'Completed', 'Dine-in', 'Table 5', '', NULL, 6500, 0, '')
 ON CONFLICT ("Id") DO UPDATE SET
     "CustomerId" = EXCLUDED."CustomerId",
     "UserId" = EXCLUDED."UserId",
@@ -71,69 +100,94 @@ ON CONFLICT ("Id") DO UPDATE SET
     "ManualAdjustment" = EXCLUDED."ManualAdjustment",
     "ManualAdjustmentReason" = EXCLUDED."ManualAdjustmentReason";
 
--- ORDER DETAILS (Approx 2 items per order for the new 40 orders)
--- Orders 6-45
-INSERT INTO "OrderDetails" ("Id", "OrderId", "ProductId", "Quantity", "UnitPrice", "Notes") VALUES
+-- ORDER DETAILS
+INSERT INTO "OrderDetails" ("Id", "OrderId", "ProductId", "Quantity", "UnitPrice", "UnitCostPrice", "Notes") VALUES
 -- Legacy Migration Details (IDs 1-5)
-(1, 1, 2, 2, 45000, NULL), (2, 1, 14, 1, 85000, NULL),
-(3, 2, 3, 2, 50000, NULL), (4, 2, 17, 2, 45000, NULL),
-(5, 3, 5, 1, 55000, NULL), (6, 3, 20, 1, 65000, NULL), (7, 3, 15, 1, 95000, NULL),
-(8, 4, 1, 1, 30000, NULL), (9, 4, 21, 1, 60000, NULL), (10, 4, 18, 1, 40000, NULL),
-(11, 5, 2, 2, 45000, NULL), (12, 5, 9, 1, 30000, NULL), (13, 5, 16, 1, 75000, NULL),
+(1, 1, 2, 2, 45000, 18000, NULL), (2, 1, 14, 1, 85000, 35000, NULL),
+(3, 2, 3, 2, 50000, 20000, NULL), (4, 2, 17, 2, 45000, 18000, NULL),
+(5, 3, 5, 1, 55000, 22000, NULL), (6, 3, 20, 1, 65000, 28000, NULL), (7, 3, 15, 1, 95000, 42000, NULL),
+(8, 4, 1, 1, 30000, 10000, NULL), (9, 4, 21, 1, 60000, 25000, NULL), (10, 4, 18, 1, 40000, 15000, NULL),
+(11, 5, 2, 2, 45000, 18000, NULL), (12, 5, 9, 1, 30000, 8000, NULL), (13, 5, 16, 1, 75000, 30000, NULL),
 
 -- 20 ACTIVE ORDERS (None, Preparing, Ready) - Starting ID 14
-(14, 6, 1, 1, 30000, NULL), (15, 6, 2, 1, 15000, NULL),
-(16, 7, 3, 1, 25000, NULL), (17, 7, 4, 1, 30000, NULL),
-(18, 8, 5, 1, 30000, NULL),
-(19, 9, 6, 2, 32500, NULL),
-(20, 10, 7, 1, 40000, NULL),
-(21, 11, 8, 2, 42500, NULL),
-(22, 12, 9, 1, 55000, NULL), (23, 12, 1, 1, 40000, NULL),
-(24, 13, 10, 3, 40000, NULL),
-(25, 14, 11, 1, 35000, NULL),
-(26, 15, 12, 2, 25000, NULL),
-(27, 16, 13, 1, 60000, NULL),
-(28, 17, 14, 1, 75000, NULL),
-(29, 18, 15, 1, 45000, NULL),
-(30, 19, 16, 1, 55000, NULL),
-(31, 20, 17, 1, 30000, NULL),
-(32, 21, 18, 2, 32500, NULL),
-(33, 22, 19, 1, 40000, NULL),
-(34, 23, 20, 2, 42500, NULL),
-(35, 24, 21, 1, 55000, NULL), (36, 24, 2, 1, 40000, NULL),
-(37, 25, 1, 3, 40000, NULL),
+(14, 6, 1, 1, 30000, 10000, NULL), (15, 6, 2, 1, 45000, 18000, NULL),
+(16, 7, 3, 1, 50000, 20000, NULL), (17, 7, 4, 1, 40000, 12000, NULL),
+(18, 8, 5, 1, 55000, 22000, NULL),
+(19, 9, 6, 2, 48000, 15000, NULL),
+(20, 10, 7, 1, 52000, 22000, NULL),
+(21, 11, 8, 2, 48000, 18000, NULL),
+(22, 12, 9, 1, 30000, 8000, NULL), (23, 12, 1, 1, 30000, 10000, NULL),
+(24, 13, 10, 3, 32000, 8000, NULL),
+(25, 14, 11, 1, 35000, 10000, NULL),
+(26, 15, 12, 2, 38000, 12000, NULL),
+(27, 16, 13, 1, 28000, 6000, NULL),
+(28, 17, 14, 1, 85000, 35000, NULL),
+(29, 18, 15, 1, 95000, 42000, NULL),
+(30, 19, 16, 1, 75000, 30000, NULL),
+(31, 20, 17, 1, 45000, 18000, NULL),
+(32, 21, 18, 2, 40000, 15000, NULL),
+(33, 22, 19, 1, 35000, 12000, NULL),
+(34, 23, 20, 2, 65000, 28000, NULL),
+(35, 24, 21, 1, 60000, 25000, NULL), (36, 24, 2, 1, 45000, 18000, NULL),
+(37, 25, 1, 3, 30000, 10000, NULL),
 
--- 20 HISTORY ORDERS (Paid, Cancelled, Refunded + Completed) - Starting ID 38
-(38, 26, 2, 1, 45000, NULL),
-(39, 27, 3, 1, 55000, NULL),
-(40, 28, 4, 1, 30000, NULL),
-(41, 29, 5, 2, 32500, NULL),
-(42, 30, 6, 1, 40000, NULL),
-(43, 31, 7, 2, 42500, NULL),
-(44, 32, 8, 1, 55000, NULL), (45, 32, 9, 1, 40000, NULL),
-(46, 33, 10, 3, 40000, NULL),
-(47, 34, 11, 1, 35000, NULL),
-(48, 35, 12, 2, 25000, NULL),
-(49, 36, 13, 1, 60000, NULL),
-(50, 37, 14, 1, 75000, NULL),
-(51, 38, 15, 1, 45000, NULL),
-(52, 39, 16, 1, 55000, NULL),
-(53, 40, 17, 1, 30000, NULL),
-(54, 41, 18, 2, 32500, NULL),
-(55, 42, 19, 1, 40000, NULL),
-(56, 43, 20, 2, 42500, NULL),
-(57, 44, 21, 1, 55000, NULL), (58, 44, 1, 1, 40000, NULL),
-(59, 45, 2, 3, 40000, NULL)
+-- 20 HISTORY ORDERS
+(38, 26, 2, 1, 45000, 18000, NULL),
+(39, 27, 3, 1, 50000, 20000, NULL),
+(40, 28, 4, 1, 40000, 12000, NULL),
+(41, 29, 5, 2, 55000, 22000, NULL),
+(42, 30, 6, 1, 48000, 15000, NULL),
+(43, 31, 7, 2, 52000, 22000, NULL),
+(44, 32, 8, 1, 48000, 18000, NULL), (45, 32, 9, 1, 30000, 8000, NULL),
+(46, 33, 10, 3, 32000, 8000, NULL),
+(47, 34, 11, 1, 35000, 10000, NULL),
+(48, 35, 12, 2, 38000, 12000, NULL),
+(49, 36, 13, 1, 28000, 6000, NULL),
+(50, 37, 14, 1, 85000, 35000, NULL),
+(51, 38, 15, 1, 95000, 42000, NULL),
+(52, 39, 16, 1, 75000, 30000, NULL),
+(53, 40, 17, 1, 45000, 18000, NULL),
+(54, 41, 18, 2, 40000, 15000, NULL),
+(55, 42, 19, 1, 35000, 12000, NULL),
+(56, 43, 20, 2, 65000, 28000, NULL),
+(57, 44, 21, 1, 60000, 25000, NULL), (58, 44, 1, 1, 30000, 10000, NULL),
+(59, 45, 2, 3, 45000, 18000, NULL),
+-- MARCH DETAILS
+(100, 100, 2, 2, 45000, 18000, NULL), (101, 100, 15, 1, 95000, 42000, NULL),
+(102, 101, 3, 1, 50000, 20000, NULL), (103, 101, 4, 1, 40000, 12000, NULL),
+(104, 102, 1, 2, 30000, 10000, NULL), (105, 102, 14, 2, 85000, 35000, NULL),
+(106, 103, 5, 1, 55000, 22000, NULL),
+(107, 104, 6, 1, 48000, 15000, NULL), (108, 104, 21, 1, 60000, 25000, NULL),
+-- FEBRUARY DETAILS
+(110, 110, 16, 4, 75000, 30000, NULL),
+(111, 111, 17, 2, 45000, 18000, NULL), (112, 111, 9, 1, 30000, 8000, NULL),
+(113, 112, 18, 3, 40000, 15000, NULL), (114, 112, 1, 2, 30000, 10000, NULL),
+-- JANUARY DETAILS
+(120, 120, 19, 2, 35000, 12000, NULL), (121, 120, 20, 1, 65000, 28000, NULL),
+(122, 121, 2, 1, 45000, 18000, NULL), (123, 121, 10, 1, 32000, 8000, NULL),
+-- April 2026 Details (200-214)
+(400, 200, 2, 2, 45000, 18000, NULL), (401, 200, 15, 1, 95000, 42000, NULL),
+(402, 201, 3, 1, 50000, 20000, NULL), (403, 201, 9, 1, 30000, 8000, NULL),
+(404, 202, 14, 2, 85000, 35000, NULL), (405, 202, 23, 1, 75000, 32000, NULL), (406, 202, 7, 2, 52000, 22000, NULL),
+(407, 203, 11, 1, 35000, 10000, NULL), (408, 203, 1, 1, 30000, 10000, NULL),
+(409, 204, 3, 1, 50000, 20000, NULL), (410, 204, 17, 1, 45000, 18000, NULL),
+(411, 205, 12, 1, 38000, 12000, NULL),
+(412, 206, 6, 2, 48000, 15000, NULL), (413, 206, 17, 1, 45000, 18000, NULL),
+(414, 207, 5, 1, 55000, 22000, NULL), (415, 207, 1, 1, 30000, 10000, NULL),
+(416, 208, 15, 1, 95000, 42000, NULL),
+(417, 209, 2, 2, 45000, 18000, NULL), (418, 209, 10, 1, 32000, 8000, NULL),
+(419, 210, 3, 1, 50000, 20000, NULL),
+(420, 211, 4, 1, 40000, 12000, NULL), (421, 211, 14, 1, 85000, 35000, NULL),
+(422, 212, 5, 2, 55000, 22000, NULL),
+(423, 213, 7, 1, 52000, 22000, NULL),
+(424, 214, 15, 1, 95000, 42000, NULL)
 ON CONFLICT ("Id") DO UPDATE SET
     "OrderId" = EXCLUDED."OrderId",
     "ProductId" = EXCLUDED."ProductId",
     "Quantity" = EXCLUDED."Quantity",
     "UnitPrice" = EXCLUDED."UnitPrice",
+    "UnitCostPrice" = EXCLUDED."UnitCostPrice",
     "Notes" = EXCLUDED."Notes";
-
-
--- Legacy Order Details (Matching IDs 1-5 already in file)
--- IDs 1-13 already exist. New ones start from 14.
 
 SELECT setval('"Orders_Id_seq"', (SELECT MAX("Id") FROM "Orders") + 1);
 SELECT setval('"OrderDetails_Id_seq"', (SELECT MAX("Id") FROM "OrderDetails") + 1);
