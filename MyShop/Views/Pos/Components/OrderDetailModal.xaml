@@ -257,22 +257,19 @@
                                     </Button.Flyout>
                                 </Button>
 
-                                <!--  Adjustments (Paid)  -->
-                                <Button
-                                    Content="Add Price Adjustment"
-                                    Style="{StaticResource AppSecondaryButtonStyle}"
-                                    Visibility="{Binding IsPaid, Converter={StaticResource BoolToVis}}">
+                                <Button Content="Price Adjustment" Style="{StaticResource AppSecondaryButtonStyle}">
                                     <Button.Flyout>
                                         <Flyout>
-                                            <StackPanel Width="200" Spacing="12">
-                                                <TextBlock FontWeight="Bold" Text="Adjustment Amount" />
-                                                <TextBox x:Name="AdjAmountBox" PlaceholderText="e.g. -5000 or 10000" />
-                                                <Button
-                                                    HorizontalAlignment="Stretch"
-                                                    Command="{Binding AddAdjustmentCommand}"
-                                                    CommandParameter="{Binding Text, ElementName=AdjAmountBox}"
-                                                    Content="Apply"
-                                                    Style="{StaticResource AppPrimaryButtonStyle}" />
+                                            <StackPanel Width="220" Spacing="12">
+                                                <TextBlock FontWeight="Bold" Text="Manual Adjustment" />
+                                                <NumberBox
+                                                    Header="Amount (e.g. 5000)"
+                                                    PlaceholderText="Enter amount"
+                                                    Value="{Binding EditManualAdjustment, Mode=TwoWay}" />
+                                                <TextBox
+                                                    Header="Reason"
+                                                    PlaceholderText="e.g. Service fee, Discount"
+                                                    Text="{Binding EditManualAdjustmentReason, Mode=TwoWay}" />
                                             </StackPanel>
                                         </Flyout>
                                     </Button.Flyout>
@@ -381,6 +378,21 @@
                                     <Run Text="{Binding SelectedOrderDetails.Tax, Converter={StaticResource CurrencyConverter}}" />
                                 </TextBlock>
                             </Grid>
+                            <Grid Visibility="{Binding SelectedOrderDetails.ManualAdjustment, Converter={StaticResource NumberToVisibilityConverter}}">
+                                <TextBlock
+                                    HorizontalAlignment="Left"
+                                    Style="{StaticResource BodyStyle}"
+                                    Text="Adjustment" />
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    Foreground="{StaticResource ErrorSurface}"
+                                    Style="{StaticResource BodyStyle}">
+                                    <Run Text="{Binding SelectedOrderDetails.ManualAdjustment, Converter={StaticResource CurrencyConverter}}" />
+                                </TextBlock>
+                                <ToolTipService.ToolTip>
+                                    <TextBlock Text="{Binding SelectedOrderDetails.ManualAdjustmentReason}" />
+                                </ToolTipService.ToolTip>
+                            </Grid>
                             <Grid>
                                 <TextBlock
                                     HorizontalAlignment="Left"
@@ -404,6 +416,13 @@
                             <Grid>
                                 <TextBlock HorizontalAlignment="Left" Text="New Tax" />
                                 <TextBlock HorizontalAlignment="Right" Text="{Binding EditTax, Converter={StaticResource CurrencyConverter}}" />
+                            </Grid>
+                            <Grid Visibility="{Binding EditManualAdjustment, Converter={StaticResource NumberToVisibilityConverter}}">
+                                <TextBlock HorizontalAlignment="Left" Text="Adjustment" />
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    Foreground="{StaticResource ErrorSurface}"
+                                    Text="{Binding EditManualAdjustment, Converter={StaticResource CurrencyConverter}}" />
                             </Grid>
                             <Grid Visibility="{Binding EditDiscount, Converter={StaticResource NumberToVisibilityConverter}}">
                                 <TextBlock HorizontalAlignment="Left" Text="Discount" />

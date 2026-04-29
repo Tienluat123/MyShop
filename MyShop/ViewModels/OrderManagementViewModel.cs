@@ -89,6 +89,12 @@ public partial class OrderManagementViewModel : ObservableObject
     private decimal _editDiscount;
 
     [ObservableProperty]
+    private double _editManualAdjustment;
+
+    [ObservableProperty]
+    private string _editManualAdjustmentReason = "";
+
+    [ObservableProperty]
     private decimal _editTotal;
 
     public bool CanEditItems => SelectedOrderDetails != null && 
@@ -281,6 +287,8 @@ public partial class OrderManagementViewModel : ObservableObject
         EditNotes = SelectedOrderDetails.Notes ?? string.Empty;
         EditPaymentStatus = SelectedOrderDetails.PaymentStatus;
         EditFulfillmentStatus = SelectedOrderDetails.FulfillmentStatus;
+        EditManualAdjustment = (double)SelectedOrderDetails.ManualAdjustment;
+        EditManualAdjustmentReason = SelectedOrderDetails.ManualAdjustmentReason ?? string.Empty;
 
         // Clone items for editing
         EditableItems.Clear();
@@ -307,7 +315,7 @@ public partial class OrderManagementViewModel : ObservableObject
         EditTax = EditSubtotal * 0.0875m; // Synced with POS TAX_RATE
         // Keep existing discount logic if any, or just use the one from modal for now
         EditDiscount = SelectedOrderDetails?.Discount ?? 0; 
-        EditTotal = Math.Max(0, EditSubtotal + EditTax - EditDiscount);
+        EditTotal = Math.Max(0, EditSubtotal + EditTax - EditDiscount - (decimal)EditManualAdjustment);
     }
 
     [RelayCommand]
@@ -359,21 +367,7 @@ public partial class OrderManagementViewModel : ObservableObject
         UpdateEditTotals();
     }
 
-    [RelayCommand]
-    private void AddAdjustment(object amountParam)
-    {
-        if (amountParam is string s && decimal.TryParse(s, out decimal amount) && amount != 0)
-        {
-            // For Paid orders, add a special adjustment product/item
-            EditableItems.Add(new OrderItem
-            {
-                Product = new Product { Name = "Admin Adjustment", Price = amount },
-                BasePrice = amount,
-                Quantity = 1
-            });
-            UpdateEditTotals();
-        }
-    }
+    partial void OnEditManualAdjustmentChanged(double value) => UpdateEditTotals();
 
     [RelayCommand]
     private void CancelEditOrderDetail()
@@ -396,6 +390,8 @@ public partial class OrderManagementViewModel : ObservableObject
             order.Notes = EditNotes;
             order.PaymentStatus = EditPaymentStatus.ToString();
             order.FulfillmentStatus = EditFulfillmentStatus.ToString();
+            order.ManualAdjustment = (decimal)EditManualAdjustment;
+            order.ManualAdjustmentReason = EditManualAdjustmentReason;
 
             // Sync items back to OrderDetails
             if (CanEditItems || IsPaid) // Allow adjustments for paid too
@@ -489,7 +485,9 @@ public partial class OrderManagementViewModel : ObservableObject
             Table = order.TableNumber,
             Notes = order.Notes,
             Tax = order.TaxAmount,
-            Discount = order.DiscountAmount + order.ManualAdjustment,
+            Discount = order.DiscountAmount,
+            ManualAdjustment = order.ManualAdjustment,
+            ManualAdjustmentReason = order.ManualAdjustmentReason ?? string.Empty,
             Subtotal = order.SubTotal,
             Total = order.TotalAmount
         };

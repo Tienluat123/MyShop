@@ -119,6 +119,12 @@ public partial class PosOrder : ObservableObject
     private decimal _discount;
 
     [ObservableProperty]
+    private decimal _manualAdjustment;
+
+    [ObservableProperty]
+    private string _manualAdjustmentReason = "";
+
+    [ObservableProperty]
     private string? _customerId;
 
     [ObservableProperty]
