@@ -79,12 +79,32 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private FulfillmentStatus _editFulfillmentStatus;
 
+    [ObservableProperty]
+    private decimal _editSubtotal;
+
+    [ObservableProperty]
+    private decimal _editTax;
+
+    [ObservableProperty]
+    private decimal _editDiscount;
+
+    [ObservableProperty]
+    private decimal _editTotal;
+
+    public bool CanEditItems => SelectedOrderDetails != null && 
+                                SelectedOrderDetails.PaymentStatus != PaymentStatus.Paid && 
+                                SelectedOrderDetails.PaymentStatus != PaymentStatus.Refunded;
+
+    public bool IsPaid => SelectedOrderDetails?.PaymentStatus == PaymentStatus.Paid;
+
     public ObservableCollection<PaymentStatus> PaymentStatusOptions { get; } = new(Enum.GetValues<PaymentStatus>());
     public ObservableCollection<FulfillmentStatus> FulfillmentStatusOptions { get; } = new(Enum.GetValues<FulfillmentStatus>());
 
     public Action? ScrollToTopAction { get; set; }
 
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
+    public ObservableCollection<OrderItem> EditableItems { get; } = new();
+    public ObservableCollection<Product> AllProducts { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
 
     public OrderManagementViewModel(IOrderService orderService, IProductService productService)
@@ -262,7 +282,97 @@ public partial class OrderManagementViewModel : ObservableObject
         EditPaymentStatus = SelectedOrderDetails.PaymentStatus;
         EditFulfillmentStatus = SelectedOrderDetails.FulfillmentStatus;
 
+        // Clone items for editing
+        EditableItems.Clear();
+        foreach (var item in SelectedOrderDetails.Items)
+        {
+            EditableItems.Add(new OrderItem
+            {
+                Product = item.Product,
+                BasePrice = item.BasePrice,
+                Quantity = item.Quantity,
+                DrinkOptions = item.DrinkOptions // Shallow copy of options is fine for now
+            });
+        }
+
+        UpdateEditTotals();
         IsEditingDetail = true;
+        OnPropertyChanged(nameof(CanEditItems));
+        OnPropertyChanged(nameof(IsPaid));
+    }
+
+    private void UpdateEditTotals()
+    {
+        EditSubtotal = EditableItems.Sum(i => i.TotalPrice);
+        EditTax = EditSubtotal * 0.0875m; // Synced with POS TAX_RATE
+        // Keep existing discount logic if any, or just use the one from modal for now
+        EditDiscount = SelectedOrderDetails?.Discount ?? 0; 
+        EditTotal = Math.Max(0, EditSubtotal + EditTax - EditDiscount);
+    }
+
+    [RelayCommand]
+    private void IncreaseItemQty(OrderItem item)
+    {
+        if (!CanEditItems) return;
+        item.Quantity++;
+        UpdateEditTotals();
+    }
+
+    [RelayCommand]
+    private void DecreaseItemQty(OrderItem item)
+    {
+        if (!CanEditItems) return;
+        if (item.Quantity > 1)
+        {
+            item.Quantity--;
+            UpdateEditTotals();
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveItemFromEdit(OrderItem item)
+    {
+        if (!CanEditItems) return;
+        EditableItems.Remove(item);
+        UpdateEditTotals();
+    }
+
+    [RelayCommand]
+    private void AddProductToEdit(Product product)
+    {
+        if (!CanEditItems || product == null) return;
+        
+        var existing = EditableItems.FirstOrDefault(i => i.Product.Id == product.Id);
+        if (existing != null)
+        {
+            existing.Quantity++;
+        }
+        else
+        {
+            EditableItems.Add(new OrderItem
+            {
+                Product = product,
+                BasePrice = product.Price,
+                Quantity = 1
+            });
+        }
+        UpdateEditTotals();
+    }
+
+    [RelayCommand]
+    private void AddAdjustment(object amountParam)
+    {
+        if (amountParam is string s && decimal.TryParse(s, out decimal amount) && amount != 0)
+        {
+            // For Paid orders, add a special adjustment product/item
+            EditableItems.Add(new OrderItem
+            {
+                Product = new Product { Name = "Admin Adjustment", Price = amount },
+                BasePrice = amount,
+                Quantity = 1
+            });
+            UpdateEditTotals();
+        }
     }
 
     [RelayCommand]
@@ -287,7 +397,33 @@ public partial class OrderManagementViewModel : ObservableObject
             order.PaymentStatus = EditPaymentStatus.ToString();
             order.FulfillmentStatus = EditFulfillmentStatus.ToString();
 
-            await _orderService.Update(order);
+            // Sync items back to OrderDetails
+            if (CanEditItems || IsPaid) // Allow adjustments for paid too
+            {
+                var newDetails = new List<OrderDetail>();
+                foreach (var item in EditableItems)
+                {
+                    newDetails.Add(new OrderDetail
+                    {
+                        ProductId = item.Product.Id,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.BasePrice,
+                        Notes = item.DrinkOptions?.Notes
+                    });
+                }
+                
+                // Recalculate financial fields
+                order.SubTotal = EditSubtotal;
+                order.TaxAmount = EditTax;
+                order.DiscountAmount = EditDiscount;
+                order.TotalAmount = EditTotal;
+
+                await _orderService.UpdateWithDetails(order, newDetails);
+            }
+            else
+            {
+                await _orderService.Update(order);
+            }
             IsEditingDetail = false;
             
             await LoadOrders();
