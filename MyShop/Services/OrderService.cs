@@ -52,6 +52,11 @@ public interface IOrderService
     Task Update(Order order);
 
     /// <summary>
+    /// Cập nhật đơn hàng kèm theo danh sách chi tiết (thay thế toàn bộ chi tiết cũ)
+    /// </summary>
+    Task UpdateWithDetails(Order order, List<OrderDetail> details);
+
+    /// <summary>
     /// Xóa đơn hàng
     /// </summary>
     Task Delete(int id);
@@ -266,6 +271,9 @@ public class OrderService : IOrderService
         if (user == null)
             throw new InvalidOperationException($"Nhân viên với ID {order.UserId} không tồn tại");
 
+        // Ensure date is UTC to prevent Npgsql timezone shifts
+        order.OrderDate = DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc);
+
         try
         {
             return await _orderRepository.AddAsync(order);
@@ -289,12 +297,48 @@ public class OrderService : IOrderService
 
         try
         {
+            // Ensure date remains UTC
+            order.OrderDate = DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc);
             await _orderRepository.UpdateAsync(order);
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException("Lỗi khi cập nhật đơn hàng", ex);
         }
+    }
+
+    /// <summary>
+    /// Cập nhật đơn hàng kèm chi tiết (Bất đồng bộ)
+    /// </summary>
+    public async Task UpdateWithDetails(Order order, List<OrderDetail> details)
+    {
+        if (order == null || order.Id <= 0)
+            throw new ArgumentException("Đơn hàng không hợp lệ");
+
+        await _orderRepository.ExecuteAsync(async context =>
+        {
+            // 1. Remove existing details for this order
+            var existingDetails = await context.Set<OrderDetail>()
+                .Where(od => od.OrderId == order.Id)
+                .ToListAsync();
+            context.Set<OrderDetail>().RemoveRange(existingDetails);
+
+            // 2. Add new details
+            foreach (var detail in details)
+            {
+                detail.OrderId = order.Id;
+                detail.Id = 0; // Ensure they are treated as new
+                context.Set<OrderDetail>().Add(detail);
+            }
+
+            // 3. Update the order itself - EXCLUDE OrderDate from being updated
+            var entry = context.Entry(order);
+            entry.State = EntityState.Modified;
+            entry.Property(o => o.OrderDate).IsModified = false;
+
+            await context.SaveChangesAsync();
+            return true;
+        }, "UpdateWithDetails");
     }
 
     /// <summary>
