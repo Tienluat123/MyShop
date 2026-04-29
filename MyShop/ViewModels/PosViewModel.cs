@@ -407,9 +407,7 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder == null) return;
 
-        var oldNotes = SerializeOptions(originalItem.DrinkOptions);
-        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od =>
-            od.ProductId == originalItem.Product.Id && od.Notes == oldNotes);
+        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.Id == originalItem.OrderDetailId);
 
         if (detail != null)
         {
@@ -425,33 +423,7 @@ public partial class PosViewModel : ObservableObject
     private async Task SaveDraftOrder()
     {
         if (_currentDraftOrder == null) return;
-
-        // 1. Recalculate SubTotal from OrderDetails
-        _currentDraftOrder.SubTotal = _currentDraftOrder.OrderDetails.Sum(od => od.Quantity * od.UnitPrice);
-
-        // 2. Calculate Discount Amount
-        decimal discount = 0;
-        if (_currentDraftOrder.Promotion != null)
-        {
-            var promo = _currentDraftOrder.Promotion;
-            if (promo.PromoType == "Percent")
-            {
-                discount = _currentDraftOrder.SubTotal * (promo.DiscountValue / 100m);
-            }
-            else
-            {
-                discount = promo.DiscountValue;
-            }
-            discount = Math.Min(discount, _currentDraftOrder.SubTotal);
-        }
-        _currentDraftOrder.DiscountAmount = discount;
-
-        // 3. Calculate Tax and Total (Post-discount)
-        var postDiscountBase = _currentDraftOrder.SubTotal - discount;
-        _currentDraftOrder.TaxAmount = postDiscountBase * TAX_RATE;
-        _currentDraftOrder.TotalAmount = postDiscountBase + _currentDraftOrder.TaxAmount;
-
-        await _orderService.Update(_currentDraftOrder);
+        await _orderService.UpdateWithDetails(_currentDraftOrder, _currentDraftOrder.OrderDetails.ToList());
     }
 
     private void SyncCartFromDraft()
@@ -466,6 +438,7 @@ public partial class PosViewModel : ObservableObject
         {
             Order.Add(new OrderItem
             {
+                OrderDetailId = detail.Id,
                 Product = detail.Product!,
                 BasePrice = detail.UnitPrice,
                 Quantity = detail.Quantity,
@@ -480,8 +453,7 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder == null) return;
 
-        var notes = SerializeOptions(item.DrinkOptions);
-        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == item.Product.Id && od.Notes == notes);
+        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.Id == item.OrderDetailId);
 
         if (detail != null)
         {
@@ -517,8 +489,7 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder == null || param.Item == null) return;
 
-        var notes = SerializeOptions(param.Item.DrinkOptions);
-        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.ProductId == param.Item.Product.Id && od.Notes == notes);
+        var detail = _currentDraftOrder.OrderDetails.FirstOrDefault(od => od.Id == param.Item.OrderDetailId);
 
         if (detail != null)
         {
@@ -595,16 +566,20 @@ public partial class PosViewModel : ObservableObject
         Subtotal = Order.Sum(i => i.TotalPrice);
 
         decimal promoDiscount = 0;
-        if (_currentDraftOrder?.Promotion != null)
+        if (_currentDraftOrder != null)
         {
-            var promo = _currentDraftOrder.Promotion;
-            if (promo.PromoType == "Percent")
+            _currentDraftOrder.SubTotal = Subtotal;
+            if (_currentDraftOrder.Promotion != null)
             {
-                promoDiscount = Subtotal * (promo.DiscountValue / 100m);
-            }
-            else
-            {
-                promoDiscount = promo.DiscountValue;
+                var promo = _currentDraftOrder.Promotion;
+                if (promo.PromoType == "Percent")
+                {
+                    promoDiscount = Subtotal * (promo.DiscountValue / 100m);
+                }
+                else
+                {
+                    promoDiscount = promo.DiscountValue;
+                }
             }
         }
 

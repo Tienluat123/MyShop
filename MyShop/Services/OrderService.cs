@@ -307,9 +307,6 @@ public class OrderService : IOrderService
         }
     }
 
-    /// <summary>
-    /// Cập nhật đơn hàng kèm chi tiết (Bất đồng bộ)
-    /// </summary>
     public async Task UpdateWithDetails(Order order, List<OrderDetail> details)
     {
         if (order == null || order.Id <= 0)
@@ -317,24 +314,46 @@ public class OrderService : IOrderService
 
         await _orderRepository.ExecuteAsync(async context =>
         {
-            // 1. Remove existing details for this order
-            var existingDetails = await context.Set<OrderDetail>()
-                .Where(od => od.OrderId == order.Id)
-                .ToListAsync();
-            context.Set<OrderDetail>().RemoveRange(existingDetails);
+            // 1. Sync the Order header
+            var existingOrder = await context.Set<Order>()
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.Id == order.Id);
 
-            // 2. Add new details
+            if (existingOrder == null) return false;
+
+            // Update scalar properties
+            context.Entry(existingOrder).CurrentValues.SetValues(order);
+            context.Entry(existingOrder).Property(o => o.OrderDate).IsModified = false;
+
+            // 2. Sync Details (Upsert pattern)
+            // Remove missing details
+            var detailIdsToKeep = details.Where(d => d.Id > 0).Select(d => d.Id).ToList();
+            var detailsToRemove = existingOrder.OrderDetails
+                .Where(d => !detailIdsToKeep.Contains(d.Id))
+                .ToList();
+
+            foreach (var d in detailsToRemove)
+                context.Set<OrderDetail>().Remove(d);
+
+            // Update or Add details
             foreach (var detail in details)
             {
-                detail.OrderId = order.Id;
-                detail.Id = 0; // Ensure they are treated as new
-                context.Set<OrderDetail>().Add(detail);
-            }
+                var existingDetail = existingOrder.OrderDetails
+                    .FirstOrDefault(d => d.Id > 0 && d.Id == detail.Id);
 
-            // 3. Update the order itself - EXCLUDE OrderDate from being updated
-            var entry = context.Entry(order);
-            entry.State = EntityState.Modified;
-            entry.Property(o => o.OrderDate).IsModified = false;
+                if (existingDetail != null)
+                {
+                    // Update existing
+                    context.Entry(existingDetail).CurrentValues.SetValues(detail);
+                }
+                else
+                {
+                    // Add new
+                    detail.OrderId = order.Id;
+                    detail.Id = 0;
+                    existingOrder.OrderDetails.Add(detail);
+                }
+            }
 
             await context.SaveChangesAsync();
             return true;
@@ -484,7 +503,7 @@ public class OrderService : IOrderService
             var result = await _orderRepository.GetAllAsyncWithIncludes(
                 paging,
                 filter,
-                "OrderDetails.Product",
+                "OrderDetails.Product.Category",
                 "Customer");
 
             // Apply sorting on client side (after pagination)
@@ -529,7 +548,7 @@ public class OrderService : IOrderService
             var result = await _orderRepository.GetAllAsyncWithIncludes(
                 paging,
                 filter,
-                "OrderDetails.Product",
+                "OrderDetails.Product.Category",
                 "Customer");
 
             // Apply sorting
