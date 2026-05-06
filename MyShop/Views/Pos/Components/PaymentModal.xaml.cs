@@ -11,10 +11,10 @@ public sealed partial class PaymentModal : ContentDialog
     private readonly PaymentViewModel _viewModel;
     public event Action<PaymentMethod>? PaymentConfirmed;
 
-    public PaymentModal(Order order, IOrderService orderService)
+    public PaymentModal(Order order, IOrderService orderService, decimal loyaltyDiscount = 0)
     {
         this.InitializeComponent();
-        _viewModel = new PaymentViewModel(order, orderService);
+        _viewModel = new PaymentViewModel(order, orderService, loyaltyDiscount);
         DataContext = _viewModel;
         
         _viewModel.PaymentConfirmed += (method) => 

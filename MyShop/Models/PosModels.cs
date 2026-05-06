@@ -62,7 +62,11 @@ public partial class OrderItem : ObservableObject
 {
     public Product Product { get; set; } = null!;
 
-    public decimal BasePrice { get; set; }
+    [ObservableProperty]
+    private int _orderDetailId;
+
+    [ObservableProperty]
+    private decimal _basePrice;
 
     [ObservableProperty]
     private int _quantity;
@@ -72,10 +76,8 @@ public partial class OrderItem : ObservableObject
 
     public decimal TotalPrice => BasePrice * Quantity;
 
-    partial void OnQuantityChanged(int value)
-    {
-        OnPropertyChanged(nameof(TotalPrice));
-    }
+    partial void OnQuantityChanged(int value) => OnPropertyChanged(nameof(TotalPrice));
+    partial void OnBasePriceChanged(decimal value) => OnPropertyChanged(nameof(TotalPrice));
 }
 
 public partial class PosOrder : ObservableObject
@@ -111,6 +113,18 @@ public partial class PosOrder : ObservableObject
 
     [ObservableProperty]
     private DateTime _createdAt = DateTime.Now;
+
+    [ObservableProperty]
+    private string _notes = "";
+
+    [ObservableProperty]
+    private decimal _discount;
+
+    [ObservableProperty]
+    private decimal _manualAdjustment;
+
+    [ObservableProperty]
+    private string _manualAdjustmentReason = "";
 
     [ObservableProperty]
     private string? _customerId;

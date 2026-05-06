@@ -52,6 +52,11 @@ public interface IOrderService
     Task Update(Order order);
 
     /// <summary>
+    /// Cập nhật đơn hàng kèm theo danh sách chi tiết (thay thế toàn bộ chi tiết cũ)
+    /// </summary>
+    Task UpdateWithDetails(Order order, List<OrderDetail> details);
+
+    /// <summary>
     /// Xóa đơn hàng
     /// </summary>
     Task Delete(int id);
@@ -237,8 +242,9 @@ public class OrderService : IOrderService
         if (order == null)
             throw new ArgumentNullException(nameof(order));
 
-        if (order.CustomerId <= 0)
-            throw new ArgumentException("Phải chọn khách hàng hợp lệ", nameof(order.CustomerId));
+        // CustomerId is nullable, but if provided it should be positive (or the DB will fail)
+        if (order.CustomerId.HasValue && order.CustomerId.Value < 0)
+            throw new ArgumentException("CustomerId không hợp lệ", nameof(order.CustomerId));
 
         if (order.UserId <= 0)
             throw new ArgumentException("Phải chọn nhân viên hợp lệ", nameof(order.UserId));
@@ -246,19 +252,27 @@ public class OrderService : IOrderService
         if (order.OrderDetails?.Any() == true)
         {
             order.SubTotal = order.OrderDetails.Sum(od => od.Quantity * od.UnitPrice);
-            order.TotalAmount = order.SubTotal - order.DiscountAmount;
+            
+            var discountBase = order.SubTotal - order.DiscountAmount - order.ManualAdjustment;
+            order.TotalAmount = discountBase + order.TaxAmount;
         }
 
         if (order.TotalAmount < 0)
             throw new ArgumentException("Tổng tiền không được âm", nameof(order.TotalAmount));
 
-        var customer = await _customerRepository.GetByIdAsync(order.CustomerId);
-        if (customer == null)
-            throw new InvalidOperationException($"Khách hàng với ID {order.CustomerId} không tồn tại");
+        if (order.CustomerId.HasValue)
+        {
+            var customer = await _customerRepository.GetByIdAsync(order.CustomerId.Value);
+            if (customer == null)
+                throw new InvalidOperationException($"Khách hàng với ID {order.CustomerId} không tồn tại");
+        }
 
         var user = await _userRepository.GetByIdAsync(order.UserId);
         if (user == null)
             throw new InvalidOperationException($"Nhân viên với ID {order.UserId} không tồn tại");
+
+        // Ensure date is UTC to prevent Npgsql timezone shifts
+        order.OrderDate = DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc);
 
         try
         {
@@ -283,12 +297,67 @@ public class OrderService : IOrderService
 
         try
         {
+            // Ensure date remains UTC
+            order.OrderDate = DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc);
             await _orderRepository.UpdateAsync(order);
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException("Lỗi khi cập nhật đơn hàng", ex);
         }
+    }
+
+    public async Task UpdateWithDetails(Order order, List<OrderDetail> details)
+    {
+        if (order == null || order.Id <= 0)
+            throw new ArgumentException("Đơn hàng không hợp lệ");
+
+        await _orderRepository.ExecuteAsync(async context =>
+        {
+            // 1. Sync the Order header
+            var existingOrder = await context.Set<Order>()
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.Id == order.Id);
+
+            if (existingOrder == null) return false;
+
+            // Update scalar properties
+            context.Entry(existingOrder).CurrentValues.SetValues(order);
+            context.Entry(existingOrder).Property(o => o.OrderDate).IsModified = false;
+
+            // 2. Sync Details (Upsert pattern)
+            // Remove missing details
+            var detailIdsToKeep = details.Where(d => d.Id > 0).Select(d => d.Id).ToList();
+            var detailsToRemove = existingOrder.OrderDetails
+                .Where(d => !detailIdsToKeep.Contains(d.Id))
+                .ToList();
+
+            foreach (var d in detailsToRemove)
+                context.Set<OrderDetail>().Remove(d);
+
+            // Update or Add details
+            foreach (var detail in details)
+            {
+                var existingDetail = existingOrder.OrderDetails
+                    .FirstOrDefault(d => d.Id > 0 && d.Id == detail.Id);
+
+                if (existingDetail != null)
+                {
+                    // Update existing
+                    context.Entry(existingDetail).CurrentValues.SetValues(detail);
+                }
+                else
+                {
+                    // Add new
+                    detail.OrderId = order.Id;
+                    detail.Id = 0;
+                    existingOrder.OrderDetails.Add(detail);
+                }
+            }
+
+            await context.SaveChangesAsync();
+            return true;
+        }, "UpdateWithDetails");
     }
 
     /// <summary>
@@ -391,7 +460,7 @@ public class OrderService : IOrderService
 
             if (endDate.HasValue)
             {
-                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
                 filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
@@ -427,14 +496,14 @@ public class OrderService : IOrderService
 
             if (endDate.HasValue)
             {
-                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
                 filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
             var result = await _orderRepository.GetAllAsyncWithIncludes(
                 paging,
                 filter,
-                "OrderDetails.Product",
+                "OrderDetails.Product.Category",
                 "Customer");
 
             // Apply sorting on client side (after pagination)
@@ -479,7 +548,7 @@ public class OrderService : IOrderService
             var result = await _orderRepository.GetAllAsyncWithIncludes(
                 paging,
                 filter,
-                "OrderDetails.Product",
+                "OrderDetails.Product.Category",
                 "Customer");
 
             // Apply sorting
@@ -546,7 +615,7 @@ public class OrderService : IOrderService
 
             if (endDate.HasValue)
             {
-                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
                 filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
             }
 
@@ -589,25 +658,44 @@ public class OrderService : IOrderService
 
         if (endDate.HasValue)
         {
-            var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+            var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
             filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
         }
 
         return await _orderRepository.CountAsync(filter);
     }
 
-    /// <summary>
-    /// Helper: Combine two Expression<Func<T, bool>> using AND operator
-    /// </summary>
     private static Expression<Func<Order, bool>> CombineFilters(
         Expression<Func<Order, bool>> expr1,
         Expression<Func<Order, bool>> expr2)
     {
-        var parameter = Expression.Parameter(typeof(Order));
-        var invokedExpr = Expression.Invoke(expr2, parameter);
-        var lambdaExpr = Expression.Lambda<Func<Order, bool>>(
-            Expression.AndAlso(expr1.Body, invokedExpr),
+        var parameter = Expression.Parameter(typeof(Order), "o");
+
+        var leftVisitor = new ParameterReplaceVisitor(expr1.Parameters[0], parameter);
+        var left = leftVisitor.Visit(expr1.Body);
+
+        var rightVisitor = new ParameterReplaceVisitor(expr2.Parameters[0], parameter);
+        var right = rightVisitor.Visit(expr2.Body);
+
+        return Expression.Lambda<Func<Order, bool>>(
+            Expression.AndAlso(left, right),
             parameter);
-        return lambdaExpr;
+    }
+
+    private class ParameterReplaceVisitor : ExpressionVisitor
+    {
+        private readonly ParameterExpression _from;
+        private readonly ParameterExpression _to;
+
+        public ParameterReplaceVisitor(ParameterExpression from, ParameterExpression to)
+        {
+            _from = from;
+            _to = to;
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            return node == _from ? _to : base.VisitParameter(node);
+        }
     }
 }

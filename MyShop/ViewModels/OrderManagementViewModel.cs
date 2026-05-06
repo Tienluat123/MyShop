@@ -63,10 +63,54 @@ public partial class OrderManagementViewModel : ObservableObject
 
     [ObservableProperty]
     private string _selectedStatusFilter = string.Empty;
+    
+    [ObservableProperty]
+    private bool _isEditingDetail;
+
+    [ObservableProperty]
+    private string _editTableNumber = string.Empty;
+
+    [ObservableProperty]
+    private string _editNotes = string.Empty;
+
+    [ObservableProperty]
+    private PaymentStatus _editPaymentStatus;
+
+    [ObservableProperty]
+    private FulfillmentStatus _editFulfillmentStatus;
+
+    [ObservableProperty]
+    private decimal _editSubtotal;
+
+    [ObservableProperty]
+    private decimal _editTax;
+
+    [ObservableProperty]
+    private decimal _editDiscount;
+
+    [ObservableProperty]
+    private double _editManualAdjustment;
+
+    [ObservableProperty]
+    private string _editManualAdjustmentReason = "";
+
+    [ObservableProperty]
+    private decimal _editTotal;
+
+    public bool CanEditItems => SelectedOrderDetails != null && 
+                                SelectedOrderDetails.PaymentStatus != PaymentStatus.Paid && 
+                                SelectedOrderDetails.PaymentStatus != PaymentStatus.Refunded;
+
+    public bool IsPaid => SelectedOrderDetails?.PaymentStatus == PaymentStatus.Paid;
+
+    public ObservableCollection<PaymentStatus> PaymentStatusOptions { get; } = new(Enum.GetValues<PaymentStatus>());
+    public ObservableCollection<FulfillmentStatus> FulfillmentStatusOptions { get; } = new(Enum.GetValues<FulfillmentStatus>());
 
     public Action? ScrollToTopAction { get; set; }
 
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
+    public ObservableCollection<OrderItem> EditableItems { get; } = new();
+    public ObservableCollection<Product> AllProducts { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
 
     public OrderManagementViewModel(IOrderService orderService, IProductService productService)
@@ -215,12 +259,178 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task ClearDateFilter()
+    {
+        SearchStartDate = null;
+        SearchEndDate = null;
+        CurrentPageHistory = 1;
+        await LoadOrders();
+    }
+
+    [RelayCommand]
     private void ViewOrderDetail(PosOrder order)
     {
         if (order != null)
         {
             SelectedOrderDetails = order;
             IsOrderDetailOpen = true;
+            IsEditingDetail = false; // Reset to view mode
+        }
+    }
+
+    [RelayCommand]
+    private void EditOrderDetail()
+    {
+        if (SelectedOrderDetails == null) return;
+
+        EditTableNumber = SelectedOrderDetails.Table ?? string.Empty;
+        EditNotes = SelectedOrderDetails.Notes ?? string.Empty;
+        EditPaymentStatus = SelectedOrderDetails.PaymentStatus;
+        EditFulfillmentStatus = SelectedOrderDetails.FulfillmentStatus;
+        EditManualAdjustment = (double)SelectedOrderDetails.ManualAdjustment;
+        EditManualAdjustmentReason = SelectedOrderDetails.ManualAdjustmentReason ?? string.Empty;
+
+        // Clone items for editing
+        EditableItems.Clear();
+        foreach (var item in SelectedOrderDetails.Items)
+        {
+            EditableItems.Add(new OrderItem
+            {
+                Product = item.Product,
+                BasePrice = item.BasePrice,
+                Quantity = item.Quantity,
+                DrinkOptions = item.DrinkOptions // Shallow copy of options is fine for now
+            });
+        }
+
+        UpdateEditTotals();
+        IsEditingDetail = true;
+        OnPropertyChanged(nameof(CanEditItems));
+        OnPropertyChanged(nameof(IsPaid));
+    }
+
+    private void UpdateEditTotals()
+    {
+        EditSubtotal = EditableItems.Sum(i => i.TotalPrice);
+        EditTax = EditSubtotal * 0.0875m; // Synced with POS TAX_RATE
+        // Keep existing discount logic if any, or just use the one from modal for now
+        EditDiscount = SelectedOrderDetails?.Discount ?? 0; 
+        EditTotal = Math.Max(0, EditSubtotal + EditTax - EditDiscount - (decimal)EditManualAdjustment);
+    }
+
+    [RelayCommand]
+    private void IncreaseItemQty(OrderItem item)
+    {
+        if (!CanEditItems) return;
+        item.Quantity++;
+        UpdateEditTotals();
+    }
+
+    [RelayCommand]
+    private void DecreaseItemQty(OrderItem item)
+    {
+        if (!CanEditItems) return;
+        if (item.Quantity > 1)
+        {
+            item.Quantity--;
+            UpdateEditTotals();
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveItemFromEdit(OrderItem item)
+    {
+        if (!CanEditItems) return;
+        EditableItems.Remove(item);
+        UpdateEditTotals();
+    }
+
+    [RelayCommand]
+    private void AddProductToEdit(Product product)
+    {
+        if (!CanEditItems || product == null) return;
+        
+        var existing = EditableItems.FirstOrDefault(i => i.Product.Id == product.Id);
+        if (existing != null)
+        {
+            existing.Quantity++;
+        }
+        else
+        {
+            EditableItems.Add(new OrderItem
+            {
+                Product = product,
+                BasePrice = product.Price,
+                Quantity = 1
+            });
+        }
+        UpdateEditTotals();
+    }
+
+    partial void OnEditManualAdjustmentChanged(double value) => UpdateEditTotals();
+
+    [RelayCommand]
+    private void CancelEditOrderDetail()
+    {
+        IsEditingDetail = false;
+    }
+
+    [RelayCommand]
+    private async Task SaveOrderDetail()
+    {
+        if (SelectedOrderDetails == null) return;
+
+        try
+        {
+            int numericId = ExtractId(SelectedOrderDetails.OrderId);
+            var order = await _orderService.GetById(numericId);
+            if (order == null) return;
+
+            order.TableNumber = EditTableNumber;
+            order.Notes = EditNotes;
+            order.PaymentStatus = EditPaymentStatus.ToString();
+            order.FulfillmentStatus = EditFulfillmentStatus.ToString();
+            order.ManualAdjustment = (decimal)EditManualAdjustment;
+            order.ManualAdjustmentReason = EditManualAdjustmentReason;
+
+            // Sync items back to OrderDetails
+            if (CanEditItems || IsPaid) // Allow adjustments for paid too
+            {
+                var newDetails = new List<OrderDetail>();
+                foreach (var item in EditableItems)
+                {
+                    newDetails.Add(new OrderDetail
+                    {
+                        ProductId = item.Product.Id,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.BasePrice,
+                        Notes = item.DrinkOptions?.Notes
+                    });
+                }
+                
+                // Recalculate financial fields
+                order.SubTotal = EditSubtotal;
+                order.TaxAmount = EditTax;
+                order.DiscountAmount = EditDiscount;
+                order.TotalAmount = EditTotal;
+
+                await _orderService.UpdateWithDetails(order, newDetails);
+            }
+            else
+            {
+                await _orderService.Update(order);
+            }
+            IsEditingDetail = false;
+            
+            await LoadOrders();
+            
+            // Refresh detail view
+            var updated = DisplayOrders.FirstOrDefault(o => o.OrderId == SelectedOrderDetails.OrderId);
+            if (updated != null) SelectedOrderDetails = updated;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Save failed: {ex.Message}");
         }
     }
 
@@ -229,6 +439,7 @@ public partial class OrderManagementViewModel : ObservableObject
     {
         IsOrderDetailOpen = false;
         SelectedOrderDetails = null;
+        IsEditingDetail = false;
     }
 
     [RelayCommand]
@@ -270,12 +481,19 @@ public partial class OrderManagementViewModel : ObservableObject
             PaymentStatus = MapToPaymentStatus(order.PaymentStatus),
             FulfillmentStatus = MapToFulfillmentStatus(order.FulfillmentStatus),
             CreatedAt = order.OrderDate,
+            Type = order.Type,
+            Table = order.TableNumber,
+            Notes = order.Notes,
+            Tax = order.TaxAmount,
+            Discount = order.DiscountAmount,
+            ManualAdjustment = order.ManualAdjustment,
+            ManualAdjustmentReason = order.ManualAdjustmentReason ?? string.Empty,
+            Subtotal = order.SubTotal,
+            Total = order.TotalAmount
         };
 
         if (order.OrderDetails != null)
         {
-            decimal computedSubtotal = 0;
-
             foreach (var detail in order.OrderDetails)
             {
                 var product = detail.Product
@@ -288,12 +506,7 @@ public partial class OrderManagementViewModel : ObservableObject
                     Quantity = detail.Quantity,
                     BasePrice = detail.UnitPrice
                 });
-
-                computedSubtotal += detail.UnitPrice * detail.Quantity;
             }
-
-            posOrder.Subtotal = computedSubtotal;
-            posOrder.Total = computedSubtotal;
         }
 
         return posOrder;

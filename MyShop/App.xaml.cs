@@ -283,7 +283,8 @@ public partial class App : Application
                 container.Get<IProductService>(),
                 container.Get<ICategoryService>(),
                 container.Get<IOrderService>(),
-                container.Get<IPromotionService>()
+                container.Get<IPromotionService>(),
+                container.Get<ILoyaltyService>()
             ));
 
             container.Register<ConfigViewModel>(new ConfigViewModel(

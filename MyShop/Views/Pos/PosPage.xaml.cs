@@ -51,8 +51,17 @@ public sealed partial class PosPage : Page
 
             await memberModal.ShowAsync();
 
+            // Sync customer association early to ensure it's saved in Supabase
+            ViewModel.SelectedCustomer = selectedCustomer;
+
+            if (selectedCustomer != null)
+            {
+                ViewModel.PointsToRedeem = memberModal.ViewModel.PointsToRedeem;
+                ViewModel.LoyaltyDiscount = memberModal.ViewModel.DiscountAmount;
+            }
+
             // 2. Promotion Selection
-            var promoModal = new PromoSelectionModal();
+            var promoModal = new PromoSelectionModal(ViewModel.Subtotal, ViewModel.SelectedCustomer?.Tier.ToString());
             promoModal.XamlRoot = this.XamlRoot;
 
             Models.Promotion? selectedPromo = null;
@@ -65,7 +74,7 @@ public sealed partial class PosPage : Page
             await ViewModel.ApplyPromotion(selectedPromo);
 
             // 3. Payment Checkout
-            var paymentModal = new PaymentModal(ViewModel.CurrentDraftOrder, App.Services.GetRequiredService<IOrderService>());
+            var paymentModal = new PaymentModal(ViewModel.CurrentDraftOrder, App.Services.GetRequiredService<IOrderService>(), ViewModel.LoyaltyDiscount);
             paymentModal.XamlRoot = this.XamlRoot;
 
             bool isPaid = false;
@@ -81,7 +90,7 @@ public sealed partial class PosPage : Page
 
             if (isPaid)
             {
-                var finalizedOrder = ViewModel.FinalizeOrder(selectedMethod, selectedCustomer);
+                var finalizedOrder = await ViewModel.FinalizeOrderAsync(selectedMethod, selectedCustomer);
 
                 if (finalizedOrder != null)
                 {

@@ -677,19 +677,6 @@
                             Style="{StaticResource BodyMutedTextStyle}"
                             Text="{Binding Tax, Converter={StaticResource CurrencyConverter}}"/>
                     </Grid>
-                    <Grid Margin="0,4,0,0">
-                        <TextBlock
-                            FontSize="{StaticResource FontSubtitle}"
-                            FontWeight="Bold"
-                            Foreground="{StaticResource Gray900}"
-                            Text="Total"/>
-                        <TextBlock
-                            HorizontalAlignment="Right"
-                            FontSize="{StaticResource FontHeader}"
-                            FontWeight="Bold"
-                            Foreground="{StaticResource IconSelectedBgBrush}"
-                            Text="{Binding Total, Converter={StaticResource CurrencyConverter}}"/>
-                    </Grid>
                 </StackPanel>
 
                 <!--  Order Type Selector  -->

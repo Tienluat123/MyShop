@@ -9,7 +9,8 @@ public class TimeAgoConverter : IValueConverter
     {
         if (value is not DateTime createdAt) return "";
 
-        var diff = DateTime.Now - createdAt;
+        var diff = DateTime.UtcNow - createdAt.ToUniversalTime();
+        if (diff.TotalSeconds < 0) return "just now";
         if (diff.TotalSeconds < 60) return $"{(int)diff.TotalSeconds}s";
         return $"{(int)diff.TotalMinutes}m";
     }
