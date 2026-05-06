@@ -54,7 +54,9 @@
         </Style>
     </ContentDialog.Resources>
 
-    <Grid Width="450"
+        <Grid
+            x:Name="ReceiptPrintRoot"
+            Width="450"
           Padding="0">
         <!--  Paper Background Effect  -->
         <Border
@@ -325,6 +327,7 @@
                             Margin="0,0,8,0"
                             HorizontalAlignment="Stretch"
                             Content="Print"
+                            Click="PrintButton_Click"
                             Style="{StaticResource ReceiptSecondaryButtonStyle}">
                             <Button.ContentTemplate>
                                 <DataTemplate>
