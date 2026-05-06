@@ -17,14 +17,21 @@ namespace MyShop.Views;
 
 public sealed partial class MainPage : Page
 {
+    private const string KeyLastScreen = "LastScreen";
+
     private MainPageViewModel? _viewModel;
+    private readonly IUserSettingService _userSettingService;
+    private readonly ISessionService _sessionService;
 
     public MainPage()
     {
         this.InitializeComponent();
 
+        _userSettingService = ServiceContainer.Instance.Get<IUserSettingService>();
+        _sessionService = ServiceContainer.Instance.Get<ISessionService>();
+
         // ✅ Set ViewModel as DataContext
-        _viewModel = new MainPageViewModel();
+        _viewModel = new MainPageViewModel(_userSettingService, _sessionService);
         this.DataContext = _viewModel;
 
         // Setup NotificationService
@@ -32,8 +39,7 @@ public sealed partial class MainPage : Page
         NotificationViewControl.SetNotificationService(notificationService);
 
         // Lấy thông tin User từ Session để hiển thị
-        var session = ServiceContainer.Instance.Get<ISessionService>();
-        var user = session.CurrentUser;
+        var user = _sessionService.CurrentUser;
 
         if (user != null)
         {
@@ -41,34 +47,18 @@ public sealed partial class MainPage : Page
             ProfileRoleText.Text = user.Role == "1" ? "Quản trị viên" : "Nhân viên bán hàng";
         }
 
-        // Set default page
-        if (_viewModel.CurrentPageType != null)
-        {
-            ContentFrame.Navigate(_viewModel.CurrentPageType);
-        }
+        _ = LoadInitialPageAsync();
     }
 
     /// <summary>
     /// Handle navigation khi user click menu item
     /// </summary>
-    private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+    private async void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         if (args.InvokedItemContainer?.Tag is not string tag)
             return;
 
-        // Map tag to page type
-        Type? pageType = tag switch
-        {
-            "DashboardPage" => typeof(DashboardPage),
-            "ReportPage" => typeof(ReportPage),
-            "PosPage" => typeof(PosPage),
-            "ManageProductPage" => typeof(ManageProductPage),
-            "CustomersPage" => typeof(CustomerPage),
-            "PromotionsPage" => typeof(PromotionsPage),
-            "StaffSchedulePage" => typeof(StaffSchedulePage),
-            "AppConfigPage" => typeof(AppConfigPage),
-            _ => null
-        };
+        Type? pageType = MainPageViewModel.GetPageTypeFromTag(tag);
 
         if (pageType != null)
         {
@@ -76,10 +66,67 @@ public sealed partial class MainPage : Page
             if (_viewModel != null)
             {
                 _viewModel.CurrentPageType = pageType;
+                _viewModel.CurrentPageTag = tag;
             }
 
             // Navigate frame
             ContentFrame.Navigate(pageType);
+            SelectNavigationItem(tag);
+
+            try
+            {
+                var user = _sessionService.CurrentUser;
+                if (user != null)
+                {
+                    await _userSettingService.SetAsync(user.Id, KeyLastScreen, tag);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving last screen: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task LoadInitialPageAsync()
+    {
+        if (_viewModel == null)
+            return;
+
+        try
+        {
+            await _viewModel.LoadLastScreenAsync();
+
+            if (_viewModel.CurrentPageType != null && ContentFrame.Content == null)
+            {
+                ContentFrame.Navigate(_viewModel.CurrentPageType);
+                SelectNavigationItem(_viewModel.CurrentPageTag);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading last screen: {ex.Message}");
+            _viewModel.CurrentPageType = typeof(DashboardPage);
+            _viewModel.CurrentPageTag = "DashboardPage";
+            if (ContentFrame.Content == null)
+            {
+                ContentFrame.Navigate(_viewModel.CurrentPageType);
+                SelectNavigationItem(_viewModel.CurrentPageTag);
+            }
+        }
+    }
+
+    private void SelectNavigationItem(string tag)
+    {
+        foreach (var menuItem in NavView.MenuItems)
+        {
+            if (menuItem is NavigationViewItem navigationItem &&
+                navigationItem.Tag is string itemTag &&
+                itemTag == tag)
+            {
+                NavView.SelectedItem = navigationItem;
+                return;
+            }
         }
     }
 

@@ -263,6 +263,10 @@ public partial class App : Application
                 container.Get<IRepository<AppConfig>>()
             ));
 
+            container.Register<IUserSettingService>(new UserSettingService(
+                container.Get<IRepository<UserSetting>>()
+            ));
+
             var reportService = new ReportService(
                 container.Get<IRepository<Order>>(),
                 container.Get<IRepository<Product>>(),

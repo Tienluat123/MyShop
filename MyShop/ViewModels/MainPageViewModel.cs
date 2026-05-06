@@ -6,6 +6,8 @@ using MyShop.Views.ProductManagement;
 using MyShop.Views.Promotion;
 using MyShop.Views.StaffManagement;
 using MyShop.Views.AppConfig;
+using MyShop.Views.Report;
+using MyShop.Services;
 
 namespace MyShop.ViewModels;
 
@@ -14,7 +16,13 @@ namespace MyShop.ViewModels;
 /// </summary>
 public class MainPageViewModel : BaseViewModel
 {
+    private const string KeyLastScreen = "LastScreen";
+    private const string DefaultLastScreen = "DashboardPage";
+
+    private readonly IUserSettingService _userSettingService;
+    private readonly ISessionService _sessionService;
     private Type? _currentPageType;
+    private string _currentPageTag = DefaultLastScreen;
     private RelayCommand? _navigateCommand;
 
     /// <summary>
@@ -28,6 +36,19 @@ public class MainPageViewModel : BaseViewModel
             if (_currentPageType != value)
             {
                 _currentPageType = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string CurrentPageTag
+    {
+        get => _currentPageTag;
+        set
+        {
+            if (_currentPageTag != value)
+            {
+                _currentPageTag = value;
                 OnPropertyChanged();
             }
         }
@@ -48,10 +69,55 @@ public class MainPageViewModel : BaseViewModel
         }
     }
 
-    public MainPageViewModel()
+    public MainPageViewModel(IUserSettingService userSettingService, ISessionService sessionService)
     {
-        // Set default page to Customer Management
-        CurrentPageType = typeof(CustomerPage);
+        _userSettingService = userSettingService ?? throw new ArgumentNullException(nameof(userSettingService));
+        _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
+    }
+
+    public async Task LoadLastScreenAsync()
+    {
+        var user = _sessionService.CurrentUser;
+        var lastScreen = user == null
+            ? DefaultLastScreen
+            : await _userSettingService.GetAsync(user.Id, KeyLastScreen, DefaultLastScreen);
+
+        CurrentPageTag = NormalizePageTag(lastScreen);
+        CurrentPageType = GetPageTypeFromTag(CurrentPageTag) ?? typeof(DashboardPage);
+    }
+
+    public static Type? GetPageTypeFromTag(string? tag)
+    {
+        return tag switch
+        {
+            "DashboardPage" => typeof(DashboardPage),
+            "ReportPage" => typeof(ReportPage),
+            "PosPage" => typeof(PosPage),
+            "ManageProductPage" => typeof(ManageProductPage),
+            "CustomersPage" => typeof(CustomerPage),
+            "CustomerPage" => typeof(CustomerPage),
+            "PromotionsPage" => typeof(PromotionsPage),
+            "StaffSchedulePage" => typeof(StaffSchedulePage),
+            "AppConfigPage" => typeof(AppConfigPage),
+            _ => null
+        };
+    }
+
+    public static string NormalizePageTag(string? tag)
+    {
+        return tag switch
+        {
+            "DashboardPage" => "DashboardPage",
+            "ReportPage" => "ReportPage",
+            "PosPage" => "PosPage",
+            "ManageProductPage" => "ManageProductPage",
+            "CustomersPage" => "CustomersPage",
+            "CustomerPage" => "CustomersPage",
+            "PromotionsPage" => "PromotionsPage",
+            "StaffSchedulePage" => "StaffSchedulePage",
+            "AppConfigPage" => "AppConfigPage",
+            _ => DefaultLastScreen
+        };
     }
 
     /// <summary>
