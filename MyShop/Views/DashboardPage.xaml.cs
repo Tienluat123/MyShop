@@ -1,6 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -17,90 +18,127 @@ public sealed partial class DashboardPage : Page
     public DashboardPage()
     {
         this.InitializeComponent();
-        ViewModel = new DashboardViewModel();
+        ViewModel = App.Services.GetRequiredService<DashboardViewModel>();
         this.Loaded += DashboardPage_Loaded;
     }
 
     private void DashboardPage_Loaded(object sender, RoutedEventArgs e)
     {
-        RenderProductTrend();
-        RenderRevenueTrend();
+        // Cập nhật ngày tháng hiển thị
+        DateLabel.Text = DateTime.Now.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"));
+        ChartMonthLabel.Text = $"Doanh thu Tháng {DateTime.Now.Month}/{DateTime.Now.Year}";
+
+        // Lắng nghe khi dữ liệu trong ViewModel thay đổi thì vẽ lại biểu đồ
+        ViewModel.PropertyChanged += (s, args) => {
+            if (args.PropertyName == nameof(ViewModel.RevenueTrend))
+            {
+                RenderRevenueChart();
+            }
+        };
+        
+        RenderRevenueChart();
     }
 
-    private void RenderProductTrend()
+    private void RenderRevenueChart()
     {
-        var trend = ViewModel.ProductTrend;
-        var color = Color.FromArgb(0xFF, 0xFF, 0x14, 0x93);
-        
-        var values = trend.Select(x => x.Value).ToArray();
-        var max = values.Any() ? values.Max() : 1;
-        if (max == 0) max = 1;
+       var trend = ViewModel.RevenueTrend.ToList();
+    if (!trend.Any() || RevenueChartCanvas == null) return;
 
-        var canvas = ProductTrendCanvas;
+    var total = trend.Sum(x => (long)x.Value);
+    ChartTotalLabel.Text = $"Tổng tháng: {total:N0} VND";
+    
+        var canvas = RevenueChartCanvas;
         canvas.Children.Clear();
 
-        var points = new PointCollection();
-        var trendList = trend.ToList();
-        for (int i = 0; i < trendList.Count; i++)
-        {
-            var point = trendList[i];
-            var normalized = (double)point.Value / max;
-            var x = i * 40.0;
-            var y = 200 - (20 + normalized * 160);
-            points.Add(new Windows.Foundation.Point(x, y));
-        }
+        double canvasWidth = canvas.ActualWidth > 0 ? canvas.ActualWidth : 760;
+        double canvasHeight = 200;
 
-        var polyline = new Polyline
-        {
-            Points = points,
-            Stroke = new SolidColorBrush(color),
-            StrokeThickness = 3
-        };
-        canvas.Children.Add(polyline);
-    }
-
-    private void RenderRevenueTrend()
-    {
-        var trend = ViewModel.RevenueTrend;
-        var color = Color.FromArgb(0xFF, 0x1E, 0x90, 0xFF);
-        
-        var values = trend.Select(x => x.Value).ToArray();
-        var max = values.Any() ? values.Max() : 1;
+        var values = trend.Select(x => (double)x.Value).ToArray();
+        var max = values.Max();
         if (max == 0) max = 1;
 
-        var panel = RevenueTrendPanel;
-        panel.Children.Clear();
+        double padLeft = 10;
+        double padRight = 10;
+        double padTop = 10;
+        double padBottom = 30;
+        double chartW = canvasWidth - padLeft - padRight;
+        double chartH = canvasHeight - padTop - padBottom;
+        int count = trend.Count;
+        double stepX = count > 1 ? chartW / (count - 1) : chartW;
 
-        foreach (var point in trend)
+        // Gradient area
+        var areaPoints = new Microsoft.UI.Xaml.Media.PointCollection();
+        areaPoints.Add(new Windows.Foundation.Point(padLeft, canvasHeight - padBottom));
+
+        for (int i = 0; i < count; i++)
         {
-            var normalized = (double)point.Value / max;
-            var height = 40 + normalized * 140;
-            
-            var bar = new Border
-            {
-                Width = 24,
-                Height = height,
-                Background = new SolidColorBrush(color),
-                CornerRadius = new CornerRadius(12),
-                VerticalAlignment = VerticalAlignment.Bottom
-            };
+            double x = padLeft + i * stepX;
+            double y = padTop + chartH - (values[i] / max) * chartH;
+            areaPoints.Add(new Windows.Foundation.Point(x, y));
+        }
+        areaPoints.Add(new Windows.Foundation.Point(padLeft + (count - 1) * stepX, canvasHeight - padBottom));
 
-            var stacked = new StackPanel 
-            { 
-                Orientation = Orientation.Vertical, 
-                VerticalAlignment = VerticalAlignment.Bottom, 
-                HorizontalAlignment = HorizontalAlignment.Center 
+        var area = new Polygon
+        {
+            Points = areaPoints,
+            // SỬA: Dùng Color.FromArgb (cần using Windows.UI)
+            Fill = new SolidColorBrush(Color.FromArgb(30, 187, 77, 0)),
+            Stroke = null
+        };
+        canvas.Children.Add(area);
+
+        // Line
+        // SỬA: Thay Windows.UI.Xaml.Media thành Microsoft.UI.Xaml.Media
+        var linePoints = new Microsoft.UI.Xaml.Media.PointCollection();
+        for (int i = 0; i < count; i++)
+        {
+            double x = padLeft + i * stepX;
+            double y = padTop + chartH - (values[i] / max) * chartH;
+            linePoints.Add(new Windows.Foundation.Point(x, y));
+        }
+
+        var line = new Polyline
+        {
+            Points = linePoints,
+            Stroke = new SolidColorBrush(Color.FromArgb(255, 187, 77, 0)),
+            StrokeThickness = 2.5,
+            StrokeLineJoin = PenLineJoin.Round
+        };
+        canvas.Children.Add(line);
+        ChartLabelsPanel.Children.Clear();
+        // Dots
+        for (int i = 0; i < count; i++)
+        {
+            double x = padLeft + i * stepX;
+            double y = padTop + chartH - (values[i] / max) * chartH;
+
+            var dot = new Ellipse
+            {
+                Width = 7,
+                Height = 7,
+                Fill = new SolidColorBrush(Color.FromArgb(255, 187, 77, 0)),
+                Stroke = new SolidColorBrush(Colors.White),
+                StrokeThickness = 1.5
             };
-            stacked.Children.Add(bar);
-            stacked.Children.Add(new TextBlock 
-            { 
-                Text = point.Label, 
-                FontSize = 10, 
-                Margin = new Thickness(0, 6, 0, 0), 
-                HorizontalAlignment = HorizontalAlignment.Center 
-            });
-            
-            panel.Children.Add(stacked);
+            Canvas.SetLeft(dot, x - 3.5);
+            Canvas.SetTop(dot, y - 3.5);
+            canvas.Children.Add(dot);
+        }
+
+        // X-axis labels
+        ChartLabelsPanel.Children.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            bool show = (i == 0) || (i == count - 1) || (i % 5 == 4);
+            var lbl = new TextBlock
+            {
+                Text = show ? trend[i].Label : "",
+                FontSize = 10,
+                Foreground = new SolidColorBrush(Color.FromArgb(255, 107, 114, 128)),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Width = count > 1 ? chartW / (count - 1) : chartW
+            };
+            ChartLabelsPanel.Children.Add(lbl);
         }
     }
 }

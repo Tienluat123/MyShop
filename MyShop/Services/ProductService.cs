@@ -44,6 +44,7 @@ public interface IProductService
     /// Xóa sản phẩm
     /// </summary>
     Task Delete(int id);
+    Task<IEnumerable<Product>> GetLowStockProducts(int threshold = 5, int limit = 5);
 }
 
 /// <summary>
@@ -53,15 +54,27 @@ public class ProductService : IProductService
 {
     private readonly IRepository<Product> _productRepository;
     private readonly IRepository<Category> _categoryRepository;
-
+    private readonly AppDbContext _context;
     public ProductService(
         IRepository<Product> productRepository,
-        IRepository<Category> categoryRepository)
+        IRepository<Category> categoryRepository,
+        AppDbContext context)
     {
         _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
         _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
+      
 
+    public async Task<IEnumerable<Product>> GetLowStockProducts(int threshold = 5, int limit = 5)
+    {
+        return await _context.Products
+            .Include(p => p.Category)
+            .Where(p => p.StockQuantity < threshold)
+            .OrderBy(p => p.StockQuantity)
+            .Take(limit)
+            .ToListAsync();
+    }
     /// <summary>
     /// Lấy tất cả sản phẩm (Bất đồng bộ)
     /// ✅ BƯỚC 2: Sử dụng GetAsync với Include thay vì Query()

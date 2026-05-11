@@ -221,7 +221,8 @@ public partial class App : Application
 
             container.Register<IProductService>(new ProductService(
                 container.Get<IRepository<Product>>(),
-                container.Get<IRepository<Category>>()
+                container.Get<IRepository<Category>>(),
+                dbContext
             ));
 
             container.Register<ICustomerService>(new CustomerService(
@@ -231,7 +232,8 @@ public partial class App : Application
             container.Register<IOrderService>(new OrderService(
                 container.Get<IRepository<Order>>(),
                 container.Get<IRepository<Customer>>(),
-                container.Get<IRepository<User>>()
+                container.Get<IRepository<User>>(),
+                dbContext
             ));
 
             container.Register<ICategoryService>(new CategoryService(
@@ -313,6 +315,10 @@ public partial class App : Application
                 container.Get<INotificationService>(),
                 container.Get<IAppConfigService>()
             ));
+            container.Register<DashboardViewModel>(new DashboardViewModel(
+    container.Get<IProductService>(),
+    container.Get<IOrderService>()
+));
 
             container.Register<EmployeeFormViewModel>(new EmployeeFormViewModel());
 

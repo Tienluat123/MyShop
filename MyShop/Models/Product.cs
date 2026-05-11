@@ -46,6 +46,9 @@ public partial class Product : ObservableObject
     public bool HasPrimaryImage => !string.IsNullOrWhiteSpace(PrimaryImageUrl);
     public bool HasSecondaryImages => SecondaryImageUrls.Count > 0;
 
+    [ObservableProperty]    
+    private int stockQuantity; 
+
     // Navigation properties
     public Category? Category { get; set; }
     public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
