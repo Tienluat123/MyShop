@@ -16,56 +16,42 @@
 
     <Grid x:Name="RootGrid">
         <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="ResponsiveStates">
-                <VisualState x:Name="MobileState">
+            <VisualStateGroup x:Name="LoginResponsiveStates">
+                <VisualState x:Name="CompactState">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="0"/>
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="RootGrid.ColumnDefinitions[0].Width" Value="0"/>
+                        <Setter Target="RootGrid.ColumnDefinitions[1].Width" Value="*"/>
                         <Setter Target="LeftPanel.Visibility" Value="Collapsed"/>
-                        <Setter Target="LoginColumns.(Grid.ColumnDefinitions)[0].Width" Value="0*"/>
-                        <Setter Target="LoginColumns.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
-                        <Setter Target="RightPanel.(Grid.Column)" Value="1"/>
-                        <Setter Target="RightPanel.(Grid.ColumnSpan)" Value="1"/>
-                        <Setter Target="FormStackPanel.Width" Value="NaN"/>
-                        <Setter Target="PageTitle.FontSize" Value="24"/>
-                        <Setter Target="SubtitleText.FontSize" Value="13"/>
+                        <Setter Target="LoginPanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="LoginPanel.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="LoginFormContainer.Width" Value="Auto"/>
+                        <Setter Target="LoginFormContainer.MaxWidth" Value="360"/>
+                        <Setter Target="LoginFormContainer.Margin" Value="24,32"/>
                     </VisualState.Setters>
                 </VisualState>
-                <VisualState x:Name="TabletState">
+
+                <VisualState x:Name="WideState">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="768"/>
+                        <AdaptiveTrigger MinWindowWidth="900"/>
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="LeftPanel.Visibility" Value="Collapsed"/>
-                        <Setter Target="LoginColumns.(Grid.ColumnDefinitions)[0].Width" Value="0*"/>
-                        <Setter Target="LoginColumns.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
-                        <Setter Target="RightPanel.(Grid.Column)" Value="1"/>
-                        <Setter Target="RightPanel.(Grid.ColumnSpan)" Value="1"/>
-                        <Setter Target="FormStackPanel.Width" Value="NaN"/>
-                        <Setter Target="PageTitle.FontSize" Value="26"/>
-                        <Setter Target="SubtitleText.FontSize" Value="13"/>
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="DesktopState">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="1200"/>
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
+                        <Setter Target="RootGrid.ColumnDefinitions[0].Width" Value="2*"/>
+                        <Setter Target="RootGrid.ColumnDefinitions[1].Width" Value="3*"/>
                         <Setter Target="LeftPanel.Visibility" Value="Visible"/>
-                        <Setter Target="LoginColumns.(Grid.ColumnDefinitions)[0].Width" Value="2*"/>
-                        <Setter Target="LoginColumns.(Grid.ColumnDefinitions)[1].Width" Value="3*"/>
-                        <Setter Target="RightPanel.(Grid.Column)" Value="1"/>
-                        <Setter Target="RightPanel.(Grid.ColumnSpan)" Value="1"/>
-                        <Setter Target="FormStackPanel.Width" Value="360"/>
-                        <Setter Target="PageTitle.FontSize" Value="30"/>
-                        <Setter Target="SubtitleText.FontSize" Value="13"/>
+                        <Setter Target="LoginPanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="LoginPanel.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="LoginFormContainer.Width" Value="360"/>
+                        <Setter Target="LoginFormContainer.MaxWidth" Value="360"/>
+                        <Setter Target="LoginFormContainer.Margin" Value="0"/>
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <Grid.ColumnDefinitions x:Name="LoginColumns">
+        <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
@@ -124,17 +110,16 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Column="1" x:Name="RightPanel" Background="White" Padding="16">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel
-                    x:Name="FormStackPanel"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Width="360"
-                    Spacing="0">
+        <Grid x:Name="LoginPanel" Grid.Column="1" Background="White">
+            <StackPanel
+                x:Name="LoginFormContainer"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Width="360"
+                MaxWidth="360"
+                Spacing="0">
 
                 <TextBlock
-                    x:Name="PageTitle"
                     Text="Đăng Nhập"
                     FontSize="30"
                     FontWeight="Bold"
@@ -142,7 +127,6 @@
                     Margin="0,0,0,6"/>
 
                 <TextBlock
-                    x:Name="SubtitleText"
                     Text="Vui lòng nhập thông tin tài khoản của bạn."
                     FontSize="13"
                     Foreground="#6B7280"
@@ -254,8 +238,7 @@
                     Width="32" Height="32"
                     Foreground="#EA580C"/>
 
-                </StackPanel>
-            </ScrollViewer>
+            </StackPanel>
         </Grid>
     </Grid>
 </Page>
