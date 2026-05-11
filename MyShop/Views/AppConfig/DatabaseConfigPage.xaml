@@ -47,6 +47,21 @@
                         BorderBrush="#E5E7EB"
                         BorderThickness="1">
                     <StackPanel Spacing="0">
+
+                        <Button Click="BackToOnboardingButton_Click"
+                                Background="Transparent"
+                                Foreground="#6B7280"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,8"
+                                HorizontalAlignment="Left"
+                                Margin="0,0,0,22">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <SymbolIcon Symbol="Back" Foreground="#6B7280"/>
+                                <TextBlock Text="Quay lại onboarding" FontSize="13" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
                         
                         <StackPanel Spacing="8" Margin="0,0,0,28" HorizontalAlignment="Center">
                             <Viewbox Width="40" Height="40" Margin="0,0,0,8">
