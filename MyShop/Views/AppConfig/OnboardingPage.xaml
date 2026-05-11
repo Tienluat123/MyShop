@@ -1,0 +1,935 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="MyShop.Views.AppConfig.OnboardingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="#F8FAFC">
+
+    <Grid x:Name="RootGrid"
+          SizeChanged="RootGrid_SizeChanged">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="76"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Background="White"
+                BorderBrush="#E5E7EB"
+                BorderThickness="0,0,0,1">
+            <Grid x:Name="HeaderContent"
+                  MaxWidth="1160"
+                  HorizontalAlignment="Stretch"
+                  Margin="24,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal"
+                            Spacing="12"
+                            VerticalAlignment="Center">
+                    <Border Width="40"
+                            Height="40"
+                            Background="#FFF7ED"
+                            BorderBrush="#FED7AA"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                        <SymbolIcon Symbol="Shop"
+                                    Foreground="#EA580C"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel x:Name="HeaderTitlePanel"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="MyShop"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111827"/>
+                        <TextBlock Text="Onboarding lần đầu sử dụng"
+                                   FontSize="12"
+                                   Foreground="#6B7280"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            VerticalAlignment="Center">
+                    <Button x:Name="StepOneButton"
+                            Click="StepOneButton_Click"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="12,8">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <TextBlock x:Name="StepOneNumber"
+                                       Text="1"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock x:Name="StepOneText"
+                                       Text="Chuẩn bị"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="StepTwoButton"
+                            Click="StepTwoButton_Click"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="12,8">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <TextBlock x:Name="StepTwoNumber"
+                                       Text="2"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock x:Name="StepTwoText"
+                                       Text="Tính năng"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <Grid x:Name="ContentShell"
+                  MaxWidth="1160"
+                  HorizontalAlignment="Center"
+                  Margin="24,28,24,28">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition x:Name="MobileContentGapRow"
+                                   Height="0"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="MainContentColumn"
+                                      Width="1.12*"/>
+                    <ColumnDefinition x:Name="ContentGapColumn"
+                                      Width="32"/>
+                    <ColumnDefinition x:Name="SideContentColumn"
+                                      Width="0.88*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel x:Name="StepOneMainPanel"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Spacing="24"
+                            VerticalAlignment="Center">
+                    <StackPanel Spacing="12">
+                        <Border Background="#FFF7ED"
+                                BorderBrush="#FED7AA"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,8"
+                                HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="8">
+                                <SymbolIcon Symbol="ContactInfo"
+                                            Foreground="#EA580C"/>
+                                <TextBlock Text="Bước 1/2: Chuẩn bị cấu hình"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="#9A3412"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock x:Name="StepOneTitle"
+                                   Text="Chào mừng đến với MyShop"
+                                   FontSize="38"
+                                   FontWeight="Bold"
+                                   Foreground="#111827"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock x:Name="StepOneDescription"
+                                   Text="Trước khi đăng nhập lần đầu, MyShop cần kết nối tới PostgreSQL. Hãy chuẩn bị sẵn các thông tin dưới đây để bước cấu hình diễn ra nhanh hơn."
+                                   FontSize="16"
+                                   Foreground="#4B5563"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="680"/>
+                    </StackPanel>
+
+                    <Grid x:Name="ConfigCardsGrid"
+                          ColumnSpacing="16"
+                          RowSpacing="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="ConfigCardsFirstColumn"
+                                              Width="*"/>
+                            <ColumnDefinition x:Name="ConfigCardsSecondColumn"
+                                              Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border x:Name="ServerCard"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="18">
+                            <StackPanel Spacing="10">
+                                <SymbolIcon Symbol="MapDrive"
+                                            Foreground="#EA580C"
+                                            HorizontalAlignment="Left"/>
+                                <TextBlock Text="PostgreSQL đang chạy"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#111827"/>
+                                <TextBlock Text="Máy chủ database cần hoạt động trước khi bấm Test kết nối."
+                                           FontSize="13"
+                                           Foreground="#6B7280"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="DatabaseCard"
+                                Grid.Column="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="18">
+                            <StackPanel Spacing="10">
+                                <SymbolIcon Symbol="Document"
+                                            Foreground="#EA580C"
+                                            HorizontalAlignment="Left"/>
+                                <TextBlock Text="Có tên database"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#111827"/>
+                                <TextBlock Text="Mặc định app gợi ý myshop; bạn có thể đổi theo database thật."
+                                           FontSize="13"
+                                           Foreground="#6B7280"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="AccountCard"
+                                Grid.Row="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="18">
+                            <StackPanel Spacing="10">
+                                <SymbolIcon Symbol="Permissions"
+                                            Foreground="#EA580C"
+                                            HorizontalAlignment="Left"/>
+                                <TextBlock Text="Tài khoản có quyền"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#111827"/>
+                                <TextBlock Text="Username và password cần có quyền tạo hoặc cập nhật bảng."
+                                           FontSize="13"
+                                           Foreground="#6B7280"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="SaveCard"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="18">
+                            <StackPanel Spacing="10">
+                                <SymbolIcon Symbol="Accept"
+                                            Foreground="#EA580C"
+                                            HorizontalAlignment="Left"/>
+                                <TextBlock Text="Test rồi lưu"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#111827"/>
+                                <TextBlock Text="Khi kết nối thành công, MyShop sẽ chuyển sang màn đăng nhập."
+                                           FontSize="13"
+                                           Foreground="#6B7280"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+
+                <Border x:Name="StepOneSidePanel"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Background="White"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="24"
+                        VerticalAlignment="Center">
+                    <StackPanel Spacing="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Bạn sẽ nhập gì ở màn cấu hình?"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="#111827"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="Checklist này khớp với form database ở bước sau."
+                                       FontSize="13"
+                                       Foreground="#6B7280"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="14">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="28"
+                                        Height="28"
+                                        Background="#F3F4F6"
+                                        CornerRadius="8">
+                                    <TextBlock Text="1"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#374151"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="2">
+                                    <TextBlock Text="Server và Port"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Ví dụ: localhost và 5432."
+                                               FontSize="13"
+                                               Foreground="#6B7280"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="28"
+                                        Height="28"
+                                        Background="#F3F4F6"
+                                        CornerRadius="8">
+                                    <TextBlock Text="2"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#374151"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="2">
+                                    <TextBlock Text="Database Name"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Tên database PostgreSQL dùng cho MyShop."
+                                               FontSize="13"
+                                               Foreground="#6B7280"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="28"
+                                        Height="28"
+                                        Background="#F3F4F6"
+                                        CornerRadius="8">
+                                    <TextBlock Text="3"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#374151"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="2">
+                                    <TextBlock Text="Username và Password"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Thông tin database, không phải tài khoản bán hàng."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Border Background="#FFF7ED"
+                                    BorderBrush="#FED7AA"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="14">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="10">
+                                    <SymbolIcon Symbol="Important"
+                                                Foreground="#EA580C"/>
+                                    <TextBlock Text="Nếu chưa có PostgreSQL, hãy cài và tạo database trước khi lưu cấu hình."
+                                               FontSize="13"
+                                               Foreground="#9A3412"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel x:Name="StepTwoMainPanel"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Spacing="24"
+                            Visibility="Collapsed"
+                            VerticalAlignment="Center">
+                    <StackPanel Spacing="12">
+                        <Border Background="#ECFDF5"
+                                BorderBrush="#A7F3D0"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,8"
+                                HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="8">
+                                <SymbolIcon Symbol="AllApps"
+                                            Foreground="#059669"/>
+                                <TextBlock Text="Bước 2/2: Các màn hình chính"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="#047857"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock x:Name="StepTwoTitle"
+                                   Text="Khám phá nhanh MyShop"
+                                   FontSize="38"
+                                   FontWeight="Bold"
+                                   Foreground="#111827"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock x:Name="StepTwoDescription"
+                                   Text="Sau khi cấu hình database và đăng nhập, bạn sẽ dùng các màn hình dưới đây để vận hành cửa hàng: bán hàng, quản lý sản phẩm, khách hàng, khuyến mãi, nhân viên và báo cáo."
+                                   FontSize="16"
+                                   Foreground="#4B5563"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="720"/>
+                    </StackPanel>
+
+                    <Grid x:Name="FeatureCardsGrid"
+                          ColumnSpacing="16"
+                          RowSpacing="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="FeatureCardsFirstColumn"
+                                              Width="*"/>
+                            <ColumnDefinition x:Name="FeatureCardsSecondColumn"
+                                              Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border x:Name="DashboardFeatureCard"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        Background="#EFF6FF"
+                                        CornerRadius="8">
+                                    <FontIcon Glyph="&#xE7C3;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="16"
+                                              Foreground="#2563EB"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="4">
+                                    <TextBlock Text="Dashboard"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Theo dõi nhanh doanh thu, đơn hàng và tình hình bán hàng."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="PosFeatureCard"
+                                Grid.Column="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        Background="#FFF7ED"
+                                        CornerRadius="8">
+                                    <FontIcon Glyph="&#xE8EF;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="16"
+                                              Foreground="#EA580C"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="4">
+                                    <TextBlock Text="POS"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Tạo đơn, chọn sản phẩm, áp dụng khuyến mãi và thanh toán."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="ProductsFeatureCard"
+                                Grid.Row="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        Background="#F0FDF4"
+                                        CornerRadius="8">
+                                    <FontIcon Glyph="&#xE7B8;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="16"
+                                              Foreground="#16A34A"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="4">
+                                    <TextBlock Text="Sản phẩm"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Quản lý danh mục, giá bán, hình ảnh và số lượng tồn."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="CustomersFeatureCard"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        Background="#F5F3FF"
+                                        CornerRadius="8">
+                                    <FontIcon Glyph="&#xE716;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="16"
+                                              Foreground="#7C3AED"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="4">
+                                    <TextBlock Text="Khách hàng"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Lưu hồ sơ, điểm tích lũy, hạng thành viên và lịch sử mua."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="PromotionsFeatureCard"
+                                Grid.Row="2"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        Background="#FEF2F2"
+                                        CornerRadius="8">
+                                    <FontIcon Glyph="&#xE8EC;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="16"
+                                              Foreground="#DC2626"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="4">
+                                    <TextBlock Text="Khuyến mãi"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Tạo chương trình giảm giá và chọn điều kiện áp dụng."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="StaffFeatureCard"
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        Background="#ECFEFF"
+                                        CornerRadius="8">
+                                    <FontIcon Glyph="&#xE8A4;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="16"
+                                              Foreground="#0891B2"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="4">
+                                    <TextBlock Text="Nhân viên"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Quản lý hồ sơ, lịch làm việc, ca trực và chi phí nhân sự."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="ReportsFeatureCard"
+                                Grid.Row="3"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        Background="#FEFCE8"
+                                        CornerRadius="8">
+                                    <FontIcon Glyph="&#xE9D2;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="16"
+                                              Foreground="#CA8A04"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="4">
+                                    <TextBlock Text="Báo cáo"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Xem doanh thu, chi phí, lợi nhuận và hiệu quả sản phẩm."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="SettingsFeatureCard"
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        Background="#F3F4F6"
+                                        CornerRadius="8">
+                                    <FontIcon Glyph="&#xE713;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="16"
+                                              Foreground="#4B5563"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="4">
+                                    <TextBlock Text="Cài đặt"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Cập nhật thông tin cửa hàng, hiển thị và thiết lập vận hành."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+
+                <Border x:Name="StepTwoSidePanel"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Background="White"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="24"
+                        Visibility="Collapsed"
+                        VerticalAlignment="Center">
+                    <StackPanel Spacing="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Luồng sử dụng gợi ý"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="#111827"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="Bạn có thể bắt đầu theo thứ tự này sau khi cấu hình database."
+                                       FontSize="13"
+                                       Foreground="#6B7280"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="14">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="28"
+                                        Height="28"
+                                        Background="#F3F4F6"
+                                        CornerRadius="8">
+                                    <TextBlock Text="1"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#374151"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="2">
+                                    <TextBlock Text="Cấu hình database"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Kết nối PostgreSQL và để app tạo bảng cần thiết."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="28"
+                                        Height="28"
+                                        Background="#F3F4F6"
+                                        CornerRadius="8">
+                                    <TextBlock Text="2"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#374151"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="2">
+                                    <TextBlock Text="Đăng nhập"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Admin vào trang quản trị, nhân viên bán hàng vào POS."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="28"
+                                        Height="28"
+                                        Background="#F3F4F6"
+                                        CornerRadius="8">
+                                    <TextBlock Text="3"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#374151"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="2">
+                                    <TextBlock Text="Thiết lập cửa hàng"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Cập nhật thông tin, cài đặt hiển thị và quy tắc vận hành."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="28"
+                                        Height="28"
+                                        Background="#F3F4F6"
+                                        CornerRadius="8">
+                                    <TextBlock Text="4"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#374151"/>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            Spacing="2">
+                                    <TextBlock Text="Bán hàng và theo dõi"
+                                               FontWeight="SemiBold"
+                                               Foreground="#111827"/>
+                                    <TextBlock Text="Nhập sản phẩm, tạo đơn ở POS và xem báo cáo cuối ngày."
+                                               FontSize="13"
+                                               Foreground="#6B7280"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+
+        <Border Grid.Row="2"
+                Background="White"
+                BorderBrush="#E5E7EB"
+                BorderThickness="0,1,0,0">
+            <Grid x:Name="FooterContent"
+                  MaxWidth="1160"
+                  HorizontalAlignment="Stretch"
+                  Margin="24,14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition x:Name="FooterActionsRow"
+                                   Height="0"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition x:Name="FooterActionsColumn"
+                                      Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="FooterText"
+                           Text="Tiếp theo: xem nhanh các màn hình chính trước khi cấu hình database."
+                           FontSize="13"
+                           Foreground="#6B7280"
+                           VerticalAlignment="Center"
+                           Margin="0,0,28,0"
+                           TextWrapping="Wrap"/>
+
+                <StackPanel x:Name="FooterButtons"
+                            Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="10"
+                            VerticalAlignment="Center">
+                    <Button x:Name="BackButton"
+                            Click="BackButton_Click"
+                            Background="Transparent"
+                            Foreground="#374151"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16,11"
+                            Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <SymbolIcon Symbol="Back"/>
+                            <TextBlock Text="Quay lại"
+                                       FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="PrimaryButton"
+                            Click="PrimaryButton_Click"
+                            Background="#EA580C"
+                            Foreground="White"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="18,12"
+                            MinWidth="150">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <TextBlock x:Name="PrimaryButtonText"
+                                       Text="Tiếp tục"
+                                       FontWeight="SemiBold"/>
+                            <SymbolIcon Symbol="Forward"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

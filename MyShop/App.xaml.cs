@@ -46,7 +46,7 @@ public partial class App : Application
         var isDatabaseReady = await InitializeDatabaseConnection(configService);
         if (!isDatabaseReady)
         {
-            ShowDatabaseConfigPage();
+            ShowOnboardingPage();
             MainWindow.SetWindowIcon();
             MainWindow.Activate();
             return;
@@ -103,13 +103,32 @@ public partial class App : Application
     {
         var page = new DatabaseConfigPage();
         page.ConfigurationSaved += DatabaseConfigPage_ConfigurationSaved;
+        page.BackToOnboardingRequested += DatabaseConfigPage_BackToOnboardingRequested;
         MainWindow!.Content = page;
+    }
+
+    internal void ShowOnboardingPage()
+    {
+        var page = new OnboardingPage();
+        page.ConfigureRequested += OnboardingPage_ConfigureRequested;
+        MainWindow!.Content = page;
+    }
+
+    private void OnboardingPage_ConfigureRequested(object? sender, EventArgs e)
+    {
+        if (sender is OnboardingPage page)
+            page.ConfigureRequested -= OnboardingPage_ConfigureRequested;
+
+        ShowDatabaseConfigPage();
     }
 
     private async void DatabaseConfigPage_ConfigurationSaved(object? sender, EventArgs e)
     {
         if (sender is DatabaseConfigPage page)
+        {
             page.ConfigurationSaved -= DatabaseConfigPage_ConfigurationSaved;
+            page.BackToOnboardingRequested -= DatabaseConfigPage_BackToOnboardingRequested;
+        }
 
         var configService = ServiceContainer.Instance.Get<IConfigService>();
         var isReady = await InitializeDatabaseConnection(configService);
@@ -118,6 +137,17 @@ public partial class App : Application
 
         await RegisterServicesAsync(configService);
         ShowLoginPage(string.Empty);
+    }
+
+    private void DatabaseConfigPage_BackToOnboardingRequested(object? sender, EventArgs e)
+    {
+        if (sender is DatabaseConfigPage page)
+        {
+            page.ConfigurationSaved -= DatabaseConfigPage_ConfigurationSaved;
+            page.BackToOnboardingRequested -= DatabaseConfigPage_BackToOnboardingRequested;
+        }
+
+        ShowOnboardingPage();
     }
 
     private void ShowLoginPage(string? arguments)

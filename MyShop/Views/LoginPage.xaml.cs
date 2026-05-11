@@ -51,7 +51,7 @@ public sealed partial class LoginPage : Page
     {
         if (Application.Current is App app)
         {
-            app.ShowDatabaseConfigPage();
+            app.ShowOnboardingPage();
         }
     }
 }
