@@ -24,7 +24,7 @@
                 </VisualState>
                 <VisualState x:Name="WideState">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="800"/>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
                     </VisualState.StateTriggers>
                 </VisualState>
             </VisualStateGroup>

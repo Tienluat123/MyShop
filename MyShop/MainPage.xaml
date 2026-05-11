@@ -8,12 +8,52 @@
   Background="#FFFFFF">
 
   <Grid>
+    <VisualStateManager.VisualStateGroups>
+      <VisualStateGroup x:Name="ShellResponsiveStates">
+        <VisualState x:Name="MobileState">
+          <VisualState.StateTriggers>
+            <AdaptiveTrigger MinWindowWidth="0"/>
+          </VisualState.StateTriggers>
+          <VisualState.Setters>
+            <Setter Target="NavView.PaneDisplayMode" Value="LeftMinimal"/>
+            <Setter Target="NavView.IsPaneToggleButtonVisible" Value="True"/>
+            <Setter Target="NavView.IsPaneOpen" Value="False"/>
+            <Setter Target="NavView.CompactPaneLength" Value="56"/>
+          </VisualState.Setters>
+        </VisualState>
+
+        <VisualState x:Name="TabletState">
+          <VisualState.StateTriggers>
+            <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
+          </VisualState.StateTriggers>
+          <VisualState.Setters>
+            <Setter Target="NavView.PaneDisplayMode" Value="LeftCompact"/>
+            <Setter Target="NavView.IsPaneToggleButtonVisible" Value="True"/>
+            <Setter Target="NavView.IsPaneOpen" Value="False"/>
+            <Setter Target="NavView.CompactPaneLength" Value="{StaticResource ShellCompactPaneLength}"/>
+          </VisualState.Setters>
+        </VisualState>
+
+        <VisualState x:Name="DesktopState">
+          <VisualState.StateTriggers>
+            <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointDesktop}"/>
+          </VisualState.StateTriggers>
+          <VisualState.Setters>
+            <Setter Target="NavView.PaneDisplayMode" Value="Left"/>
+            <Setter Target="NavView.IsPaneToggleButtonVisible" Value="False"/>
+            <Setter Target="NavView.IsPaneOpen" Value="True"/>
+            <Setter Target="NavView.CompactPaneLength" Value="{StaticResource ShellCompactPaneLength}"/>
+          </VisualState.Setters>
+        </VisualState>
+      </VisualStateGroup>
+    </VisualStateManager.VisualStateGroups>
+
     <NavigationView x:Name="NavView"
                     RequestedTheme="Light"
-                    PaneDisplayMode="Left"
-                    CompactPaneLength="72"
+                    PaneDisplayMode="Auto"
+                    CompactPaneLength="{StaticResource ShellCompactPaneLength}"
                     Background="{StaticResource SidebarBackgroundColor}"
-                    IsPaneToggleButtonVisible="False"
+                    IsPaneToggleButtonVisible="True"
                     IsSettingsVisible="False"
                     IsBackButtonVisible="Collapsed"
                     ItemInvoked="NavView_ItemInvoked">

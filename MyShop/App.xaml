@@ -18,6 +18,7 @@
 
                                 <ResourceDictionary Source="ms-appx:///Styles/Texts.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Styles/Navigation.xaml"/>
+                                <ResourceDictionary Source="ms-appx:///Styles/Responsive.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Styles/Components.xaml"/>
 
                                 <converters:ImageSourceConverter x:Key="ImageSourceConverter" DecodeWidth="300" />
