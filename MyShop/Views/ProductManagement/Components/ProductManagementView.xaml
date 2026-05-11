@@ -186,6 +186,7 @@
                 </Button>
 
                 <Button Grid.Column="4"
+                        Click="ImportButton_Click"
                         Background="#FFFFFF"
                         BorderBrush="#D97706"
                         Foreground="#D97706"
@@ -194,7 +195,7 @@
                         Padding="14,0">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon Glyph="&#xE898;" FontSize="14"/>
-                        <TextBlock Text="Import Excel/Access" FontWeight="SemiBold"/>
+                        <TextBlock Text="Import Excel" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Button>
 

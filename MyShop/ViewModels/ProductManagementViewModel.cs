@@ -1,5 +1,6 @@
 using MyShop.Models;
 using MyShop.Services;
+using MyShop.Services.ExcelImport;
 using MyShop.Data;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
 {
     private readonly IProductService _productService;
     private readonly IAppConfigService _configService;
+    private readonly IExcelCatalogImportService _excelCatalogImportService;
+    private readonly INotificationService _notificationService;
 
     private const string CategoryAll = "All";
     private const string CategoryCoffee = "Coffee";
@@ -84,11 +87,15 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     public ProductManagementViewModel(
         IProductService productService,
         IAppConfigService configService,
+        IExcelCatalogImportService excelCatalogImportService,
+        INotificationService notificationService,
         Action onAddProduct,
         Action<ProductListEntry> onEditProduct)
     {
         _productService = productService;
         _configService = configService;
+        _excelCatalogImportService = excelCatalogImportService;
+        _notificationService = notificationService;
 
         this.onAddProduct = onAddProduct;
         this.onEditProduct = onEditProduct;
@@ -292,6 +299,36 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     }
 
     [RelayCommand]
+    private async Task ImportFromExcel(string filePath)
+    {
+        try
+        {
+            ErrorMessage = string.Empty;
+
+            var importResult = await _excelCatalogImportService.ImportAsync(filePath);
+            if (!importResult.Success)
+            {
+                var topErrors = importResult.Errors
+                    .Take(5)
+                    .Select(e => e.ToString());
+
+                ErrorMessage = string.Join(Environment.NewLine, topErrors);
+                return;
+            }
+
+            ErrorMessage = importResult.Summary;
+            var successMessage = BuildImportSuccessMessage(importResult);
+            _notificationService.ShowSuccess(successMessage, 3500);
+            CurrentPage = 1;
+            await LoadProducts();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to import from Excel: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private void EditProduct(ProductListEntry product)
     {
         onEditProduct(product);
@@ -360,6 +397,24 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
         Categories.Add(CategoryTea);
         Categories.Add(CategorySmoothies);
         Categories.Add(CategoryPastries);
+    }
+
+    private static string BuildImportSuccessMessage(CatalogImportResult importResult)
+    {
+        if (importResult.InsertedProductNames.Count == 0)
+        {
+            return "Import thành công, nhưng không có sản phẩm mới được thêm.";
+        }
+
+        var previewNames = importResult.InsertedProductNames.Take(3).ToList();
+        var productList = string.Join(", ", previewNames);
+
+        if (importResult.InsertedProductNames.Count > previewNames.Count)
+        {
+            productList += $" và {importResult.InsertedProductNames.Count - previewNames.Count} sản phẩm khác";
+        }
+
+        return $"Đã thêm thành công {importResult.ProductsInserted} sản phẩm: {productList}.";
     }
 
     private static List<ProductListEntry> BuildSeedProducts()

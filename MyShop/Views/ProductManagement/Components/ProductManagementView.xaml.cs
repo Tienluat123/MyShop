@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 using MyShop.ViewModels;
 
 namespace MyShop.Views.ProductManagement.Components;
@@ -57,5 +59,72 @@ public sealed partial class ProductManagementView : Page
         {
             ViewModel.DeleteProductCommand.Execute(product);
         }
+    }
+
+    private async void ImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel == null)
+        {
+            return;
+        }
+
+        var filePath = await PickExcelFileAsync();
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return;
+        }
+
+        await ViewModel.ImportFromExcelCommand.ExecuteAsync(filePath);
+    }
+
+    private async Task<string?> PickExcelFileAsync()
+    {
+        try
+        {
+            if (Application.Current is MyShop.App app && app.MainWindow != null)
+            {
+                var picker = new FileOpenPicker
+                {
+                    SuggestedStartLocation = PickerLocationId.DocumentsLibrary
+                };
+
+                picker.FileTypeFilter.Add(".xlsx");
+
+                InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(app.MainWindow));
+
+                var file = await picker.PickSingleFileAsync();
+                if (file != null)
+                {
+                    return file.Path;
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        var pathTextBox = new TextBox
+        {
+            PlaceholderText = @"D:\data\catalog-phase1.xlsx"
+        };
+
+        var dialog = new ContentDialog
+        {
+            XamlRoot = this.XamlRoot,
+            Title = "Import Product Catalog",
+            Content = pathTextBox,
+            PrimaryButtonText = "Import",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary)
+        {
+            return null;
+        }
+
+        var filePath = pathTextBox.Text?.Trim() ?? string.Empty;
+        return string.IsNullOrWhiteSpace(filePath) ? null : filePath;
     }
 }

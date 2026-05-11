@@ -6,6 +6,7 @@ using MyShop.Data;
 using MyShop.Services;
 using MyShop.Di;
 using MyShop.Models;
+using MyShop.Services.ExcelImport;
 using MyShop.ViewModels;
 using MyShop.ViewModels.StaffManagement;
 using Microsoft.EntityFrameworkCore;
@@ -236,6 +237,8 @@ public partial class App : Application
             container.Register<ICategoryService>(new CategoryService(
                 container.Get<IRepository<Category>>()
             ));
+
+            container.Register<IExcelCatalogImportService>(new ExcelCatalogImportService(contextFactory));
 
             container.Register<IScheduleService>(new ScheduleService(
                 container.Get<IRepository<WorkSchedule>>()
