@@ -89,6 +89,11 @@
                                     Foreground="{StaticResource TextSecondary}"
                                     Text="{Binding SelectedOrderDetails.CreatedAt}" />
                             </StackPanel>
+                            <!-- Thêm dòng này để hiện tên khách hàng -->
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="Khách hàng:" Foreground="Gray" FontSize="14"/>
+                                <TextBlock Text="{Binding SelectedOrderDetails.CustomerName}" FontWeight="SemiBold" FontSize="14"/>
+                            </StackPanel>
                         </StackPanel>
                         <StackPanel
                             Grid.Column="1"

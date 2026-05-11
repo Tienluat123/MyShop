@@ -278,6 +278,12 @@
                                             Style="{StaticResource CaptionMutedTextStyle}"
                                             Text="{Binding Table, Converter={StaticResource StringFormatConverter}, ConverterParameter='· Table {0}'}"
                                             Visibility="{Binding Table, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='NotNull'}" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource BrandPrimary}"
+                                            Style="{StaticResource CaptionTextStyle}"
+                                            Text="{Binding CustomerName, Converter={StaticResource StringFormatConverter}, ConverterParameter='· {0}'}" />
                                     </StackPanel>
                                 </StackPanel>
 

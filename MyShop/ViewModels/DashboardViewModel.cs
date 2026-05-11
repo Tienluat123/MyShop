@@ -1,7 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using MyShop.Models;
 using MyShop.Services;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace MyShop.ViewModels;
 
@@ -25,47 +28,67 @@ public partial class DashboardViewModel : ObservableObject
         _ = LoadDashboardData();
     }
 
+    private DateTime _lastLoadTime = DateTime.MinValue;
+
+    [RelayCommand]
     public async Task LoadDashboardData()
-{
-    try 
     {
-        // 1. Tổng số sản phẩm
-        var products = await _productService.GetAll();
-        ProductsCount = products.Pagination.TotalItems;
+        // Tránh load lại quá nhanh (trong vòng 30s) nếu đã có dữ liệu
+        if (DateTime.Now - _lastLoadTime < TimeSpan.FromSeconds(30) && RecentOrders.Any())
+            return;
 
-        // 2. Top 5 sản phẩm sắp hết hàng (số lượng < 5)
-        var lowStock = await _productService.GetLowStockProducts(5, 5);
-        LowStockProducts = new ObservableCollection<Product>(lowStock);
+        try 
+        {
+            // Chạy các Task song song để tận dụng tối đa connection pool và giảm thời gian chờ
+            var productsCountTask = _productService.GetTotalCount();
+            var lowStockTask = _productService.GetLowStockProducts(5, 5);
+            var todayOrdersTask = _orderService.GetTodayOrderCount();
+            var todayRevenueTask = _orderService.GetTodayRevenue();
+            
+            var today = DateTime.Now;
+            var rawTrendTask = _orderService.GetRevenueByDateInMonth(today.Month, today.Year);
+            var recentTask = _orderService.GetRecentOrders(3);
+            var topSellingTask = _orderService.GetTopSellingProducts(5);
 
-        // 3. Đơn hàng và doanh thu hôm nay (Chỉ tính đơn đã Paid)
-        TodayOrdersCount = await _orderService.GetTodayOrderCount();
-        TodayRevenue = await _orderService.GetTodayRevenue();
+            await Task.WhenAll(productsCountTask, lowStockTask, todayOrdersTask, todayRevenueTask, rawTrendTask, recentTask, topSellingTask);
 
-        // 4. Chi tiết 3 đơn hàng gần nhất
-        var recent = await _orderService.GetRecentOrders(3);
-        RecentOrders = new ObservableCollection<Order>(recent);
+            // Cập nhật UI sau khi tất cả Task hoàn tất
+            ProductsCount = productsCountTask.Result;
+            LowStockProducts = new ObservableCollection<Product>(lowStockTask.Result);
+            TodayOrdersCount = todayOrdersTask.Result;
+            TodayRevenue = todayRevenueTask.Result;
 
-        // 5. Biểu đồ doanh thu tháng hiện tại
-        var now = DateTime.Now;
-        var trend = await _orderService.GetRevenueByDateInMonth(now.Month, now.Year);
-        
-        // Đảm bảo cập nhật UI Thread nếu cần
-        RevenueTrend = new ObservableCollection<ChartDataPoint>(
-            trend.Select(x => new ChartDataPoint { Label = x.Label, Value = (double)x.Value }));
+            // Xử lý dữ liệu biểu đồ
+            var rawTrend = rawTrendTask.Result;
+            var trend = new List<ChartDataPoint>();
+            int daysToDisplay = today.Day;
+            for (int i = 1; i <= daysToDisplay; i++)
+            {
+                string label = i.ToString();
+                var dayData = rawTrend.FirstOrDefault(x => x.Label == label);
+                trend.Add(new ChartDataPoint 
+                { 
+                    Label = label, 
+                    Value = string.IsNullOrEmpty(dayData.Label) ? 0 : (double)dayData.Value 
+                });
+            }
+            RevenueTrend = new ObservableCollection<ChartDataPoint>(trend);
 
-        // 6. Top 5 bán chạy
-        var topSelling = await _orderService.GetTopSellingProducts(5);
-        TopProducts = new ObservableCollection<TopProduct>(
-            topSelling.Select(x => new TopProduct { 
-                Name = x.Name, 
-                Amount = x.Quantity.ToString() 
-            }));
+            // Cập nhật danh sách đơn hàng và top sản phẩm
+            RecentOrders = new ObservableCollection<Order>(recentTask.Result.OrderByDescending(o => o.OrderDate));
+            TopProducts = new ObservableCollection<TopProduct>(
+                topSellingTask.Result.Select(x => new TopProduct { 
+                    Name = x.Name, 
+                    Amount = x.Quantity.ToString() 
+                }));
+
+            _lastLoadTime = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[DashboardVM] Load Error: {ex.Message}");
+        }
     }
-    catch (Exception ex)
-    {
-        // Log error hoặc thông báo qua NotificationService
-    }
-}
 
     public class ChartDataPoint
     {

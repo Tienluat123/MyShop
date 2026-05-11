@@ -346,7 +346,7 @@
                                                     FontSize="{StaticResource Size40}"
                                                     Foreground="{StaticResource Gray200}"
                                                     Glyph="&#xEB9F;"/>
-                                                <Image Source="{Binding PrimaryImageUrl}"
+                                                <Image Source="{Binding PrimaryImageUrl, Converter={StaticResource ImageSourceConverter}}"
                                                        Stretch="UniformToFill"
                                                        Visibility="{Binding HasPrimaryImage, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
@@ -367,7 +367,7 @@
                                                                     CornerRadius="4"
                                                                     BorderBrush="White"
                                                                     BorderThickness="1">
-                                                                <Image Source="{Binding}"
+                                                                <Image Source="{Binding Converter={StaticResource ImageSourceConverter}}"
                                                                        Stretch="UniformToFill"/>
                                                             </Border>
                                                         </DataTemplate>

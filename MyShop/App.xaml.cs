@@ -52,7 +52,7 @@ public partial class App : Application
             return;
         }
 
-        RegisterServices(configService);
+        await RegisterServicesAsync(configService);
 
         if (MainWindow.Content is not Frame rootFrame)
         {
@@ -116,7 +116,7 @@ public partial class App : Application
         if (!isReady)
             return;
 
-        RegisterServices(configService);
+        await RegisterServicesAsync(configService);
         ShowLoginPage(string.Empty);
     }
 
@@ -139,7 +139,7 @@ public partial class App : Application
     /// Register tất cả services vào Dependency Injection Container
     /// Gọi trong OnLaunched trước khi initialize UI
     /// </summary>
-    private void RegisterServices(IConfigService? startupConfigService = null)
+    private async Task RegisterServicesAsync(IConfigService? startupConfigService = null)
     {
         var container = ServiceContainer.Instance;
         container.Clear();
@@ -149,11 +149,11 @@ public partial class App : Application
             var configService = startupConfigService ?? new ConfigService();
             container.Register<IConfigService>(configService);
 
-            var dbConfig = configService.LoadAsync().GetAwaiter().GetResult();
+            var dbConfig = await configService.LoadAsync();
             var connectionString = dbConfig.ToConnectionString();
 
-            AppDbContext dbContext;
-            try
+            AppDbContext? dbContext = null;
+            await Task.Run(() => 
             {
                 var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
                     .UseNpgsql(connectionString, options =>
@@ -171,27 +171,20 @@ public partial class App : Application
                 try
                 {
                     dbContext.Database.Migrate();
+                    dbContext.Database.ExecuteSqlRaw("ALTER TABLE \"Products\" ADD COLUMN IF NOT EXISTS \"StockQuantity\" INTEGER DEFAULT 0;");
                 }
                 catch (Exception)
                 {
                     try
                     {
                         dbContext.Database.EnsureCreated();
+                        dbContext.Database.ExecuteSqlRaw("ALTER TABLE \"Products\" ADD COLUMN IF NOT EXISTS \"StockQuantity\" INTEGER DEFAULT 0;");
                     }
-                    catch (Exception) { }
+                    catch { }
                 }
-            }
-            catch (Exception)
-            {
-                var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
-                    .UseNpgsql(connectionString, options =>
-                    {
-                        options.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorCodesToAdd: null);
-                    })
-                    .Options;
+            });
 
-                dbContext = new AppDbContext(dbContextOptions);
-            }
+            if (dbContext == null) throw new InvalidOperationException("Failed to initialize DbContext");
 
             var contextFactory = new AppDbContextFactory(configService);
             container.Register<AppDbContextFactory>(contextFactory);
