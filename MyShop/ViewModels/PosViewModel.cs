@@ -18,14 +18,15 @@ public partial class PosViewModel : ObservableObject
     private readonly IOrderService _orderService;
     private readonly IPromotionService _promoService;
     private readonly ILoyaltyService _loyaltyService;
+    private readonly Helpers.Debouncer _filterDebouncer = new();
 
     private Order? _currentDraftOrder;
 
-    public ObservableCollection<Product> Products { get; } = new();
+    public ObservableCollection<Product> Products { get; } = new Helpers.BulkObservableCollection<Product>();
     public ObservableCollection<CategoryItem> Categories { get; } = new();
-    public ObservableCollection<OrderItem> Order { get; } = new();
+    public Helpers.BulkObservableCollection<OrderItem> Order { get; } = new();
     public ObservableCollection<PosOrder> ActiveOrders { get; } = new();
-    public ObservableCollection<Product> FilteredProducts { get; } = new();
+    public Helpers.BulkObservableCollection<Product> FilteredProducts { get; } = new();
 
     public Order? CurrentDraftOrder => _currentDraftOrder;
 
@@ -163,14 +164,21 @@ public partial class PosViewModel : ObservableObject
 
     private void RebuildFilter()
     {
-        FilteredProducts.Clear();
+        _filterDebouncer.Debounce(() => 
+        {
+            if (Microsoft.UI.Xaml.Application.Current is App app && app.MainWindow != null)
+            {
+                app.MainWindow.DispatcherQueue.TryEnqueue(() => 
+                {
+                    var filtered = Products.Where(p =>
+                        (ActiveCategory == "All" || p.Category?.Name == ActiveCategory) &&
+                        (string.IsNullOrWhiteSpace(SearchQuery) || p.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)))
+                        .ToList();
 
-        var filtered = Products.Where(p =>
-            (ActiveCategory == "All" || p.Category?.Name == ActiveCategory) &&
-            (string.IsNullOrWhiteSpace(SearchQuery) || p.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
-
-        foreach (var p in filtered)
-            FilteredProducts.Add(p);
+                    FilteredProducts.ReplaceAll(filtered);
+                });
+            }
+        });
     }
 
     partial void OnSearchQueryChanged(string value) => RebuildFilter();
@@ -226,10 +234,14 @@ public partial class PosViewModel : ObservableObject
             var result = await _productService.GetAll();
             if (result != null)
             {
-                Products.Clear();
-                foreach (var product in result.Items)
+                if (Products is Helpers.BulkObservableCollection<Product> bulkProducts)
                 {
-                    Products.Add(product);
+                    bulkProducts.ReplaceAll(result.Items);
+                }
+                else
+                {
+                    Products.Clear();
+                    foreach (var product in result.Items) Products.Add(product);
                 }
                 RebuildFilter();
             }
@@ -373,8 +385,7 @@ public partial class PosViewModel : ObservableObject
             CustomerId = null, // Guest
             UserId = 1,     // Default Staff
             PaymentStatus = "Draft",
-            Type = OrderType,
-            TableNumber = TableNumber ?? "Table 1",
+            // Set defaults
             OrderDate = DateTime.UtcNow,
             OrderDetails = new List<OrderDetail>()
         };
@@ -433,18 +444,16 @@ public partial class PosViewModel : ObservableObject
         OrderType = _currentDraftOrder.Type;
         TableNumber = string.IsNullOrEmpty(_currentDraftOrder.TableNumber) ? null : _currentDraftOrder.TableNumber;
 
-        Order.Clear();
-        foreach (var detail in _currentDraftOrder.OrderDetails)
+        var newItems = _currentDraftOrder.OrderDetails.Select(detail => new OrderItem
         {
-            Order.Add(new OrderItem
-            {
-                OrderDetailId = detail.Id,
-                Product = detail.Product!,
-                BasePrice = detail.UnitPrice,
-                Quantity = detail.Quantity,
-                DrinkOptions = ParseOptions(detail.Notes)
-            });
-        }
+            OrderDetailId = detail.Id,
+            Product = detail.Product!,
+            BasePrice = detail.UnitPrice,
+            Quantity = detail.Quantity,
+            DrinkOptions = ParseOptions(detail.Notes)
+        }).ToList();
+
+        Order.ReplaceAll(newItems);
         CalculateTotals();
     }
 

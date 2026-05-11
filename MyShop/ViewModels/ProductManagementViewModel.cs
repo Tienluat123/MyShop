@@ -19,6 +19,7 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     private readonly IAppConfigService _configService;
     private readonly IExcelCatalogImportService _excelCatalogImportService;
     private readonly INotificationService _notificationService;
+    private readonly Helpers.Debouncer _searchDebouncer = new();
 
     private const string CategoryAll = "All";
     private const string CategoryCoffee = "Coffee";
@@ -29,7 +30,7 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     private readonly Action onAddProduct;
     private readonly Action<ProductListEntry> onEditProduct;
     public ObservableCollection<string> Categories { get; } = new();
-    public ObservableCollection<ProductListEntry> DisplayProducts { get; } = new();
+    public Helpers.BulkObservableCollection<ProductListEntry> DisplayProducts { get; } = new();
     public ObservableCollection<int> PageNumbers { get; } = new();
 
     [ObservableProperty]
@@ -159,19 +160,17 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
 
             PageInfoDisplay = $"Page {CurrentPage} / {TotalPages}";
 
-            DisplayProducts.Clear();
-            foreach (var p in result.Items)
+            var newProducts = result.Items.Select(p => new ProductListEntry
             {
-                DisplayProducts.Add(new ProductListEntry
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Category = p.Category?.Name ?? "",
-                    SellingPrice = p.Price,
-                    PrimaryImageUrl = p.PrimaryImageUrl,
-                    SecondaryImageUrls = p.SecondaryImageUrls
-                });
-            }
+                Id = p.Id,
+                Name = p.Name,
+                Category = p.Category?.Name ?? "",
+                SellingPrice = p.Price,
+                PrimaryImageUrl = p.PrimaryImageUrl,
+                SecondaryImageUrls = p.SecondaryImageUrls
+            }).ToList();
+
+            DisplayProducts.ReplaceAll(newProducts);
 
             HasNoData = DisplayProducts.Count == 0;
             var pageStart = TotalItems == 0 ? 0 : (CurrentPage - 1) * PageSize + 1;
@@ -353,8 +352,17 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
 
     partial void OnSearchTextChanged(string value)
     {
-        CurrentPage = 1;
-        _ = LoadProducts();
+        _searchDebouncer.Debounce(() => 
+        {
+            if (Microsoft.UI.Xaml.Application.Current is App app && app.MainWindow != null)
+            {
+                app.MainWindow.DispatcherQueue.TryEnqueue(async () => 
+                {
+                    CurrentPage = 1;
+                    await LoadProducts();
+                });
+            }
+        });
     }
 
     partial void OnSelectedCategoryChanged(string value)
@@ -364,8 +372,17 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
             selectedCategory = CategoryAll;
         }
 
-        CurrentPage = 1;
-        _ = LoadProducts();
+        _searchDebouncer.Debounce(() => 
+        {
+            if (Microsoft.UI.Xaml.Application.Current is App app && app.MainWindow != null)
+            {
+                app.MainWindow.DispatcherQueue.TryEnqueue(async () => 
+                {
+                    CurrentPage = 1;
+                    await LoadProducts();
+                });
+            }
+        });
     }
 
 

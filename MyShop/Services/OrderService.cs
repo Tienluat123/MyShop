@@ -155,14 +155,14 @@ public class OrderService : IOrderService
         if (id <= 0)
             throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
 
-        try
+        return await _orderRepository.ExecuteAsync(async context =>
         {
-            return await _orderRepository.GetByIdAsync(id);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Lỗi khi lấy đơn hàng với ID {id}", ex);
-        }
+            return await context.Set<Order>()
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Include(o => o.Customer)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        }, "GetByIdWithDetails");
     }
 
     /// <summary>
@@ -620,14 +620,16 @@ public class OrderService : IOrderService
 
             if (startDate.HasValue)
             {
-                var startDateValue = startDate.Value;
-                filter = CombineFilters(filter, o => o.OrderDate >= startDateValue);
+                // Chuyển 00:00:00 giờ Việt Nam sang giờ UTC để Database hiểu đúng
+                var startUtc = startDate.Value.Date.ToUniversalTime();
+                filter = CombineFilters(filter, o => o.OrderDate >= startUtc);
             }
 
             if (endDate.HasValue)
             {
-                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
-                filter = CombineFilters(filter, o => o.OrderDate <= endOfDay);
+                // Chuyển 23:59:59 giờ Việt Nam sang giờ UTC
+                var endUtc = endDate.Value.Date.AddDays(1).AddSeconds(-1).ToUniversalTime();
+                filter = CombineFilters(filter, o => o.OrderDate <= endUtc);
             }
 
             var result = await _orderRepository.GetAllAsyncWithIncludes(
@@ -712,13 +714,16 @@ public class OrderService : IOrderService
     //Lấy đơn theo ngày
     public async Task<IEnumerable<Order>> GetOrdersByDateRange(DateTime from, DateTime to)    
     {        
-        return await _context.Orders            
-        .Include(o => o.OrderDetails)                
-        .ThenInclude(od => od.Product)            
-        .Include(o => o.Customer)            
-        .Where(o => o.OrderDate >= from && o.OrderDate < to)            
-        .OrderByDescending(o => o.OrderDate)            
-        .ToListAsync();    
+        return await _orderRepository.ExecuteAsync(async context =>
+        {
+            return await context.Set<Order>()
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Include(o => o.Customer)
+                .Where(o => o.OrderDate >= from && o.OrderDate < to)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }, "GetOrdersByDateRange");
     }
 
     /// <summary>
@@ -726,79 +731,104 @@ public class OrderService : IOrderService
     /// </summary>
     public async Task<IEnumerable<Order>> GetAllOrdersWithDetails()
     {
-        return await _context.Orders
-            .Include(o => o.OrderDetails)
-            .ThenInclude(od => od.Product)
-            .Where(o => o.PaymentStatus == "Paid")
-            .ToListAsync();
+        return await _orderRepository.ExecuteAsync(async context =>
+        {
+            return await context.Set<Order>()
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Where(o => o.PaymentStatus == "Paid")
+                .ToListAsync();
+        }, "GetAllOrdersWithDetails");
     }
-    /// <summary>
-    /// Đếm số lượng đơn hàng hôm nay
-    /// </summary>
     public async Task<int> GetTodayOrderCount()
     {
-        var today = DateTime.UtcNow.Date;
-        var tomorrow = today.AddDays(1);
+        // Lấy biên giới ngày hôm nay theo giờ máy chủ (Local) rồi đổi sang UTC
+        var today = DateTime.Today;
+        var startUtc = today.ToUniversalTime();
+        var endUtc = today.AddDays(1).AddSeconds(-1).ToUniversalTime();
 
-        return await _context.Orders
-        .Where(o => o.OrderDate >= today
-        && o.OrderDate < tomorrow
-        && o.PaymentStatus == "Paid")
-        .CountAsync();
-
+        return await _orderRepository.CountAsync(o => 
+            o.OrderDate >= startUtc && 
+            o.OrderDate <= endUtc && 
+            o.PaymentStatus == "Paid");
     }
-    /// <summary>
-    /// Tính doanh thu hôm nay
-    /// </summary>
+
     public async Task<decimal> GetTodayRevenue()
     {
-        var today = DateTime.UtcNow.Date;
-        var tomorrow = today.AddDays(1);
+        var today = DateTime.Today;
+        var startUtc = today.ToUniversalTime();
+        var endUtc = today.AddDays(1).AddSeconds(-1).ToUniversalTime();
 
-        return await _context.Orders
-        .Where(o => o.OrderDate >= today
-        && o.OrderDate < tomorrow
-        && o.PaymentStatus == "Paid")
-        .SumAsync(o => o.TotalAmount);
-
+        return await _orderRepository.ExecuteAsync(async (AppDbContext context) =>
+        {
+            var result = await context.Set<Order>()
+                .Where(o => o.OrderDate >= startUtc && o.OrderDate <= endUtc && o.PaymentStatus == "Paid")
+                .SumAsync(o => (decimal?)o.TotalAmount);
+            return result ?? 0m;
+        }, "GetTodayRevenue");
     }
 
     public async Task<List<(string Label, decimal Value)>> GetRevenueByDateInMonth(int month, int year)
-{
-    var startDate = new DateTime(year, month, 1);
-    var endDate = startDate.AddMonths(1).AddDays(-1);
+    {
+        // Tạo mốc thời gian bắt đầu và kết thúc của tháng theo giờ Việt Nam
+        // Sau đó đổi sang UTC để query Database
+        var startLocal = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Local);
+        var endLocal = startLocal.AddMonths(1).AddSeconds(-1);
 
-    var orders = await _orderRepository.GetAsync(o => 
-        o.OrderDate >= startDate && o.OrderDate <= endDate && o.PaymentStatus == "Paid");
+        var startUtc = startLocal.ToUniversalTime();
+        var endUtc = endLocal.ToUniversalTime();
 
-    return orders
-        .GroupBy(o => o.OrderDate.Day)
-        .Select(g => (Label: g.Key.ToString(), Value: g.Sum(o => o.TotalAmount)))
-        .OrderBy(x => int.Parse(x.Label))
-        .ToList();
-}
+        return await _orderRepository.ExecuteAsync(async (AppDbContext context) =>
+        {
+            // 1. Tải dữ liệu thô từ DB (chỉ lấy các trường cần thiết để tối ưu)
+            var data = await context.Set<Order>()
+                .Where(o => o.OrderDate >= startUtc && o.OrderDate <= endUtc && o.PaymentStatus == "Paid")
+                .Select(o => new { o.OrderDate, o.TotalAmount })
+                .ToListAsync();
+
+            // 2. Xử lý GroupBy ở Client-side để đảm bảo tính đúng theo giờ Local Việt Nam
+            var rawData = data
+                .GroupBy(o => o.OrderDate.ToLocalTime().Day)
+                .Select(g => new { Day = g.Key, Total = g.Sum(o => o.TotalAmount) })
+                .OrderBy(x => x.Day)
+                .ToList();
+
+            return rawData.Select(x => (x.Day.ToString(), x.Total)).ToList();
+        }, "GetRevenueByDateInMonth");
+    }
 
 public async Task<List<(string Name, int Quantity)>> GetTopSellingProducts(int limit = 5)
 {
-    // Giả sử OrderDetails đã được Include sẵn trong Repo hoặc dùng ExecuteAsync
-    return await _orderRepository.ExecuteAsync(async context =>
+    return await _orderRepository.ExecuteAsync(async (AppDbContext context) =>
     {
-        return await context.Set<OrderDetail>()
-            .GroupBy(od => od.Product.Name)
+        var rawData = await context.Set<OrderDetail>()
+            .Include(od => od.Product)
+            .GroupBy(od => od.Product!.Name)
             .Select(g => new { Name = g.Key, Total = g.Sum(od => od.Quantity) })
             .OrderByDescending(x => x.Total)
             .Take(limit)
-            .Select(x => ValueTuple.Create(x.Name, x.Total))
             .ToListAsync();
+
+        return rawData.Select(x => (x.Name, x.Total)).ToList();
     }, "GetTopSelling");
 }
+    public async Task<IEnumerable<Order>> GetRecentOrders(int limit = 3)
+    {
+        return await _orderRepository.ExecuteAsync(async (AppDbContext context) =>
+        {
+            var orders = await context.Set<Order>()
+                .Include(o => o.Customer)
+                .OrderByDescending(o => o.OrderDate) // Sắp xếp theo thời gian mới nhất
+                .Take(limit)
+                .ToListAsync();
 
-public async Task<IEnumerable<Order>> GetRecentOrders(int limit = 3)
-{
-    var result = await _orderRepository.GetAllAsyncWithIncludes(
-        new PagingRequest { PageNumber = 1, PageSize = limit },
-        null, "Customer");
-    return result.Items.OrderByDescending(o => o.OrderDate);
-}
+            // In log để debug kiểm tra
+            foreach(var o in orders) {
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] Recent Order: ID={o.Id}, Date={o.OrderDate}, Total={o.TotalAmount}");
+            }
+
+            return orders;
+        }, "GetRecentOrders");
+    }
 }
 

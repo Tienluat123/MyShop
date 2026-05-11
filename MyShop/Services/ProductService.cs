@@ -45,6 +45,7 @@ public interface IProductService
     /// </summary>
     Task Delete(int id);
     Task<IEnumerable<Product>> GetLowStockProducts(int threshold = 5, int limit = 5);
+    Task<int> GetTotalCount();
 }
 
 /// <summary>
@@ -68,12 +69,15 @@ public class ProductService : IProductService
 
     public async Task<IEnumerable<Product>> GetLowStockProducts(int threshold = 5, int limit = 5)
     {
-        return await _context.Products
-            .Include(p => p.Category)
-            .Where(p => p.StockQuantity < threshold)
-            .OrderBy(p => p.StockQuantity)
-            .Take(limit)
-            .ToListAsync();
+        return await _productRepository.ExecuteAsync(async context =>
+        {
+            return await context.Set<Product>()
+                .Include(p => p.Category)
+                .Where(p => p.StockQuantity < threshold)
+                .OrderBy(p => p.StockQuantity)
+                .Take(limit)
+                .ToListAsync();
+        }, "GetLowStockProducts");
     }
     /// <summary>
     /// Lấy tất cả sản phẩm (Bất đồng bộ)
@@ -305,5 +309,9 @@ public class ProductService : IProductService
         {
             throw new InvalidOperationException($"Lỗi khi xóa sản phẩm với ID {id}", ex);
         }
+    }
+    public async Task<int> GetTotalCount()
+    {
+        return await _productRepository.CountAsync();
     }
 }

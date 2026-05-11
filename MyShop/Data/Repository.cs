@@ -211,8 +211,8 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             var totalItems = await query.CountAsync();
 
             // Apply orderBy string if provided before Skip/Take
-            IQueryable<TEntity> sortedQuery = !string.IsNullOrWhiteSpace(paging.SortBy) 
-                ? query.OrderBy(paging.SortBy) 
+            IQueryable<TEntity> sortedQuery = !string.IsNullOrWhiteSpace(paging.SortBy)
+                ? query.OrderBy(paging.SortBy)
                 : query;
 
             // Get items with Skip/Take

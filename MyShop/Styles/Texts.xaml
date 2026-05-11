@@ -4,6 +4,8 @@
 
         <Style x:Key="HeaderTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontHeader}"/>
                 <Setter Property="FontWeight"
@@ -18,6 +20,8 @@
 
         <Style x:Key="TitleTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontTitle}"/>
                 <Setter Property="FontWeight"
@@ -30,6 +34,8 @@
 
         <Style x:Key="SubtitleTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontSubtitle}"/>
                 <Setter Property="Foreground"
@@ -40,6 +46,8 @@
 
         <Style x:Key="SubtitleSecondaryTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontSubtitle}"/>
                 <Setter Property="Foreground"
@@ -50,6 +58,8 @@
 
         <Style x:Key="SubtitleMutedTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontSubtitle}"/>
                 <Setter Property="Foreground"
@@ -60,6 +70,8 @@
 
         <Style x:Key="BodyTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontBody}"/>
                 <Setter Property="Foreground"
@@ -70,6 +82,8 @@
 
         <Style x:Key="BodySecondaryTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontBody}"/>
                 <Setter Property="Foreground"
@@ -80,6 +94,8 @@
 
         <Style x:Key="BodyMutedTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontBody}"/>
                 <Setter Property="Foreground"
@@ -90,6 +106,8 @@
 
         <Style x:Key="CaptionTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontCaption}"/>
                 <Setter Property="Foreground"
@@ -100,6 +118,8 @@
 
         <Style x:Key="CaptionMutedTextStyle"
                TargetType="TextBlock">
+                <Setter Property="FontFamily"
+                        Value="{StaticResource AppFontFamily}"/>
                 <Setter Property="FontSize"
                         Value="{StaticResource FontCaption}"/>
                 <Setter Property="Foreground"

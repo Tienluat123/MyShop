@@ -107,6 +107,7 @@ public partial class OrderManagementViewModel : ObservableObject
     public ObservableCollection<FulfillmentStatus> FulfillmentStatusOptions { get; } = new(Enum.GetValues<FulfillmentStatus>());
 
     public Action? ScrollToTopAction { get; set; }
+    public Action? CloseOrderDetailAction { get; set; }
 
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
     public ObservableCollection<OrderItem> EditableItems { get; } = new();
@@ -265,6 +266,28 @@ public partial class OrderManagementViewModel : ObservableObject
         SearchEndDate = null;
         CurrentPageHistory = 1;
         await LoadOrders();
+    }
+
+    public async Task SelectOrder(Order order)
+    {
+        if (order == null) return;
+        
+        // 1. Đảm bảo tải đầy đủ chi tiết đơn hàng (các món ăn) từ DB
+        if (order.OrderDetails == null || !order.OrderDetails.Any())
+        {
+             var fullOrder = await _orderService.GetById(order.Id);
+             if (fullOrder != null) {
+                 order.OrderDetails = fullOrder.OrderDetails;
+                 order.Customer = fullOrder.Customer; // Đảm bảo tải cả khách hàng
+             }
+        }
+
+        // 2. Chuyển đổi sang định dạng PosOrder để hiển thị được danh sách món ăn
+        SelectedOrderDetails = await MapToPosOrder(order);
+        IsOrderDetailOpen = true;
+        IsEditingDetail = false;
+        
+        OnPropertyChanged(nameof(SelectedOrderDetails));
     }
 
     [RelayCommand]
@@ -440,6 +463,9 @@ public partial class OrderManagementViewModel : ObservableObject
         IsOrderDetailOpen = false;
         SelectedOrderDetails = null;
         IsEditingDetail = false;
+        
+        // Thực thi lệnh đóng từ bên ngoài (nếu có)
+        CloseOrderDetailAction?.Invoke();
     }
 
     [RelayCommand]
@@ -475,6 +501,7 @@ public partial class OrderManagementViewModel : ObservableObject
 
     private async Task<PosOrder> MapToPosOrder(Order order)
     {
+        System.Diagnostics.Debug.WriteLine($"[OrderVM] Mapping Order ID={order.Id}, CustomerId={order.CustomerId}, HasCustomer={order.Customer != null}, CustomerName='{order.Customer?.Name}'");
         var posOrder = new PosOrder
         {
             OrderId = $"ORD-{order.Id}",
@@ -483,6 +510,8 @@ public partial class OrderManagementViewModel : ObservableObject
             CreatedAt = order.OrderDate,
             Type = order.Type,
             Table = order.TableNumber,
+            CustomerId = order.CustomerId?.ToString(),
+            CustomerName = order.Customer?.Name ?? "Guest",
             Notes = order.Notes,
             Tax = order.TaxAmount,
             Discount = order.DiscountAmount,

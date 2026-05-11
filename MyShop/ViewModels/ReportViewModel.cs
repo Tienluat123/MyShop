@@ -62,7 +62,7 @@ public partial class ReportViewModel : ObservableObject
     [ObservableProperty] private decimal totalProfit;
 
     [ObservableProperty]
-    private string selectedPeriod;
+    private string selectedPeriod = "Day";
 
     [ObservableProperty] private bool isDayWeekVisible;
     [ObservableProperty] private bool isMonthVisible;
