@@ -45,22 +45,81 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid Margin="16,12,16,20"
+    <Grid x:Name="RootGrid"
+          Margin="16,12,16,20"
           Background="{StaticResource SurfaceBackground}"
           CornerRadius="{StaticResource RadiusMedium}"
           BorderBrush="{StaticResource BorderBrush}"
           BorderThickness="1">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="WeeklyRosterResponsiveStates">
+                <VisualState x:Name="WeeklyRosterMobileState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="RootGrid.Margin" Value="12,10,12,16"/>
+                        <Setter Target="WeekHeaderStack.Orientation" Value="Vertical"/>
+                        <Setter Target="WeekHeaderStack.Spacing" Value="8"/>
+                        <Setter Target="WeekHeaderStack.Margin" Value="0,12"/>
+                        <Setter Target="WeekTitle.FontSize" Value="16"/>
+                        <Setter Target="ScheduleScrollViewer.Padding" Value="8,0,8,8"/>
+                        <Setter Target="ScheduleStackPanel.MinWidth" Value="920"/>
+                        <Setter Target="DaysHeaderGrid.(Grid.ColumnDefinitions)[0].Width" Value="90"/>
+                        <Setter Target="MorningGrid.(Grid.ColumnDefinitions)[0].Width" Value="90"/>
+                        <Setter Target="AfternoonGrid.(Grid.ColumnDefinitions)[0].Width" Value="90"/>
+                        <Setter Target="EveningGrid.(Grid.ColumnDefinitions)[0].Width" Value="90"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="WeeklyRosterTabletState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="RootGrid.Margin" Value="16,12,16,20"/>
+                        <Setter Target="WeekHeaderStack.Orientation" Value="Horizontal"/>
+                        <Setter Target="WeekHeaderStack.Spacing" Value="24"/>
+                        <Setter Target="WeekHeaderStack.Margin" Value="0,16"/>
+                        <Setter Target="WeekTitle.FontSize" Value="18"/>
+                        <Setter Target="ScheduleScrollViewer.Padding" Value="0"/>
+                        <Setter Target="ScheduleStackPanel.MinWidth" Value="0"/>
+                        <Setter Target="DaysHeaderGrid.(Grid.ColumnDefinitions)[0].Width" Value="120"/>
+                        <Setter Target="MorningGrid.(Grid.ColumnDefinitions)[0].Width" Value="120"/>
+                        <Setter Target="AfternoonGrid.(Grid.ColumnDefinitions)[0].Width" Value="120"/>
+                        <Setter Target="EveningGrid.(Grid.ColumnDefinitions)[0].Width" Value="120"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="WeeklyRosterDesktopState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointDesktop}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="RootGrid.Margin" Value="16,12,16,20"/>
+                        <Setter Target="WeekHeaderStack.Orientation" Value="Horizontal"/>
+                        <Setter Target="WeekHeaderStack.Spacing" Value="24"/>
+                        <Setter Target="WeekHeaderStack.Margin" Value="0,16"/>
+                        <Setter Target="WeekTitle.FontSize" Value="18"/>
+                        <Setter Target="ScheduleScrollViewer.Padding" Value="0"/>
+                        <Setter Target="ScheduleStackPanel.MinWidth" Value="0"/>
+                        <Setter Target="DaysHeaderGrid.(Grid.ColumnDefinitions)[0].Width" Value="120"/>
+                        <Setter Target="MorningGrid.(Grid.ColumnDefinitions)[0].Width" Value="120"/>
+                        <Setter Target="AfternoonGrid.(Grid.ColumnDefinitions)[0].Width" Value="120"/>
+                        <Setter Target="EveningGrid.(Grid.ColumnDefinitions)[0].Width" Value="120"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Spacing="24"
-                    Margin="0,16">
+        <StackPanel x:Name="WeekHeaderStack"
+                Grid.Row="0"
+                Orientation="Horizontal"
+                HorizontalAlignment="Center"
+                Spacing="24"
+                Margin="0,16">
             <Button Command="{x:Bind ViewModel.PreviousWeekCommand}"
                     Style="{StaticResource AppGhostButtonStyle}">
                 <FontIcon Glyph="&#xE72B;"
@@ -68,7 +127,8 @@
             </Button>
             <StackPanel VerticalAlignment="Center"
                         MinWidth="220">
-                <TextBlock Text="{x:Bind ViewModel.CurrentWeekStart, Mode=OneWay}"
+                <TextBlock x:Name="WeekTitle"
+                           Text="{x:Bind ViewModel.CurrentWeekStart, Mode=OneWay}"
                            HorizontalAlignment="Center"
                            FontSize="18"
                            FontWeight="Bold"
@@ -85,59 +145,62 @@
             </Button>
         </StackPanel>
 
-        <Grid Grid.Row="1"
-              Background="{StaticResource SurfaceHover}"
-              Padding="0,12"
-              BorderBrush="{StaticResource BorderBrush}"
-              BorderThickness="0,1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="SHIFT"
-                       Margin="16,0,0,0"
-                       FontWeight="Bold"
-                       Foreground="{StaticResource TextSecondary}"/>
-            <TextBlock Grid.Column="1"
-                       Text="Mon"
-                       HorizontalAlignment="Center"
-                       FontWeight="SemiBold"/>
-            <TextBlock Grid.Column="2"
-                       Text="Tue"
-                       HorizontalAlignment="Center"
-                       FontWeight="SemiBold"/>
-            <TextBlock Grid.Column="3"
-                       Text="Wed"
-                       HorizontalAlignment="Center"
-                       FontWeight="SemiBold"/>
-            <TextBlock Grid.Column="4"
-                       Text="Thu"
-                       HorizontalAlignment="Center"
-                       FontWeight="SemiBold"/>
-            <TextBlock Grid.Column="5"
-                       Text="Fri"
-                       HorizontalAlignment="Center"
-                       FontWeight="SemiBold"/>
-            <TextBlock Grid.Column="6"
-                       Text="Sat"
-                       HorizontalAlignment="Center"
-                       FontWeight="SemiBold"/>
-            <TextBlock Grid.Column="7"
-                       Text="Sun"
-                       HorizontalAlignment="Center"
-                       FontWeight="Bold"
-                       Foreground="{StaticResource ErrorStrong}"/>
-        </Grid>
-
-        <ScrollViewer Grid.Row="2">
-            <StackPanel>
-                <Grid MinHeight="120"
+        <ScrollViewer x:Name="ScheduleScrollViewer"
+                      Grid.Row="1"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="ScheduleStackPanel">
+                <Grid x:Name="DaysHeaderGrid"
+                      Background="{StaticResource SurfaceHover}"
+                      Padding="0,12"
+                      BorderBrush="{StaticResource BorderBrush}"
+                      BorderThickness="0,1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="SHIFT"
+                               Margin="16,0,0,0"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextSecondary}"/>
+                    <TextBlock Grid.Column="1"
+                               Text="Mon"
+                               HorizontalAlignment="Center"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="2"
+                               Text="Tue"
+                               HorizontalAlignment="Center"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="3"
+                               Text="Wed"
+                               HorizontalAlignment="Center"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="4"
+                               Text="Thu"
+                               HorizontalAlignment="Center"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="5"
+                               Text="Fri"
+                               HorizontalAlignment="Center"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="6"
+                               Text="Sat"
+                               HorizontalAlignment="Center"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="7"
+                               Text="Sun"
+                               HorizontalAlignment="Center"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource ErrorStrong}"/>
+                </Grid>
+                <Grid x:Name="MorningGrid"
+                      MinHeight="120"
                       BorderBrush="{StaticResource BorderBrush}"
                       BorderThickness="0,0,0,1">
                     <Grid.ColumnDefinitions>
@@ -206,7 +269,8 @@
                     </Border>
                 </Grid>
 
-                <Grid MinHeight="120"
+                    <Grid x:Name="AfternoonGrid"
+                        MinHeight="120"
                       BorderBrush="{StaticResource BorderBrush}"
                       BorderThickness="0,0,0,1">
                     <Grid.ColumnDefinitions>
@@ -275,7 +339,8 @@
                     </Border>
                 </Grid>
 
-                <Grid MinHeight="120"
+                    <Grid x:Name="EveningGrid"
+                        MinHeight="120"
                       BorderBrush="{StaticResource BorderBrush}"
                       BorderThickness="0,0,0,1">
                     <Grid.ColumnDefinitions>

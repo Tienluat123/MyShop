@@ -53,8 +53,51 @@
                 </Style>
         </ContentDialog.Resources>
 
-        <Grid Width="500"
+        <Grid x:Name="DialogRoot"
+              Width="500"
               Margin="-24">
+                <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="PromotionFormResponsiveStates">
+                                <VisualState x:Name="PromotionFormNarrowState">
+                                        <VisualState.StateTriggers>
+                                                <AdaptiveTrigger MinWindowWidth="0"/>
+                                        </VisualState.StateTriggers>
+                                        <VisualState.Setters>
+                                                <Setter Target="DialogRoot.Width" Value="Auto"/>
+                                                <Setter Target="DialogRoot.MaxWidth" Value="360"/>
+                                                <Setter Target="DialogRoot.Margin" Value="0"/>
+                                                <Setter Target="FormScrollViewer.Padding" Value="20,8,20,20"/>
+                                                <Setter Target="TypeValueGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                                                <Setter Target="TypeValueGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                                                <Setter Target="ValueStack.(Grid.Column)" Value="0"/>
+                                                <Setter Target="ValueStack.(Grid.Row)" Value="1"/>
+                                                <Setter Target="DateGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                                                <Setter Target="DateGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                                                <Setter Target="EndDateStack.(Grid.Column)" Value="0"/>
+                                                <Setter Target="EndDateStack.(Grid.Row)" Value="1"/>
+                                        </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PromotionFormWideState">
+                                        <VisualState.StateTriggers>
+                                                <AdaptiveTrigger MinWindowWidth="600"/>
+                                        </VisualState.StateTriggers>
+                                        <VisualState.Setters>
+                                                <Setter Target="DialogRoot.Width" Value="500"/>
+                                                <Setter Target="DialogRoot.MaxWidth" Value="500"/>
+                                                <Setter Target="DialogRoot.Margin" Value="-24"/>
+                                                <Setter Target="FormScrollViewer.Padding" Value="32,8,32,24"/>
+                                                <Setter Target="TypeValueGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                                                <Setter Target="TypeValueGrid.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                                                <Setter Target="ValueStack.(Grid.Column)" Value="1"/>
+                                                <Setter Target="ValueStack.(Grid.Row)" Value="0"/>
+                                                <Setter Target="DateGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                                                <Setter Target="DateGrid.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                                                <Setter Target="EndDateStack.(Grid.Column)" Value="1"/>
+                                                <Setter Target="EndDateStack.(Grid.Row)" Value="0"/>
+                                        </VisualState.Setters>
+                                </VisualState>
+                        </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
                 <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -66,9 +109,10 @@
                                 Subtitle="{Binding Subtitle}"
                                 CancelClicked="CancelButton_Click"/>
 
-                <ScrollViewer Grid.Row="1"
-                              Padding="32,8,32,24"
-                              MaxHeight="550">
+                    <ScrollViewer x:Name="FormScrollViewer"
+                                        Grid.Row="1"
+                                        Padding="32,8,32,24"
+                                        MaxHeight="550">
                         <StackPanel Spacing="16">
 
                                 <!-- ===== PROMOTION CODE ===== -->
@@ -89,12 +133,16 @@
                                 </StackPanel>
 
                                 <!-- ===== TYPE + VALUE ===== -->
-                                <Grid ColumnSpacing="16">
+                                <Grid x:Name="TypeValueGrid" ColumnSpacing="16" RowSpacing="12">
+                                        <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
+                                        <StackPanel Grid.Column="0" Grid.Row="0">
                                                 <TextBlock Text="TYPE"
                                                            Style="{StaticResource LabelStyle}"/>
                                                 <ComboBox SelectedIndex="{Binding SelectedTypeIndex, Mode=TwoWay}">
@@ -102,7 +150,7 @@
                                                         <ComboBoxItem Content="Fixed Amount (đ)"/>
                                                 </ComboBox>
                                         </StackPanel>
-                                        <StackPanel Grid.Column="1">
+                                        <StackPanel x:Name="ValueStack" Grid.Column="1" Grid.Row="0">
                                                 <TextBlock Text="VALUE"
                                                            Style="{StaticResource LabelStyle}"/>
                                                 <NumberBox Value="{Binding PromotionData.Value, Mode=TwoWay}"
@@ -158,12 +206,16 @@
                                 </Border>
 
                                 <!-- ===== START + END DATE ===== -->
-                                <Grid ColumnSpacing="16">
+                                <Grid x:Name="DateGrid" ColumnSpacing="16" RowSpacing="12">
+                                        <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
+                                        <StackPanel Grid.Column="0" Grid.Row="0">
                                                 <TextBlock Text="START DATE"
                                                            Style="{StaticResource LabelStyle}"/>
                                                 <CalendarDatePicker Date="{Binding PromotionData.StartDate, Mode=TwoWay, Converter={StaticResource DateConverter}}"
@@ -172,7 +224,7 @@
                                                                     Header=""
                                                                     HorizontalAlignment="Stretch"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Column="1">
+                                        <StackPanel x:Name="EndDateStack" Grid.Column="1" Grid.Row="0">
                                                 <TextBlock Text="END DATE"
                                                            Style="{StaticResource LabelStyle}"/>
                                                 <CalendarDatePicker Date="{Binding PromotionData.EndDate, Mode=TwoWay, Converter={StaticResource DateConverter}}"

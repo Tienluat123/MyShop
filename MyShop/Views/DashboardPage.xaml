@@ -16,27 +16,140 @@
     </Page.Resources>
 
     <Grid x:Name="RootGrid">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ResponsiveStates">
+                <VisualState x:Name="MobileState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="PageStackPanel.Padding" Value="{StaticResource PagePaddingMobile}"/>
+                        <Setter Target="KPICol0.ColumnSpacing" Value="{StaticResource CardGapMobile}"/>
+                        <Setter Target="KPICol0.RowSpacing" Value="{StaticResource CardGapMobile}"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[2].Width" Value="0"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[3].Width" Value="0"/>
+                        <Setter Target="Card1.(Grid.Column)" Value="0"/>
+                        <Setter Target="Card1.(Grid.Row)" Value="0"/>
+                        <Setter Target="Card2.(Grid.Column)" Value="1"/>
+                        <Setter Target="Card2.(Grid.Row)" Value="0"/>
+                        <Setter Target="Card3.(Grid.Column)" Value="0"/>
+                        <Setter Target="Card3.(Grid.Row)" Value="1"/>
+                        <Setter Target="Card4.(Grid.Column)" Value="1"/>
+                        <Setter Target="Card4.(Grid.Row)" Value="1"/>
+                        <Setter Target="ChartsGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="ChartsGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="ChartsGrid.ColumnSpacing" Value="{StaticResource CardGapMobile}"/>
+                        <Setter Target="ListsGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="ListsGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="ListsGrid.ColumnSpacing" Value="{StaticResource CardGapMobile}"/>
+                        <Setter Target="ListsGrid.RowSpacing" Value="{StaticResource CardGapMobile}"/>
+                        <Setter Target="TopProductsPanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="TopProductsPanel.(Grid.Row)" Value="0"/>
+                        <Setter Target="LowStockPanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="LowStockPanel.(Grid.Row)" Value="1"/>
+                        <Setter Target="PageTitle.FontSize" Value="24"/>
+                        <Setter Target="PageStackPanel.Spacing" Value="{StaticResource CardGapMobile}"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="TabletState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="768"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="PageStackPanel.Padding" Value="{StaticResource PagePaddingTablet}"/>
+                        <Setter Target="KPICol0.ColumnSpacing" Value="{StaticResource CardGapTablet}"/>
+                        <Setter Target="KPICol0.RowSpacing" Value="{StaticResource CardGapTablet}"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[2].Width" Value="0"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[3].Width" Value="0"/>
+                        <Setter Target="Card1.(Grid.Column)" Value="0"/>
+                        <Setter Target="Card1.(Grid.Row)" Value="0"/>
+                        <Setter Target="Card2.(Grid.Column)" Value="1"/>
+                        <Setter Target="Card2.(Grid.Row)" Value="0"/>
+                        <Setter Target="Card3.(Grid.Column)" Value="0"/>
+                        <Setter Target="Card3.(Grid.Row)" Value="1"/>
+                        <Setter Target="Card4.(Grid.Column)" Value="1"/>
+                        <Setter Target="Card4.(Grid.Row)" Value="1"/>
+                        <Setter Target="ChartsGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="ChartsGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="ChartsGrid.ColumnSpacing" Value="{StaticResource CardGapTablet}"/>
+                        <Setter Target="ListsGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="ListsGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="ListsGrid.ColumnSpacing" Value="{StaticResource CardGapTablet}"/>
+                        <Setter Target="ListsGrid.RowSpacing" Value="{StaticResource CardGapTablet}"/>
+                        <Setter Target="TopProductsPanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="TopProductsPanel.(Grid.Row)" Value="0"/>
+                        <Setter Target="LowStockPanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="LowStockPanel.(Grid.Row)" Value="1"/>
+                        <Setter Target="PageTitle.FontSize" Value="26"/>
+                        <Setter Target="PageStackPanel.Spacing" Value="{StaticResource CardGapTablet}"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="DesktopState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1200"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="PageStackPanel.Padding" Value="{StaticResource PagePaddingDesktop}"/>
+                        <Setter Target="KPICol0.ColumnSpacing" Value="{StaticResource CardGapDesktop}"/>
+                        <Setter Target="KPICol0.RowSpacing" Value="0"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[2].Width" Value="*"/>
+                        <Setter Target="KPICol0.(Grid.ColumnDefinitions)[3].Width" Value="*"/>
+                        <Setter Target="Card1.(Grid.Column)" Value="0"/>
+                        <Setter Target="Card1.(Grid.Row)" Value="0"/>
+                        <Setter Target="Card2.(Grid.Column)" Value="1"/>
+                        <Setter Target="Card2.(Grid.Row)" Value="0"/>
+                        <Setter Target="Card3.(Grid.Column)" Value="2"/>
+                        <Setter Target="Card3.(Grid.Row)" Value="0"/>
+                        <Setter Target="Card4.(Grid.Column)" Value="3"/>
+                        <Setter Target="Card4.(Grid.Row)" Value="0"/>
+                        <Setter Target="ChartsGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="ChartsGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="ChartsGrid.ColumnSpacing" Value="{StaticResource CardGapDesktop}"/>
+                        <Setter Target="ListsGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="ListsGrid.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="ListsGrid.ColumnSpacing" Value="{StaticResource CardGapDesktop}"/>
+                        <Setter Target="ListsGrid.RowSpacing" Value="0"/>
+                        <Setter Target="TopProductsPanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="TopProductsPanel.(Grid.Row)" Value="0"/>
+                        <Setter Target="LowStockPanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="LowStockPanel.(Grid.Row)" Value="0"/>
+                        <Setter Target="PageTitle.FontSize" Value="28"/>
+                        <Setter Target="PageStackPanel.Spacing" Value="{StaticResource CardGapDesktop}"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <StackPanel Padding="24" Spacing="24">
+            <StackPanel x:Name="PageStackPanel" Padding="24" Spacing="24">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <TextBlock FontSize="28" FontWeight="Bold" Text="DASHBOARD" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="PageTitle" FontSize="28" FontWeight="Bold" Text="DASHBOARD" VerticalAlignment="Center"/>
                     <TextBlock x:Name="DateLabel" VerticalAlignment="Bottom" Margin="20,0,0,4" Foreground="Gray"/>
                 </StackPanel>
 
-                <Grid ColumnSpacing="16">
+                <Grid x:Name="KPICol0" ColumnSpacing="16" RowSpacing="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <Border Grid.Column="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                    <Border x:Name="Card1" Grid.Column="0" Grid.Row="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Đơn hàng hôm nay" Foreground="Gray" FontSize="13"/>
                             <TextBlock Text="{x:Bind ViewModel.TodayOrdersCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="1" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                    <Border x:Name="Card2" Grid.Column="1" Grid.Row="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Doanh thu hôm nay" Foreground="Gray" FontSize="13"/>
                             <TextBlock Text="{x:Bind ViewModel.TodayRevenue, Mode=OneWay, Converter={StaticResource CurrencyConverter}}" 
@@ -44,14 +157,14 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="2" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                    <Border x:Name="Card3" Grid.Column="2" Grid.Row="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Tổng sản phẩm" Foreground="Gray" FontSize="13"/>
                             <TextBlock Text="{x:Bind ViewModel.ProductsCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="3" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                    <Border x:Name="Card4" Grid.Column="3" Grid.Row="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                         <StackPanel Spacing="4">
                             <TextBlock Text="SP sắp hết hàng" Foreground="Gray" FontSize="13"/>
                             <TextBlock Text="{x:Bind ViewModel.LowStockProducts.Count, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="Red"/>
@@ -59,24 +172,35 @@
                     </Border>
                 </Grid>
 
-                <Border Padding="20" Background="White" CornerRadius="12" BorderBrush="#E5E7EB" BorderThickness="1">
-                    <StackPanel Spacing="16">
-                        <Grid>
-                            <TextBlock x:Name="ChartMonthLabel" FontWeight="Bold" FontSize="18"/>
-                            <TextBlock x:Name="ChartTotalLabel" HorizontalAlignment="Right" Foreground="Gray" VerticalAlignment="Center"/>
-                        </Grid>
-                        <Canvas x:Name="RevenueChartCanvas" Height="220" HorizontalAlignment="Stretch"/>
-                        <StackPanel x:Name="ChartLabelsPanel" Orientation="Horizontal" Height="20"/>
-                    </StackPanel>
-                </Border>
+                <Grid x:Name="ChartsGrid" ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0"/>
+                    </Grid.ColumnDefinitions>
 
-                <Grid ColumnSpacing="24">
+                    <Border Grid.Column="0" Padding="20" Background="White" CornerRadius="12" BorderBrush="#E5E7EB" BorderThickness="1">
+                        <StackPanel Spacing="16">
+                            <Grid>
+                                <TextBlock x:Name="ChartMonthLabel" FontWeight="Bold" FontSize="18"/>
+                                <TextBlock x:Name="ChartTotalLabel" HorizontalAlignment="Right" Foreground="Gray" VerticalAlignment="Center"/>
+                            </Grid>
+                            <Canvas x:Name="RevenueChartCanvas" Height="220" HorizontalAlignment="Stretch"/>
+                            <StackPanel x:Name="ChartLabelsPanel" Orientation="Horizontal" Height="20"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="ListsGrid" ColumnSpacing="24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Column="0" Spacing="12">
+                    <StackPanel x:Name="TopProductsPanel" Grid.Column="0" Grid.Row="0" Spacing="12">
                         <TextBlock Text="Top 5 Sản phẩm bán chạy" FontSize="18" FontWeight="Bold"/>
                         <ListView ItemsSource="{x:Bind ViewModel.TopProducts, Mode=OneWay}" SelectionMode="None" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                             <ListView.ItemTemplate>
@@ -94,7 +218,7 @@
                         </ListView>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" Spacing="12">
+                    <StackPanel x:Name="LowStockPanel" Grid.Column="1" Grid.Row="0" Spacing="12">
                         <TextBlock Text="Top 5 Sản phẩm sắp hết hàng" FontSize="18" FontWeight="Bold"/>
                         <ListView ItemsSource="{x:Bind ViewModel.LowStockProducts, Mode=OneWay}" SelectionMode="None" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                             <ListView.ItemTemplate>

@@ -73,6 +73,12 @@ public sealed partial class MainPage : Page
             ContentFrame.Navigate(pageType);
             SelectNavigationItem(tag);
 
+            // Keep content-first flow on small screens by auto-collapsing the pane.
+            if (sender.DisplayMode is NavigationViewDisplayMode.Minimal or NavigationViewDisplayMode.Compact)
+            {
+                sender.IsPaneOpen = false;
+            }
+
             try
             {
                 var user = _sessionService.CurrentUser;

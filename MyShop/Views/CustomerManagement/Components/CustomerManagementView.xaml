@@ -44,37 +44,116 @@
     </Page.Resources>
 
 
-    <Border Grid.Row="1"
-            Margin="16,12,16,16"
-            Background="White"
-            CornerRadius="12"
-            BorderThickness="1"
-            BorderBrush="#EEEEEE">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+    <Grid x:Name="RootGrid">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CustomerResponsiveStates">
+                <VisualState x:Name="CustomerMobileState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ActionBarGrid.ColumnSpacing" Value="12"/>
+                        <Setter Target="ActionBarGrid.RowSpacing" Value="12"/>
+                        <Setter Target="SearchBorder.(Grid.Row)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Column)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="SearchBorder.Width" Value="Auto"/>
+                        <Setter Target="SearchBorder.HorizontalAlignment" Value="Stretch"/>
+                        <Setter Target="ActionBarStack.Orientation" Value="Vertical"/>
+                        <Setter Target="ActionBarStack.Spacing" Value="12"/>
+                        <Setter Target="AddCustomerButton.(Grid.Row)" Value="1"/>
+                        <Setter Target="AddCustomerButton.(Grid.Column)" Value="0"/>
+                        <Setter Target="AddCustomerButton.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="AddCustomerButton.HorizontalAlignment" Value="Stretch"/>
+                        <Setter Target="TableScroll.Padding" Value="8,0"/>
+                        <Setter Target="TableStackPanel.MinWidth" Value="980"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CustomerTabletState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ActionBarGrid.ColumnSpacing" Value="30"/>
+                        <Setter Target="ActionBarGrid.RowSpacing" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Row)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Column)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="SearchBorder.Width" Value="220"/>
+                        <Setter Target="SearchBorder.HorizontalAlignment" Value="Left"/>
+                        <Setter Target="ActionBarStack.Orientation" Value="Horizontal"/>
+                        <Setter Target="ActionBarStack.Spacing" Value="12"/>
+                        <Setter Target="AddCustomerButton.(Grid.Row)" Value="0"/>
+                        <Setter Target="AddCustomerButton.(Grid.Column)" Value="1"/>
+                        <Setter Target="AddCustomerButton.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="AddCustomerButton.HorizontalAlignment" Value="Right"/>
+                        <Setter Target="TableScroll.Padding" Value="0"/>
+                        <Setter Target="TableStackPanel.MinWidth" Value="0"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CustomerDesktopState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointDesktop}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ActionBarGrid.ColumnSpacing" Value="30"/>
+                        <Setter Target="ActionBarGrid.RowSpacing" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Row)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Column)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="SearchBorder.Width" Value="250"/>
+                        <Setter Target="SearchBorder.HorizontalAlignment" Value="Left"/>
+                        <Setter Target="ActionBarStack.Orientation" Value="Horizontal"/>
+                        <Setter Target="ActionBarStack.Spacing" Value="12"/>
+                        <Setter Target="AddCustomerButton.(Grid.Row)" Value="0"/>
+                        <Setter Target="AddCustomerButton.(Grid.Column)" Value="1"/>
+                        <Setter Target="AddCustomerButton.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="AddCustomerButton.HorizontalAlignment" Value="Right"/>
+                        <Setter Target="TableScroll.Padding" Value="0"/>
+                        <Setter Target="TableStackPanel.MinWidth" Value="0"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <Border Margin="16,12,16,16"
+                Background="White"
+                CornerRadius="12"
+                BorderThickness="1"
+                BorderBrush="#EEEEEE">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
 
-            <Grid Grid.Row="0"
-                  Padding="16,16,16,12"
-                  ColumnSpacing="30">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0"
+                      x:Name="ActionBarGrid"
+                      Padding="16,16,16,12"
+                      ColumnSpacing="30"
+                      RowSpacing="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
                 <Button Grid.Column="1"
-                        HorizontalAlignment="Right"
-                        Command="{x:Bind ViewModel.AddCustomerCommand}"
-                        Background="#D97706"
-                        Foreground="White"
-                        Height="35"
-                        Padding="20,0"
-                        CornerRadius="20"
-                        VerticalAlignment="Center"
-                        BorderThickness="0">
+                    Grid.Row="0"
+                    x:Name="AddCustomerButton"
+                    HorizontalAlignment="Right"
+                    Command="{x:Bind ViewModel.AddCustomerCommand}"
+                    Background="#D97706"
+                    Foreground="White"
+                    Height="35"
+                    Padding="20,0"
+                    CornerRadius="20"
+                    VerticalAlignment="Center"
+                    BorderThickness="0">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="8">
                         <FontIcon Glyph="&#xE710;"
@@ -84,8 +163,9 @@
                     </StackPanel>
                 </Button>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
-                    <Border HorizontalAlignment="Left"
+                <StackPanel x:Name="ActionBarStack" Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Spacing="12">
+                    <Border x:Name="SearchBorder"
+                            HorizontalAlignment="Left"
                             Background="#F0F0F0"
                             CornerRadius="20"
                             BorderThickness="1"
@@ -126,7 +206,8 @@
                     </Border>
 
                     <!-- Advanced Sort Button -->
-                    <Button Background="White"
+                        <Button x:Name="AdvancedSortButton"
+                            Background="White"
                             Height="35"
                             CornerRadius="20"
                             BorderThickness="1"
@@ -209,30 +290,33 @@
             <Border Grid.Row="1">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Header Row -->
-                    <Border Grid.Row="0"
-                            Background="#FAFAFA"
-                            Padding="16,12"
-                            BorderBrush="#EEEEEE"
-                            BorderThickness="0,0,0,1">
-                        <Grid ColumnSpacing="8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.5*"/>
-                                <ColumnDefinition Width="1.2*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="0.5*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="0.9*"/>
-                                <ColumnDefinition Width="0.9*"/>
-                                <ColumnDefinition Width="0.8*"/>
-                                <ColumnDefinition Width="100"/>
-                            </Grid.ColumnDefinitions>
+                    <ScrollViewer Grid.Row="0"
+                                  x:Name="TableScroll"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="TableStackPanel">
+                            <!-- Header Row -->
+                            <Border Background="#FAFAFA"
+                                    Padding="16,12"
+                                    BorderBrush="#EEEEEE"
+                                    BorderThickness="0,0,0,1">
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.5*"/>
+                                        <ColumnDefinition Width="1.2*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="0.5*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="0.9*"/>
+                                        <ColumnDefinition Width="0.9*"/>
+                                        <ColumnDefinition Width="0.8*"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
 
                             <!-- Name -->
                             <Button Style="{StaticResource SortHeaderButtonStyle}"
@@ -331,31 +415,29 @@
                                        FontWeight="Bold"
                                        Foreground="Gray"
                                        HorizontalAlignment="Center"/>
-                        </Grid>
-                    </Border>
+                                </Grid>
+                            </Border>
 
-                    <!-- Data Rows -->
-                    <ScrollViewer Grid.Row="1"
-                                  VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{x:Bind ViewModel.DisplayCustomers, Mode=OneWay}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="viewModels:CustomerListItem">
-                                    <Border BorderBrush="#F9F9F9"
-                                            BorderThickness="0,0,0,1"
-                                            Padding="16,10">
-                                        <Grid ColumnSpacing="8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1.5*"/>
-                                                <ColumnDefinition Width="1.2*"/>
-                                                <ColumnDefinition Width="1*"/>
-                                                <ColumnDefinition Width="1*"/>
-                                                <ColumnDefinition Width="0.5*"/>
-                                                <ColumnDefinition Width="1*"/>
-                                                <ColumnDefinition Width="0.9*"/>
-                                                <ColumnDefinition Width="0.9*"/>
-                                                <ColumnDefinition Width="0.8*"/>
-                                                <ColumnDefinition Width="100"/>
-                                            </Grid.ColumnDefinitions>
+                            <!-- Data Rows -->
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.DisplayCustomers, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:CustomerListItem">
+                                        <Border BorderBrush="#F9F9F9"
+                                                BorderThickness="0,0,0,1"
+                                                Padding="16,10">
+                                            <Grid ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="1.5*"/>
+                                                    <ColumnDefinition Width="1.2*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="0.5*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="0.9*"/>
+                                                    <ColumnDefinition Width="0.9*"/>
+                                                    <ColumnDefinition Width="0.8*"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
 
                                             <!-- Name -->
                                             <StackPanel Orientation="Horizontal"
@@ -477,15 +559,16 @@
                                                               FontSize="16"/>
                                                 </Button>
                                             </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </ScrollViewer>
 
                     <!-- Paging Controls -->
-                    <Border Grid.Row="2"
+                        <Border Grid.Row="1"
                             Background="White"
                             Padding="10"
                             BorderBrush="#EEEEEE"
@@ -532,4 +615,5 @@
             </Border>
         </Grid>
     </Border>
+</Grid>
 </Page>

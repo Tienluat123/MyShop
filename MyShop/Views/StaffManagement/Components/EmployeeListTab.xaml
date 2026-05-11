@@ -45,23 +45,148 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Padding="0"
-          Background="#F5F5F5">
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
+          <Grid x:Name="RootGrid"
+              Padding="0"
+              Background="#F5F5F5">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="EmployeeListResponsiveStates">
+                <VisualState x:Name="EmployeeListMobileState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SummaryGrid.ColumnSpacing" Value="12"/>
+                        <Setter Target="SummaryGrid.RowSpacing" Value="12"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[2].Width" Value="0"/>
+                        <Setter Target="PayrollCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="PayrollCard.(Grid.Column)" Value="0"/>
+                        <Setter Target="ActiveCard.(Grid.Row)" Value="1"/>
+                        <Setter Target="ActiveCard.(Grid.Column)" Value="0"/>
+                        <Setter Target="TopPerformerCard.(Grid.Row)" Value="2"/>
+                        <Setter Target="TopPerformerCard.(Grid.Column)" Value="0"/>
+                        <Setter Target="ActionBarGrid.ColumnSpacing" Value="12"/>
+                        <Setter Target="ActionBarGrid.RowSpacing" Value="12"/>
+                        <Setter Target="SearchBorder.(Grid.Row)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Column)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.ColumnSpan)" Value="4"/>
+                        <Setter Target="SearchBorder.Width" Value="Auto"/>
+                        <Setter Target="SearchBorder.HorizontalAlignment" Value="Stretch"/>
+                        <Setter Target="FilterStack.Orientation" Value="Vertical"/>
+                        <Setter Target="FilterStack.Spacing" Value="12"/>
+                        <Setter Target="FilterStack.(Grid.Row)" Value="1"/>
+                        <Setter Target="FilterStack.(Grid.Column)" Value="0"/>
+                        <Setter Target="FilterStack.(Grid.ColumnSpan)" Value="4"/>
+                        <Setter Target="AddEmployeeButton.(Grid.Row)" Value="2"/>
+                        <Setter Target="AddEmployeeButton.(Grid.Column)" Value="0"/>
+                        <Setter Target="AddEmployeeButton.(Grid.ColumnSpan)" Value="4"/>
+                        <Setter Target="AddEmployeeButton.HorizontalAlignment" Value="Stretch"/>
+                        <Setter Target="TableScroll.Padding" Value="8,0"/>
+                        <Setter Target="TableStackPanel.MinWidth" Value="980"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="EmployeeListTabletState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SummaryGrid.ColumnSpacing" Value="16"/>
+                        <Setter Target="SummaryGrid.RowSpacing" Value="12"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[2].Width" Value="0"/>
+                        <Setter Target="PayrollCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="PayrollCard.(Grid.Column)" Value="0"/>
+                        <Setter Target="ActiveCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="ActiveCard.(Grid.Column)" Value="1"/>
+                        <Setter Target="TopPerformerCard.(Grid.Row)" Value="1"/>
+                        <Setter Target="TopPerformerCard.(Grid.Column)" Value="0"/>
+                        <Setter Target="TopPerformerCard.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="ActionBarGrid.ColumnSpacing" Value="16"/>
+                        <Setter Target="ActionBarGrid.RowSpacing" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Row)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Column)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="SearchBorder.Width" Value="260"/>
+                        <Setter Target="SearchBorder.HorizontalAlignment" Value="Left"/>
+                        <Setter Target="FilterStack.Orientation" Value="Horizontal"/>
+                        <Setter Target="FilterStack.Spacing" Value="8"/>
+                        <Setter Target="FilterStack.(Grid.Row)" Value="0"/>
+                        <Setter Target="FilterStack.(Grid.Column)" Value="1"/>
+                        <Setter Target="FilterStack.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="AddEmployeeButton.(Grid.Row)" Value="0"/>
+                        <Setter Target="AddEmployeeButton.(Grid.Column)" Value="3"/>
+                        <Setter Target="AddEmployeeButton.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="AddEmployeeButton.HorizontalAlignment" Value="Right"/>
+                        <Setter Target="TableScroll.Padding" Value="0"/>
+                        <Setter Target="TableStackPanel.MinWidth" Value="0"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="EmployeeListDesktopState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointDesktop}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SummaryGrid.ColumnSpacing" Value="16"/>
+                        <Setter Target="SummaryGrid.RowSpacing" Value="0"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="SummaryGrid.(Grid.ColumnDefinitions)[2].Width" Value="*"/>
+                        <Setter Target="PayrollCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="PayrollCard.(Grid.Column)" Value="0"/>
+                        <Setter Target="ActiveCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="ActiveCard.(Grid.Column)" Value="1"/>
+                        <Setter Target="TopPerformerCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="TopPerformerCard.(Grid.Column)" Value="2"/>
+                        <Setter Target="TopPerformerCard.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="ActionBarGrid.ColumnSpacing" Value="16"/>
+                        <Setter Target="ActionBarGrid.RowSpacing" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Row)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.Column)" Value="0"/>
+                        <Setter Target="SearchBorder.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="SearchBorder.Width" Value="320"/>
+                        <Setter Target="SearchBorder.HorizontalAlignment" Value="Left"/>
+                        <Setter Target="FilterStack.Orientation" Value="Horizontal"/>
+                        <Setter Target="FilterStack.Spacing" Value="8"/>
+                        <Setter Target="FilterStack.(Grid.Row)" Value="0"/>
+                        <Setter Target="FilterStack.(Grid.Column)" Value="1"/>
+                        <Setter Target="FilterStack.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="AddEmployeeButton.(Grid.Row)" Value="0"/>
+                        <Setter Target="AddEmployeeButton.(Grid.Column)" Value="3"/>
+                        <Setter Target="AddEmployeeButton.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="AddEmployeeButton.HorizontalAlignment" Value="Right"/>
+                        <Setter Target="TableScroll.Padding" Value="0"/>
+                        <Setter Target="TableStackPanel.MinWidth" Value="0"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0"
+        <Grid x:Name="SummaryGrid"
+              Grid.Row="0"
               Margin="16,12,16,8"
               ColumnSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
+            <Border x:Name="PayrollCard"
+                    Grid.Column="0"
                     Background="White"
                     Padding="20"
                     CornerRadius="12"
@@ -79,7 +204,8 @@
                 </StackPanel>
             </Border>
 
-            <Border Grid.Column="1"
+                <Border x:Name="ActiveCard"
+                    Grid.Column="1"
                     Background="White"
                     Padding="20"
                     CornerRadius="12"
@@ -96,7 +222,8 @@
                 </StackPanel>
             </Border>
 
-            <Border Grid.Column="2"
+                <Border x:Name="TopPerformerCard"
+                    Grid.Column="2"
                     Background="White"
                     Padding="20"
                     CornerRadius="12"
@@ -142,8 +269,16 @@
                 </Grid.RowDefinitions>
 
                 <!-- Search and Filter Row -->
-                <Grid Grid.Row="0"
-                      Padding="16,16,16,12">
+                                <Grid Grid.Row="0"
+                                            x:Name="ActionBarGrid"
+                                            Padding="16,16,16,12"
+                                            ColumnSpacing="16"
+                                            RowSpacing="0">
+                                        <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
@@ -151,7 +286,9 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="3"
+                                        <Button x:Name="AddEmployeeButton"
+                                                        Grid.Column="3"
+                                                        Grid.Row="0"
                             Command="{x:Bind ViewModel.AddEmployeeCommand}"
                             Background="#D97706"
                             Foreground="White"
@@ -170,7 +307,9 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-                    <Border Grid.Column="0"
+                        <Border x:Name="SearchBorder"
+                            Grid.Column="0"
+                            Grid.Row="0"
                             Width="320"
                             Height="35"
                             Background="#F0F0F0"
@@ -210,12 +349,15 @@
                             </TextBox>
                         </Grid>
                     </Border>
-                    <StackPanel Grid.Column="1"
+                    <StackPanel x:Name="FilterStack"
+                                Grid.Column="1"
+                                Grid.Row="0"
                                 Orientation="Horizontal"
                                 Margin="12,0,0,0"
                                 Spacing="8">
 
-                        <Border Background="White"
+                        <Border x:Name="RoleFilterBorder"
+                            Background="White"
                                 Height="35"
                                 CornerRadius="20"
                                 BorderThickness="1"
@@ -244,7 +386,8 @@
                             </ComboBox>
                         </Border>
 
-                        <Border Background="White"
+                        <Border x:Name="StatusFilterBorder"
+                            Background="White"
                                 Height="35"
                                 CornerRadius="20"
                                 BorderThickness="1"
@@ -274,7 +417,8 @@
                         </Border>
 
                         <!-- Advanced Sort Button -->
-                        <Button Background="White"
+                        <Button x:Name="AdvancedSortButton"
+                            Background="White"
                                 Height="35"
                                 CornerRadius="20"
                                 BorderThickness="1"
@@ -354,31 +498,40 @@
                 </Grid>
 
                 <!-- List Grid with Header and Paging -->
-                <Grid Grid.Row="1">
+                    <Grid Grid.Row="1"
+                        RowSpacing="8">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Header Row -->
-                    <Border Grid.Row="0"
-                            Background="#FAFAFA"
-                            Padding="16,12"
-                            BorderBrush="#EEEEEE"
-                            BorderThickness="0,1,0,1">
-                        <Grid ColumnSpacing="10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="0.8*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="0.7*"/>
-                                <ColumnDefinition Width="0.5*"/>
-                                <ColumnDefinition Width="1.1*"/>
-                                <ColumnDefinition Width="1.3*"/>
-                                <ColumnDefinition Width="100"/>
-                            </Grid.ColumnDefinitions>
+                    <ScrollViewer Grid.Row="0"
+                                  x:Name="TableScroll"
+                                  Margin="0,0,0,4"
+                                  MinHeight="220"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  HorizontalScrollMode="Enabled"
+                                  IsHorizontalRailEnabled="True"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  VerticalScrollMode="Disabled">
+                        <StackPanel x:Name="TableStackPanel">
+                            <!-- Header Row -->
+                            <Border Background="#FAFAFA"
+                                    Padding="16,12"
+                                    BorderBrush="#EEEEEE"
+                                    BorderThickness="0,1,0,1">
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="0.8*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="0.7*"/>
+                                        <ColumnDefinition Width="0.5*"/>
+                                        <ColumnDefinition Width="1.1*"/>
+                                        <ColumnDefinition Width="1.3*"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
 
                             <!-- Column 0: EMPLOYEE -->
                             <Button Style="{StaticResource SortHeaderButtonStyle}"
@@ -519,30 +672,28 @@
                                        FontWeight="Bold"
                                        Foreground="Gray"
                                        HorizontalAlignment="Center"/>
-                        </Grid>
-                    </Border>
+                                </Grid>
+                            </Border>
 
-                    <!-- List -->
-                    <ScrollViewer Grid.Row="1"
-                                  VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{x:Bind ViewModel.DisplayEmployees, Mode=OneWay}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:UserSalaryInfo">
-                                    <Border BorderBrush="#F9F9F9"
-                                            BorderThickness="0,0,0,1"
-                                            Padding="16,10">
-                                        <Grid ColumnSpacing="10">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="2*"/>
-                                                <ColumnDefinition Width="1*"/>
-                                                <ColumnDefinition Width="0.8*"/>
-                                                <ColumnDefinition Width="1*"/>
-                                                <ColumnDefinition Width="0.7*"/>
-                                                <ColumnDefinition Width="0.5*"/>
-                                                <ColumnDefinition Width="1.1*"/>
-                                                <ColumnDefinition Width="1.3*"/>
-                                                <ColumnDefinition Width="100"/>
-                                            </Grid.ColumnDefinitions>
+                            <!-- List -->
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.DisplayEmployees, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodels:UserSalaryInfo">
+                                        <Border BorderBrush="#F9F9F9"
+                                                BorderThickness="0,0,0,1"
+                                                Padding="16,10">
+                                            <Grid ColumnSpacing="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="2*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="0.8*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="0.7*"/>
+                                                    <ColumnDefinition Width="0.5*"/>
+                                                    <ColumnDefinition Width="1.1*"/>
+                                                    <ColumnDefinition Width="1.3*"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
 
                                             <StackPanel Orientation="Horizontal"
                                                         Spacing="8">
@@ -643,15 +794,16 @@
                                                               FontSize="16"/>
                                                 </Button>
                                             </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </ScrollViewer>
 
                     <!-- Paging Controls -->
-                    <Border Grid.Row="2"
+                        <Border Grid.Row="1"
                             Background="White"
                             Padding="10"
                             BorderBrush="#EEEEEE"
@@ -697,5 +849,6 @@
                 </Grid>
             </Grid>
         </Border>
-    </Grid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>
