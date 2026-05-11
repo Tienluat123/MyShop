@@ -9,6 +9,7 @@ using MyShop.Models;
 using MyShop.Services;
 using MyShop.Data;
 using System.Linq;
+using System.IO;
 
 namespace MyShop.Services;
 
@@ -19,7 +20,7 @@ public interface IAiAssistantService
 
 public class AiAssistantService : IAiAssistantService
 {
-    private readonly string _apiKey = "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";
+    private string _apiKey = ""; // Will be loaded from file
     private readonly string _baseUrl = "https://api.groq.com/openai/v1/chat/completions";
     private readonly HttpClient _httpClient;
     
@@ -34,6 +35,7 @@ public class AiAssistantService : IAiAssistantService
         ICustomerService customerService,
         IPromotionService promotionService)
     {
+        LoadApiKey();
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         
@@ -43,10 +45,30 @@ public class AiAssistantService : IAiAssistantService
         _promotionService = promotionService;
     }
 
+    private void LoadApiKey()
+    {
+        try
+        {
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SecretConfig.json");
+            if (File.Exists(configPath))
+            {
+                var json = File.ReadAllText(configPath);
+                using var doc = JsonDocument.Parse(json);
+                _apiKey = doc.RootElement.GetProperty("GroqApiKey").GetString() ?? "";
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading API Key: {ex.Message}");
+        }
+    }
+
     public async Task<string> GetAiResponse(string userMessage, List<ChatMessage> history, string mode)
     {
         try
         {
+            if (string.IsNullOrEmpty(_apiKey)) return "API Key missing. Please check SecretConfig.json.";
+
             var shopContext = await GetOptimizedShopContext();
 
             var messages = new List<object>
