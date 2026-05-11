@@ -20,7 +20,7 @@
                                 <ResourceDictionary Source="ms-appx:///Styles/Navigation.xaml"/>
                                 <ResourceDictionary Source="ms-appx:///Styles/Components.xaml"/>
 
-                                <converters:ImageSourceConverter x:Key="ImageSourceConverter" DecodeWidth="300" />
+                                <converters:ImageSourceConverter x:Key="ImageSourceConverter" DecodeWidth="180" />
                         </ResourceDictionary.MergedDictionaries>
 
                         <!-- Fallback keys for TeachingTip styles on Uno -->

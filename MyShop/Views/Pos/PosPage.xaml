@@ -346,33 +346,9 @@
                                                     FontSize="{StaticResource Size40}"
                                                     Foreground="{StaticResource Gray200}"
                                                     Glyph="&#xEB9F;"/>
-                                                <Image Source="{Binding PrimaryImageUrl, Converter={StaticResource ImageSourceConverter}}"
+                                                <Image Source="{Binding PrimaryImageUrl, Converter={StaticResource ImageSourceConverter}, ConverterParameter=180}"
                                                        Stretch="UniformToFill"
                                                        Visibility="{Binding HasPrimaryImage, Converter={StaticResource BoolToVisibilityConverter}}"/>
-
-                                                <ItemsControl VerticalAlignment="Bottom"
-                                                              HorizontalAlignment="Right"
-                                                              Margin="0,0,8,8"
-                                                              ItemsSource="{Binding SecondaryImageUrls}"
-                                                              Visibility="{Binding HasSecondaryImages, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" Spacing="4"/>
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border Width="18"
-                                                                    Height="18"
-                                                                    CornerRadius="4"
-                                                                    BorderBrush="White"
-                                                                    BorderThickness="1">
-                                                                <Image Source="{Binding Converter={StaticResource ImageSourceConverter}}"
-                                                                       Stretch="UniformToFill"/>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
                                             </Grid>
                                         </Border>
 
