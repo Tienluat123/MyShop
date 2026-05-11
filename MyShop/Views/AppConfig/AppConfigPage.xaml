@@ -35,9 +35,53 @@
     </Page.Resources>
 
     <!-- ===================== ROOT SCROLL ===================== -->
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled">
-        <Grid Margin="32,28,32,32">
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                <Grid x:Name="RootGrid"
+                          Margin="32,28,32,32">
+                        <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="AppConfigResponsiveStates">
+                                        <VisualState x:Name="AppConfigMobileState">
+                                                <VisualState.StateTriggers>
+                                                        <AdaptiveTrigger MinWindowWidth="0"/>
+                                                </VisualState.StateTriggers>
+                                                <VisualState.Setters>
+                                                        <Setter Target="RootGrid.Margin" Value="16,16,16,20"/>
+                                                        <Setter Target="HeaderStack.Orientation" Value="Vertical"/>
+                                                        <Setter Target="HeaderStack.Spacing" Value="10"/>
+                                                        <Setter Target="ActionButtons.Orientation" Value="Vertical"/>
+                                                        <Setter Target="ActionButtons.HorizontalAlignment" Value="Stretch"/>
+                                                        <Setter Target="SaveButton.HorizontalAlignment" Value="Stretch"/>
+                                                </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="AppConfigTabletState">
+                                                <VisualState.StateTriggers>
+                                                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
+                                                </VisualState.StateTriggers>
+                                                <VisualState.Setters>
+                                                        <Setter Target="RootGrid.Margin" Value="24,24,24,28"/>
+                                                        <Setter Target="HeaderStack.Orientation" Value="Horizontal"/>
+                                                        <Setter Target="HeaderStack.Spacing" Value="14"/>
+                                                        <Setter Target="ActionButtons.Orientation" Value="Horizontal"/>
+                                                        <Setter Target="ActionButtons.HorizontalAlignment" Value="Right"/>
+                                                        <Setter Target="SaveButton.HorizontalAlignment" Value="Stretch"/>
+                                                </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="AppConfigDesktopState">
+                                                <VisualState.StateTriggers>
+                                                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointDesktop}"/>
+                                                </VisualState.StateTriggers>
+                                                <VisualState.Setters>
+                                                        <Setter Target="RootGrid.Margin" Value="32,28,32,32"/>
+                                                        <Setter Target="HeaderStack.Orientation" Value="Horizontal"/>
+                                                        <Setter Target="HeaderStack.Spacing" Value="14"/>
+                                                        <Setter Target="ActionButtons.Orientation" Value="Horizontal"/>
+                                                        <Setter Target="ActionButtons.HorizontalAlignment" Value="Right"/>
+                                                        <Setter Target="SaveButton.HorizontalAlignment" Value="Stretch"/>
+                                                </VisualState.Setters>
+                                        </VisualState>
+                                </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <!-- Page Header 0 -->
@@ -60,9 +104,10 @@
             </Grid.RowDefinitions>
 
             <!-- ===================== PAGE HEADER ===================== -->
-            <StackPanel Grid.Row="0"
-                    Orientation="Horizontal"
-                    Spacing="14">
+            <StackPanel x:Name="HeaderStack"
+                        Grid.Row="0"
+                        Orientation="Horizontal"
+                        Spacing="14">
                 <Border Width="36"
                         Height="36"
                         Background="#FEF3C7"
@@ -95,11 +140,13 @@
             <components:FunctionalitySettingsCard Grid.Row="6"/>
 
             <!-- ===================== ACTION BUTTONS ===================== -->
-            <StackPanel Grid.Row="8"
+            <StackPanel x:Name="ActionButtons"
+                        Grid.Row="8"
                         Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         Spacing="12">
-                <Button Style="{StaticResource PrimaryBtnStyle}"
+                <Button x:Name="SaveButton"
+                        Style="{StaticResource PrimaryBtnStyle}"
                         Command="{Binding SaveSettingsCommand}"
                         Content="Save Changes"/>
             </StackPanel>

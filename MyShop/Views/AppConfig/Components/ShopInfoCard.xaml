@@ -92,7 +92,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Style="{StaticResource CardStyle}">
+        <Border Style="{StaticResource CardStyle}">
         <StackPanel>
             <!-- Header -->
             <StackPanel Orientation="Horizontal"
@@ -118,24 +118,65 @@
                     Margin="0,0,0,20"/>
             <Border Style="{StaticResource DividerStyle}"/>
 
-            <!-- Fields Grid -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="16"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="16"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+                        <!-- Fields Grid -->
+                        <Grid x:Name="FieldsGrid">
+                                <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="ShopInfoResponsiveStates">
+                                                <VisualState x:Name="ShopInfoMobileState">
+                                                        <VisualState.StateTriggers>
+                                                                <AdaptiveTrigger MinWindowWidth="0"/>
+                                                        </VisualState.StateTriggers>
+                                                        <VisualState.Setters>
+                                                                <Setter Target="FieldsGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                                                                <Setter Target="FieldsGrid.(Grid.ColumnDefinitions)[2].Width" Value="0"/>
+                                                                <Setter Target="ShopCodePanel.(Grid.Row)" Value="2"/>
+                                                                <Setter Target="ShopCodePanel.(Grid.Column)" Value="0"/>
+                                                                <Setter Target="AddressPanel.(Grid.ColumnSpan)" Value="1"/>
+                                                                <Setter Target="PhonePanel.(Grid.Row)" Value="6"/>
+                                                                <Setter Target="PhonePanel.(Grid.Column)" Value="0"/>
+                                                                <Setter Target="EmailPanel.(Grid.Row)" Value="8"/>
+                                                                <Setter Target="EmailPanel.(Grid.Column)" Value="0"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="ShopInfoWideState">
+                                                        <VisualState.StateTriggers>
+                                                                <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
+                                                        </VisualState.StateTriggers>
+                                                        <VisualState.Setters>
+                                                                <Setter Target="FieldsGrid.(Grid.ColumnDefinitions)[1].Width" Value="20"/>
+                                                                <Setter Target="FieldsGrid.(Grid.ColumnDefinitions)[2].Width" Value="*"/>
+                                                                <Setter Target="ShopCodePanel.(Grid.Row)" Value="0"/>
+                                                                <Setter Target="ShopCodePanel.(Grid.Column)" Value="2"/>
+                                                                <Setter Target="AddressPanel.(Grid.ColumnSpan)" Value="3"/>
+                                                                <Setter Target="PhonePanel.(Grid.Row)" Value="6"/>
+                                                                <Setter Target="PhonePanel.(Grid.Column)" Value="0"/>
+                                                                <Setter Target="EmailPanel.(Grid.Row)" Value="6"/>
+                                                                <Setter Target="EmailPanel.(Grid.Column)" Value="2"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                        </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="12"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="12"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="12"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="12"/>
+                                        <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
                 <!-- Shop Name -->
-                <StackPanel Grid.Row="0"
-                        Grid.Column="0">
+                                <StackPanel x:Name="ShopNamePanel"
+                                                        Grid.Row="0"
+                                                        Grid.Column="0">
                     <TextBlock Text="Shop Name"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
@@ -143,8 +184,9 @@
                 </StackPanel>
 
                 <!-- Shop Code -->
-                <StackPanel Grid.Row="0"
-                        Grid.Column="2">
+                                <StackPanel x:Name="ShopCodePanel"
+                                                        Grid.Row="0"
+                                                        Grid.Column="2">
                     <TextBlock Text="Shop Code"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
@@ -152,9 +194,10 @@
                 </StackPanel>
 
                 <!-- Address -->
-                <StackPanel Grid.Row="2"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="3">
+                                <StackPanel x:Name="AddressPanel"
+                                                        Grid.Row="4"
+                                                        Grid.Column="0"
+                                                        Grid.ColumnSpan="3">
                     <TextBlock Text="Address"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
@@ -162,8 +205,9 @@
                 </StackPanel>
 
                 <!-- Phone -->
-                <StackPanel Grid.Row="4"
-                        Grid.Column="0">
+                                <StackPanel x:Name="PhonePanel"
+                                                        Grid.Row="6"
+                                                        Grid.Column="0">
                     <TextBlock Text="Phone Number"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"
@@ -171,8 +215,9 @@
                 </StackPanel>
 
                 <!-- Email -->
-                <StackPanel Grid.Row="4"
-                        Grid.Column="2">
+                                <StackPanel x:Name="EmailPanel"
+                                                        Grid.Row="6"
+                                                        Grid.Column="2">
                     <TextBlock Text="Contact Email"
                             Style="{StaticResource FieldLabelStyle}"/>
                     <TextBox Style="{StaticResource ConfigTextBoxStyle}"

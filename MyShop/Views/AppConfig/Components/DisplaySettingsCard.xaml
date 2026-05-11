@@ -126,12 +126,41 @@
             <Border Style="{StaticResource DividerStyle}"/>
 
             <!-- Items Per Page -->
-            <Grid Style="{StaticResource SettingRowStyle}"
-                    Margin="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="200"/>
-                </Grid.ColumnDefinitions>
+                        <Grid x:Name="SettingsGrid"
+                                  Style="{StaticResource SettingRowStyle}"
+                                  Margin="0">
+                                <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="DisplaySettingsResponsiveStates">
+                                                <VisualState x:Name="DisplaySettingsMobileState">
+                                                        <VisualState.StateTriggers>
+                                                                <AdaptiveTrigger MinWindowWidth="0"/>
+                                                        </VisualState.StateTriggers>
+                                                        <VisualState.Setters>
+                                                                <Setter Target="SettingsGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                                                                <Setter Target="ItemsPerPageCombo.(Grid.Row)" Value="1"/>
+                                                                <Setter Target="ItemsPerPageCombo.(Grid.Column)" Value="0"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="DisplaySettingsWideState">
+                                                        <VisualState.StateTriggers>
+                                                                <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
+                                                        </VisualState.StateTriggers>
+                                                        <VisualState.Setters>
+                                                                <Setter Target="SettingsGrid.(Grid.ColumnDefinitions)[1].Width" Value="200"/>
+                                                                <Setter Target="ItemsPerPageCombo.(Grid.Row)" Value="0"/>
+                                                                <Setter Target="ItemsPerPageCombo.(Grid.Column)" Value="1"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                        </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="200"/>
+                                </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0"
                         VerticalAlignment="Center">
                     <TextBlock Text="Items Per Page (Pagination)"
@@ -140,7 +169,9 @@
                     <TextBlock Text="Number of products displayed on each list page."
                                Style="{StaticResource SectionDescStyle}"/>
                 </StackPanel>
-                <ComboBox Grid.Column="1"
+                <ComboBox x:Name="ItemsPerPageCombo"
+                          Grid.Column="1"
+                          Grid.Row="0"
                           Style="{StaticResource ConfigComboStyle}"
                           SelectedIndex="{Binding ItemsPerPageIndex, Mode=TwoWay}">
                     <ComboBoxItem Content="5"/>

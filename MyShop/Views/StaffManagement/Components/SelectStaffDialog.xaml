@@ -5,8 +5,43 @@
     xmlns:models="using:MyShop.Models"
     CornerRadius="20">
 
-    <Grid Width="420"
+    <Grid x:Name="DialogRoot"
+          Width="420"
           Padding="0">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="SelectStaffDialogStates">
+                <VisualState x:Name="SelectStaffDialogNarrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="DialogRoot.Width" Value="Auto"/>
+                        <Setter Target="DialogRoot.MaxWidth" Value="360"/>
+                        <Setter Target="DialogRoot.Padding" Value="8"/>
+                        <Setter Target="StaffListView.Height" Value="160"/>
+                        <Setter Target="StatusNoteGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="StatusNoteGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="NoteStack.(Grid.Column)" Value="0"/>
+                        <Setter Target="NoteStack.(Grid.Row)" Value="1"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SelectStaffDialogWideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="600"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="DialogRoot.Width" Value="420"/>
+                        <Setter Target="DialogRoot.MaxWidth" Value="420"/>
+                        <Setter Target="DialogRoot.Padding" Value="0"/>
+                        <Setter Target="StaffListView.Height" Value="180"/>
+                        <Setter Target="StatusNoteGrid.(Grid.ColumnDefinitions)[0].Width" Value="180"/>
+                        <Setter Target="StatusNoteGrid.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="NoteStack.(Grid.Column)" Value="1"/>
+                        <Setter Target="NoteStack.(Grid.Row)" Value="0"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <StackPanel Spacing="20">
 
             <Grid Margin="0,5,0,0">
@@ -84,7 +119,11 @@
                 </Border>
             </StackPanel>
 
-            <Grid ColumnSpacing="12">
+            <Grid x:Name="StatusNoteGrid" ColumnSpacing="12" RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="180"/>
                     <ColumnDefinition Width="*"/>
@@ -103,7 +142,9 @@
                         <ComboBoxItem Content="Cancelled"/>
                     </ComboBox>
                 </StackPanel>
-                <StackPanel Grid.Column="1"
+                <StackPanel x:Name="NoteStack"
+                            Grid.Column="1"
+                            Grid.Row="0"
                             Spacing="5">
                     <TextBlock Text="Quick Note"
                                FontWeight="SemiBold"
