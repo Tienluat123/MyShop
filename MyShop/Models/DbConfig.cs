@@ -11,6 +11,6 @@ public class DbConfig
     public string ToConnectionString()
     {
         return $"Host={Server};Port={Port};Database={DatabaseName};Username={Username};Password={Password};" +
-               "SslMode=Prefer;Trust Server Certificate=true;Pooling=true;Maximum Pool Size=8;Minimum Pool Size=0;Connection Idle Lifetime=30;Command Timeout=30;";
+               "SslMode=Prefer;Trust Server Certificate=true;Pooling=true;Maximum Pool Size=14;Minimum Pool Size=0;Connection Idle Lifetime=20;Command Timeout=90;";
     }
 }

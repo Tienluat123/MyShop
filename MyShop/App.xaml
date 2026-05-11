@@ -21,6 +21,7 @@
                                 <ResourceDictionary Source="ms-appx:///Styles/Components.xaml"/>
 
                                 <converters:ImageSourceConverter x:Key="ImageSourceConverter" DecodeWidth="300" />
+                                <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
                         </ResourceDictionary.MergedDictionaries>
 
                         <!-- Fallback keys for TeachingTip styles on Uno -->

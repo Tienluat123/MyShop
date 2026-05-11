@@ -55,15 +55,12 @@ public class ProductService : IProductService
 {
     private readonly IRepository<Product> _productRepository;
     private readonly IRepository<Category> _categoryRepository;
-    private readonly AppDbContext _context;
     public ProductService(
         IRepository<Product> productRepository,
-        IRepository<Category> categoryRepository,
-        AppDbContext context)
+        IRepository<Category> categoryRepository)
     {
         _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
         _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
       
 

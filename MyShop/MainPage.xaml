@@ -148,5 +148,6 @@
     </NavigationView>
 
     <comp:NotificationView x:Name="NotificationViewControl"/>
+    <local:ChatBotControl x:Name="AiAssistant" />
   </Grid>
 </Page>
