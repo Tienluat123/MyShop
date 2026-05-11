@@ -10,14 +10,16 @@ namespace MyShop.Services;
 /// </summary>
 public class LoyaltyService : ILoyaltyService
 {
-    private readonly AppDbContext _dbContext;
+    private readonly AppDbContextFactory _contextFactory;
     private readonly IRepository<Customer> _customerRepo;
 
-    public LoyaltyService(AppDbContext dbContext, IRepository<Customer> customerRepo)
+    public LoyaltyService(AppDbContextFactory contextFactory, IRepository<Customer> customerRepo)
     {
-        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         _customerRepo = customerRepo ?? throw new ArgumentNullException(nameof(customerRepo));
     }
+
+    private AppDbContext CreateContext() => _contextFactory.CreateDbContext(Array.Empty<string>());
 
     // =====================================================================
     // CONFIG CRUD
@@ -25,18 +27,22 @@ public class LoyaltyService : ILoyaltyService
 
     public async Task<LoyaltyTierConfig?> GetConfigAsync(string configKey)
     {
-        return await _dbContext.LoyaltyTierConfigs
+        using var context = CreateContext();
+        return await context.LoyaltyTierConfigs
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.ConfigKey == configKey);
     }
 
     public async Task<List<LoyaltyTierConfig>> GetAllConfigsAsync()
     {
-        return await _dbContext.LoyaltyTierConfigs.ToListAsync();
+        using var context = CreateContext();
+        return await context.LoyaltyTierConfigs.AsNoTracking().ToListAsync();
     }
 
     public async Task UpsertConfigAsync(LoyaltyTierConfig config)
     {
-        var existing = await _dbContext.LoyaltyTierConfigs
+        using var context = CreateContext();
+        var existing = await context.LoyaltyTierConfigs
             .FirstOrDefaultAsync(c => c.ConfigKey == config.ConfigKey);
 
         if (existing != null)
@@ -47,9 +53,9 @@ public class LoyaltyService : ILoyaltyService
         }
         else
         {
-            _dbContext.LoyaltyTierConfigs.Add(config);
+            context.LoyaltyTierConfigs.Add(config);
         }
-        await _dbContext.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 
     // =====================================================================
@@ -58,7 +64,9 @@ public class LoyaltyService : ILoyaltyService
 
     public async Task<List<TierThresholdConfig>> GetTierThresholdsAsync()
     {
-        var configs = await _dbContext.LoyaltyTierConfigs
+        using var context = CreateContext();
+        var configs = await context.LoyaltyTierConfigs
+            .AsNoTracking()
             .Where(c => c.ConfigKey.StartsWith("Tier_"))
             .OrderBy(c => c.DisplayOrder)
             .ToListAsync();

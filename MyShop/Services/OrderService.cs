@@ -119,17 +119,14 @@ public class OrderService : IOrderService
     private readonly IRepository<Customer> _customerRepository;
     private readonly IRepository<User> _userRepository;
 
- private readonly AppDbContext _context;
     public OrderService(
         IRepository<Order> orderRepository,
         IRepository<Customer> customerRepository,
-        IRepository<User> userRepository,
-        AppDbContext context)
+        IRepository<User> userRepository)
     {
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
    
     /// <summary>
@@ -782,6 +779,7 @@ public class OrderService : IOrderService
         {
             // 1. Tải dữ liệu thô từ DB (chỉ lấy các trường cần thiết để tối ưu)
             var data = await context.Set<Order>()
+                .AsNoTracking()
                 .Where(o => o.OrderDate >= startUtc && o.OrderDate <= endUtc && o.PaymentStatus == "Paid")
                 .Select(o => new { o.OrderDate, o.TotalAmount })
                 .ToListAsync();

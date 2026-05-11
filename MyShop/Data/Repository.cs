@@ -18,11 +18,12 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         Func<AppDbContext, Task<TResult>> action,
         string operationName = "operation")
     {
-        const int maxRetries = 3;
+        const int maxRetries = 10;
         int attempt = 0;
 
         while (attempt < maxRetries)
         {
+            await DbThrottle.GlobalSemaphore.WaitAsync();
             try
             {
                 using var context = _contextFactory.CreateDbContext(Array.Empty<string>());
@@ -33,107 +34,37 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             {
                 attempt++;
 
-                // Kiểm tra lỗi có "retry được" không
                 bool isRetryableError = ex.Message.Contains("ECIRCUITBREAKER") ||
                                        ex.Message.Contains("EMAXCONNSESSION") ||
                                        ex.Message.Contains("too many") ||
                                        ex.Message.Contains("authentication") ||
+                                       ex.Message.Contains("max clients") ||
                                        ex.InnerException?.Message.Contains("ECIRCUITBREAKER") == true ||
-                                       ex.InnerException?.Message.Contains("authentication") == true;
+                                       ex.InnerException?.Message.Contains("EMAXCONNSESSION") == true ||
+                                       ex.InnerException?.Message.Contains("max clients") == true;
 
-                // Nếu lỗi retry được VÀ còn attempt → chờ rồi retry
                 if (isRetryableError && attempt < maxRetries)
                 {
-                    int delayMs = attempt * 1000; // 1s, 2s, 3s
-                    System.Diagnostics.Debug.WriteLine(
-                        $"⚠️ [{typeof(TEntity).Name}] {operationName} lỗi (attempt {attempt}/{maxRetries}). Chờ {delayMs}ms rồi retry...");
+                    int delayMs = attempt * 1000; 
+                    System.Diagnostics.Debug.WriteLine($"⚠️ [RETRY] {operationName} (Attempt {attempt}/{maxRetries}). Wait {delayMs}ms...");
                     await Task.Delay(delayMs);
                     continue;
                 }
 
-                // Không phải retryable error hoặc hết attempts → throw
-                System.Diagnostics.Debug.WriteLine($"❌ [{typeof(TEntity).Name}] {operationName} failed: {ex.GetType().Name}: {ex.Message}");
-                if (ex.InnerException != null)
-                    System.Diagnostics.Debug.WriteLine($"   └─ Inner: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
-                throw new InvalidOperationException($"Lỗi khi thực hiện {operationName} trên {typeof(TEntity).Name}: {ex.Message}", ex);
+                System.Diagnostics.Debug.WriteLine($"❌ [FATAL] {operationName} failed: {ex.Message}");
+                throw new InvalidOperationException($"Database error in {operationName}: {ex.Message}", ex);
+            }
+            finally
+            {
+                DbThrottle.GlobalSemaphore.Release();
             }
         }
 
-        throw new InvalidOperationException($"Lỗi khi thực hiện {operationName} trên {typeof(TEntity).Name}: Exceeded max retries");
-    }
-
-    /// <summary>
-    /// Gom GetAllAsync lại - gọi GetAllAsyncWithIncludes với includes trống cho gọn
-    /// </summary>
-    public async Task<PagedResult<TEntity>> GetAllAsync(
-        PagingRequest? paging = null,
-        Expression<Func<TEntity, bool>>? filter = null,
-        params string[] includes)
-    {
-        return await GetAllAsyncWithIncludes(paging, filter, includes);
-    }
-
-    /// <summary>
-    /// Thêm entity mới - Trả về entity có kèm ID mới từ database (Async)
-    /// </summary>
-    public async Task<TEntity> AddAsync(TEntity entity)
-    {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
-
-        var result = await ExecuteAsync(async context =>
-        {
-            context.Add(entity);
-            await context.SaveChangesAsync();
-            return entity; // Trả về entity để có được ID mới
-        }, "AddAsync");
-
-        System.Diagnostics.Debug.WriteLine($" [{typeof(TEntity).Name}] AddAsync completed successfully");
-        return result;
-    }
-
-    /// <summary>
-    /// Cập nhật entity (Async)
-    /// </summary>
-    public async Task<TEntity> UpdateAsync(TEntity entity)
-    {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
-
-        var result = await ExecuteAsync(async context =>
-        {
-            context.Update(entity);
-            await context.SaveChangesAsync();
-            return entity;
-        }, "UpdateAsync");
-
-        System.Diagnostics.Debug.WriteLine($" [{typeof(TEntity).Name}] UpdateAsync completed successfully");
-        return result;
-    }
-    public async Task DeleteAsync(int id)
-    {
-        if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
-
-        await ExecuteAsync(async context =>
-        {
-            var entity = await context.Set<TEntity>().FindAsync(id);
-            if (entity == null)
-                throw new KeyNotFoundException($"{typeof(TEntity).Name} với ID {id} không tìm thấy");
-
-            context.Remove(entity);
-            await context.SaveChangesAsync();
-            return true;
-        }, $"DeleteAsync(ID={id})");
-
-        System.Diagnostics.Debug.WriteLine($" [{typeof(TEntity).Name}] DeleteAsync(ID={id}) completed successfully");
+        throw new InvalidOperationException($"Database busy after {maxRetries} retries in {operationName}");
     }
 
     public async Task<TEntity?> GetByIdAsync(int id)
     {
-        if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
-
         return await ExecuteAsync(async context =>
         {
             return await context.Set<TEntity>().FindAsync(id);
@@ -146,13 +77,11 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
         return await ExecuteAsync(async context =>
         {
-            var query = context.Set<TEntity>().AsQueryable();
+            var query = context.Set<TEntity>().AsNoTracking();
 
-            // Add Includes
             foreach (var include in includes)
                 query = query.Include(include);
 
-            // Apply predicate
             if (predicate != null)
                 query = query.Where(predicate);
 
@@ -160,9 +89,6 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         }, "GetAsync");
     }
 
-    /// <summary>
-    /// Kiểm tra entity có tồn tại với điều kiện (Async)
-    /// </summary>
     public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
     {
         return await ExecuteAsync(async context =>
@@ -171,92 +97,108 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         }, "AnyAsync");
     }
 
-    public async Task<PagedResult<TEntity>> GetAllAsyncWithIncludes(
+    public async Task<PagedResult<TEntity>> GetAllAsync(
         PagingRequest? paging = null,
         Expression<Func<TEntity, bool>>? filter = null,
         params string[] includes)
     {
         return await ExecuteAsync(async context =>
         {
+            var result = new PagedResult<TEntity>();
             var query = context.Set<TEntity>().AsNoTracking();
 
-            // Apply Includes FIRST (before filter for better performance)
             foreach (var include in includes)
                 query = query.Include(include);
 
-            // Apply filter if available
             if (filter != null)
                 query = query.Where(filter);
 
-            // If no pagination, get all
             if (paging == null)
             {
-                var allItems = await query.ToListAsync();
-                return new PagedResult<TEntity>
+                result.Items = await query.ToListAsync();
+                result.Pagination = new PagingMetadata
                 {
-                    Items = allItems,
-                    Pagination = new PagingMetadata
-                    {
-                        PageNumber = 1,
-                        PageSize = allItems.Count,
-                        TotalItems = allItems.Count,
-                    }
+                    PageNumber = 1,
+                    PageSize = result.Items.Count,
+                    TotalItems = result.Items.Count
                 };
+                return result;
             }
 
-            // Validate pagination
             paging.Validate();
-
-            // Count total items (MUST be after filter is applied)
             var totalItems = await query.CountAsync();
 
-            // Apply orderBy string if provided before Skip/Take
-            IQueryable<TEntity> sortedQuery = !string.IsNullOrWhiteSpace(paging.SortBy)
-                ? query.OrderBy(paging.SortBy)
-                : query;
-
-            // Get items with Skip/Take
-            var items = await sortedQuery
+            var items = await query
                 .Skip(paging.GetSkip())
                 .Take(paging.PageSize)
                 .ToListAsync();
 
-            return new PagedResult<TEntity>
+            result.Items = items;
+            result.Pagination = new PagingMetadata
             {
-                Items = items,
-                Pagination = new PagingMetadata
-                {
-                    PageNumber = paging.PageNumber,
-                    PageSize = paging.PageSize,
-                    TotalItems = totalItems,
-                }
+                PageNumber = paging.PageNumber,
+                PageSize = paging.PageSize,
+                TotalItems = totalItems
             };
-        }, "GetAllAsyncWithIncludes");
+            return result;
+        }, "GetAllAsync");
     }
 
-    /// <summary>
-    /// Đếm entities với filter (Async)
-    /// </summary>
-    public async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null)
+    public async Task<TEntity> AddAsync(TEntity entity)
     {
         return await ExecuteAsync(async context =>
         {
-            var query = context.Set<TEntity>().AsQueryable();
-            if (predicate != null)
-                query = query.Where(predicate);
+            await context.Set<TEntity>().AddAsync(entity);
+            await context.SaveChangesAsync();
+            return entity;
+        }, "AddAsync");
+    }
+
+    public async Task<TEntity> UpdateAsync(TEntity entity)
+    {
+        return await ExecuteAsync(async context =>
+        {
+            context.Set<TEntity>().Update(entity);
+            await context.SaveChangesAsync();
+            return entity;
+        }, "UpdateAsync");
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        await ExecuteAsync(async context =>
+        {
+            var entity = await context.Set<TEntity>().FindAsync(id);
+            if (entity != null)
+            {
+                context.Set<TEntity>().Remove(entity);
+                await context.SaveChangesAsync();
+            }
+            return true;
+        }, "DeleteAsync");
+    }
+
+    public async Task<int> CountAsync(Expression<Func<TEntity, bool>>? filter = null)
+    {
+        return await ExecuteAsync(async context =>
+        {
+            var query = context.Set<TEntity>().AsNoTracking();
+            if (filter != null)
+                query = query.Where(filter);
             return await query.CountAsync();
         }, "CountAsync");
     }
 
-    /// <summary>
-    /// Lưu tất cả thay đổi vào database (Async)
-    /// </summary>
     public async Task SaveChangesAsync()
     {
-        await ExecuteAsync(async context =>
-        {
-            await context.SaveChangesAsync();
-            return true;
-        }, "SaveChangesAsync");
+        await Task.CompletedTask;
+    }
+
+    public async Task<PagedResult<TEntity>> GetAllAsyncWithIncludes(
+        PagingRequest? paging = null,
+        Expression<Func<TEntity, bool>>? filter = null,
+        params string[] includes)
+    {
+        return await GetAllAsync(paging, filter, includes);
     }
 }
