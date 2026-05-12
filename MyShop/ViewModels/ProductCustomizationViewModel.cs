@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,11 +11,28 @@ namespace MyShop.ViewModels;
 public partial class ProductCustomizationViewModel : ObservableObject
 {
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentImageUrl))]
+    [NotifyPropertyChangedFor(nameof(HasCurrentImage))]
+    [NotifyPropertyChangedFor(nameof(HasMultipleImages))]
+    [NotifyPropertyChangedFor(nameof(ImagePositionText))]
     private Product _product;
 
     private OrderItem? _editingItem;
+    private IReadOnlyList<string> ProductImageUrls => BuildProductImageUrls();
     public bool IsEditing => _editingItem != null;
     public string Title => IsEditing ? $"Edit {Product.Name}" : $"Customize {Product.Name}";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentImageUrl))]
+    [NotifyPropertyChangedFor(nameof(ImagePositionText))]
+    private int _currentImageIndex;
+
+    public string? CurrentImageUrl => ProductImageUrls.ElementAtOrDefault(CurrentImageIndex);
+    public bool HasCurrentImage => !string.IsNullOrWhiteSpace(CurrentImageUrl);
+    public bool HasMultipleImages => ProductImageUrls.Count > 1;
+    public string ImagePositionText => HasMultipleImages
+        ? $"{CurrentImageIndex + 1} / {ProductImageUrls.Count}"
+        : string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TotalPrice))]
@@ -172,6 +190,53 @@ public partial class ProductCustomizationViewModel : ObservableObject
             price += AddOns.Count * 10000;
         }
         return price;
+    }
+
+    private IReadOnlyList<string> BuildProductImageUrls()
+    {
+        if (Product is null)
+        {
+            return Array.Empty<string>();
+        }
+
+        var imageUrls = Product.ProductImages
+            .OrderBy(pi => pi.SortOrder)
+            .Select(pi => pi.ImageUrl)
+            .Where(url => !string.IsNullOrWhiteSpace(url))
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(Product.ImagePath))
+        {
+            imageUrls.Add(Product.ImagePath);
+        }
+
+        return imageUrls
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    [RelayCommand]
+    private void ShowPreviousImage()
+    {
+        var imageCount = ProductImageUrls.Count;
+        if (imageCount <= 1)
+        {
+            return;
+        }
+
+        CurrentImageIndex = (CurrentImageIndex - 1 + imageCount) % imageCount;
+    }
+
+    [RelayCommand]
+    private void ShowNextImage()
+    {
+        var imageCount = ProductImageUrls.Count;
+        if (imageCount <= 1)
+        {
+            return;
+        }
+
+        CurrentImageIndex = (CurrentImageIndex + 1) % imageCount;
     }
 
     [RelayCommand]

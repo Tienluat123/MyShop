@@ -174,7 +174,12 @@ public sealed partial class ProductFormView : ContentDialog
                 previewUri = new Uri(fullPath);
             }
 
-            var bitmap = new BitmapImage(previewUri);
+            var bitmap = new BitmapImage
+            {
+                DecodePixelWidth = 320,
+                DecodePixelType = DecodePixelType.Physical,
+                UriSource = previewUri
+            };
             previewImage.Source = bitmap;
             previewImage.Visibility = Visibility.Visible;
             previewPlaceholder.Visibility = Visibility.Collapsed;

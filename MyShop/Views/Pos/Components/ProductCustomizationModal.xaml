@@ -75,7 +75,16 @@
 
         <!--  Header  -->
         <Grid Grid.Row="0">
-            <Image Source="{Binding Product.ImageUrl}" Stretch="UniformToFill" />
+            <Grid Background="{StaticResource SurfaceAlt}">
+                <FontIcon
+                    FontSize="{StaticResource Size40}"
+                    Foreground="{StaticResource Gray200}"
+                    Glyph="&#xEB9F;" />
+                <Image
+                    Source="{Binding CurrentImageUrl, Converter={StaticResource ImageSourceConverter}, ConverterParameter=520}"
+                    Stretch="UniformToFill"
+                    Visibility="{Binding HasCurrentImage, Converter={StaticResource BoolToVisibilityConverter}}" />
+            </Grid>
             <Border>
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -84,6 +93,42 @@
                     </LinearGradientBrush>
                 </Border.Background>
             </Border>
+
+            <Button
+                Width="40"
+                Height="40"
+                Margin="16,0,0,0"
+                Padding="0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Background="{StaticResource OverlayBlack40}"
+                BorderThickness="0"
+                Command="{Binding ShowPreviousImageCommand}"
+                CornerRadius="20"
+                Foreground="White"
+                Style="{StaticResource AppIconButtonStyle}"
+                ToolTipService.ToolTip="Previous image"
+                Visibility="{Binding HasMultipleImages, Converter={StaticResource BoolToVisibilityConverter}}">
+                <FontIcon Glyph="&#xE76B;" Style="{StaticResource IconBodyStyle}" />
+            </Button>
+
+            <Button
+                Width="40"
+                Height="40"
+                Margin="0,0,16,0"
+                Padding="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Background="{StaticResource OverlayBlack40}"
+                BorderThickness="0"
+                Command="{Binding ShowNextImageCommand}"
+                CornerRadius="20"
+                Foreground="White"
+                Style="{StaticResource AppIconButtonStyle}"
+                ToolTipService.ToolTip="Next image"
+                Visibility="{Binding HasMultipleImages, Converter={StaticResource BoolToVisibilityConverter}}">
+                <FontIcon Glyph="&#xE76C;" Style="{StaticResource IconBodyStyle}" />
+            </Button>
 
             <StackPanel Margin="24,0,24,16" VerticalAlignment="Bottom">
                 <TextBlock
@@ -137,6 +182,21 @@
                         Foreground="{StaticResource AccentGold}"
                         Text="{Binding UnitTotalPrice, Converter={StaticResource CurrencyConverter}}" />
                 </StackPanel>
+            </Border>
+
+            <Border
+                Margin="24"
+                Padding="10,4"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Background="{StaticResource OverlayBlack40}"
+                CornerRadius="12"
+                Visibility="{Binding HasMultipleImages, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock
+                    FontSize="{StaticResource FontCaption}"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="{Binding ImagePositionText}" />
             </Border>
         </Grid>
 
