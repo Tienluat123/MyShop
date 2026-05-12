@@ -14,7 +14,43 @@
         <converters:BoolToSymbolConverter x:Key="BoolToSymbolConverter"/>
     </Page.Resources>
 
-    <Grid>
+    <Grid x:Name="RootGrid">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LoginResponsiveStates">
+                <VisualState x:Name="CompactState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="RootGrid.ColumnDefinitions[0].Width" Value="0"/>
+                        <Setter Target="RootGrid.ColumnDefinitions[1].Width" Value="*"/>
+                        <Setter Target="LeftPanel.Visibility" Value="Collapsed"/>
+                        <Setter Target="LoginPanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="LoginPanel.(Grid.ColumnSpan)" Value="2"/>
+                        <Setter Target="LoginFormContainer.Width" Value="Auto"/>
+                        <Setter Target="LoginFormContainer.MaxWidth" Value="360"/>
+                        <Setter Target="LoginFormContainer.Margin" Value="24,32"/>
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="WideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="900"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="RootGrid.ColumnDefinitions[0].Width" Value="2*"/>
+                        <Setter Target="RootGrid.ColumnDefinitions[1].Width" Value="3*"/>
+                        <Setter Target="LeftPanel.Visibility" Value="Visible"/>
+                        <Setter Target="LoginPanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="LoginPanel.(Grid.ColumnSpan)" Value="1"/>
+                        <Setter Target="LoginFormContainer.Width" Value="360"/>
+                        <Setter Target="LoginFormContainer.MaxWidth" Value="360"/>
+                        <Setter Target="LoginFormContainer.Margin" Value="0"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
@@ -74,11 +110,13 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Column="1" Background="White">
+        <Grid x:Name="LoginPanel" Grid.Column="1" Background="White">
             <StackPanel
+                x:Name="LoginFormContainer"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Width="360"
+                MaxWidth="360"
                 Spacing="0">
 
                 <TextBlock

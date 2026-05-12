@@ -46,7 +46,7 @@ public partial class App : Application
         var isDatabaseReady = await InitializeDatabaseConnection(configService);
         if (!isDatabaseReady)
         {
-            ShowDatabaseConfigPage();
+            ShowOnboardingPage();
             MainWindow.SetWindowIcon();
             MainWindow.Activate();
             return;
@@ -103,13 +103,32 @@ public partial class App : Application
     {
         var page = new DatabaseConfigPage();
         page.ConfigurationSaved += DatabaseConfigPage_ConfigurationSaved;
+        page.BackToOnboardingRequested += DatabaseConfigPage_BackToOnboardingRequested;
         MainWindow!.Content = page;
+    }
+
+    internal void ShowOnboardingPage()
+    {
+        var page = new OnboardingPage();
+        page.ConfigureRequested += OnboardingPage_ConfigureRequested;
+        MainWindow!.Content = page;
+    }
+
+    private void OnboardingPage_ConfigureRequested(object? sender, EventArgs e)
+    {
+        if (sender is OnboardingPage page)
+            page.ConfigureRequested -= OnboardingPage_ConfigureRequested;
+
+        ShowDatabaseConfigPage();
     }
 
     private async void DatabaseConfigPage_ConfigurationSaved(object? sender, EventArgs e)
     {
         if (sender is DatabaseConfigPage page)
+        {
             page.ConfigurationSaved -= DatabaseConfigPage_ConfigurationSaved;
+            page.BackToOnboardingRequested -= DatabaseConfigPage_BackToOnboardingRequested;
+        }
 
         var configService = ServiceContainer.Instance.Get<IConfigService>();
         var isReady = await InitializeDatabaseConnection(configService);
@@ -118,6 +137,17 @@ public partial class App : Application
 
         await RegisterServicesAsync(configService);
         ShowLoginPage(string.Empty);
+    }
+
+    private void DatabaseConfigPage_BackToOnboardingRequested(object? sender, EventArgs e)
+    {
+        if (sender is DatabaseConfigPage page)
+        {
+            page.ConfigurationSaved -= DatabaseConfigPage_ConfigurationSaved;
+            page.BackToOnboardingRequested -= DatabaseConfigPage_BackToOnboardingRequested;
+        }
+
+        ShowOnboardingPage();
     }
 
     private void ShowLoginPage(string? arguments)
@@ -152,39 +182,25 @@ public partial class App : Application
             var dbConfig = await configService.LoadAsync();
             var connectionString = dbConfig.ToConnectionString();
 
-            AppDbContext? dbContext = null;
             await Task.Run(() => 
             {
                 var dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
-                    .UseNpgsql(connectionString, options =>
-                    {
-                        options.EnableRetryOnFailure(
-                            maxRetryCount: 5,
-                            maxRetryDelay: TimeSpan.FromSeconds(10),
-                            errorCodesToAdd: new[] { "XX000", "ECIRCUITBREAKER", "EMAXCONNSESSION" }
+                    .UseNpgsql(connectionString, npgsqlOptions => {
+                        npgsqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorCodesToAdd: new[] { "XX000", "EMAXCONNSESSION" }
                         );
                     })
                     .Options;
 
-                dbContext = new AppDbContext(dbContextOptions);
-
+                using var dbContext = new AppDbContext(dbContextOptions);
                 try
                 {
                     dbContext.Database.Migrate();
-                    dbContext.Database.ExecuteSqlRaw("ALTER TABLE \"Products\" ADD COLUMN IF NOT EXISTS \"StockQuantity\" INTEGER DEFAULT 0;");
                 }
-                catch (Exception)
-                {
-                    try
-                    {
-                        dbContext.Database.EnsureCreated();
-                        dbContext.Database.ExecuteSqlRaw("ALTER TABLE \"Products\" ADD COLUMN IF NOT EXISTS \"StockQuantity\" INTEGER DEFAULT 0;");
-                    }
-                    catch { }
-                }
+                catch { }
             });
-
-            if (dbContext == null) throw new InvalidOperationException("Failed to initialize DbContext");
 
             var contextFactory = new AppDbContextFactory(configService);
             container.Register<AppDbContextFactory>(contextFactory);
@@ -214,8 +230,7 @@ public partial class App : Application
 
             container.Register<IProductService>(new ProductService(
                 container.Get<IRepository<Product>>(),
-                container.Get<IRepository<Category>>(),
-                dbContext
+                container.Get<IRepository<Category>>()
             ));
 
             container.Register<ICustomerService>(new CustomerService(
@@ -225,8 +240,7 @@ public partial class App : Application
             container.Register<IOrderService>(new OrderService(
                 container.Get<IRepository<Order>>(),
                 container.Get<IRepository<Customer>>(),
-                container.Get<IRepository<User>>(),
-                dbContext
+                container.Get<IRepository<User>>()
             ));
 
             container.Register<ICategoryService>(new CategoryService(
@@ -245,12 +259,12 @@ public partial class App : Application
             ));
 
             container.Register<ILoyaltyService>(new LoyaltyService(
-                contextFactory.CreateDbContext(Array.Empty<string>()),
+                contextFactory,
                 container.Get<IRepository<Customer>>()
             ));
 
             container.Register<IPromotionRepository>(new PromotionRepository(
-                contextFactory.CreateDbContext(Array.Empty<string>())
+                contextFactory
             ));
 
             container.Register<IPromotionService>(new PromotionService(
@@ -274,6 +288,13 @@ public partial class App : Application
             container.Register<IReportService>(reportService);
 
             container.Register<IAuthService>(new AuthService(contextFactory));
+
+            container.Register<IAiAssistantService>(new AiAssistantService(
+                container.Get<IReportService>(),
+                container.Get<IProductService>(),
+                container.Get<ICustomerService>(),
+                container.Get<IPromotionService>()
+            ));
 
             container.Register<WeeklyRosterViewModel>(new WeeklyRosterViewModel(
                 container.Get<IScheduleService>(),

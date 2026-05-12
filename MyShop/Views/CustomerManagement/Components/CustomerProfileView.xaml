@@ -16,36 +16,99 @@
             </Grid>
         </DataTemplate>
     </Page.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" /> <RowDefinition Height="Auto" /> <RowDefinition Height="*" />    </Grid.RowDefinitions>
+    <Grid x:Name="RootGrid">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CustomerProfileResponsiveStates">
+                <VisualState x:Name="CustomerProfileMobileState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderBorder.Padding" Value="16,12"/>
+                        <Setter Target="HeaderTitle.FontSize" Value="20"/>
+                        <Setter Target="ProfileSummaryBorder.Margin" Value="16,12"/>
+                        <Setter Target="ProfileSummaryBorder.Padding" Value="16"/>
+                        <Setter Target="ProfileSummaryStack.Orientation" Value="Vertical"/>
+                        <Setter Target="ProfileSummaryStack.Spacing" Value="12"/>
+                        <Setter Target="AvatarBorder.Width" Value="64"/>
+                        <Setter Target="AvatarBorder.Height" Value="64"/>
+                        <Setter Target="AvatarBorder.CornerRadius" Value="32"/>
+                        <Setter Target="AvatarText.FontSize" Value="24"/>
+                        <Setter Target="CustomerNameText.FontSize" Value="22"/>
+                        <Setter Target="DynamicTabContainer.Margin" Value="16,0,16,16"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CustomerProfileTabletState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderBorder.Padding" Value="20,14"/>
+                        <Setter Target="HeaderTitle.FontSize" Value="22"/>
+                        <Setter Target="ProfileSummaryBorder.Margin" Value="20,14"/>
+                        <Setter Target="ProfileSummaryBorder.Padding" Value="18"/>
+                        <Setter Target="ProfileSummaryStack.Orientation" Value="Horizontal"/>
+                        <Setter Target="ProfileSummaryStack.Spacing" Value="16"/>
+                        <Setter Target="AvatarBorder.Width" Value="72"/>
+                        <Setter Target="AvatarBorder.Height" Value="72"/>
+                        <Setter Target="AvatarBorder.CornerRadius" Value="36"/>
+                        <Setter Target="AvatarText.FontSize" Value="28"/>
+                        <Setter Target="CustomerNameText.FontSize" Value="26"/>
+                        <Setter Target="DynamicTabContainer.Margin" Value="20,0,20,20"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CustomerProfileDesktopState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointDesktop}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderBorder.Padding" Value="24,14"/>
+                        <Setter Target="HeaderTitle.FontSize" Value="24"/>
+                        <Setter Target="ProfileSummaryBorder.Margin" Value="24,16"/>
+                        <Setter Target="ProfileSummaryBorder.Padding" Value="20"/>
+                        <Setter Target="ProfileSummaryStack.Orientation" Value="Horizontal"/>
+                        <Setter Target="ProfileSummaryStack.Spacing" Value="20"/>
+                        <Setter Target="AvatarBorder.Width" Value="80"/>
+                        <Setter Target="AvatarBorder.Height" Value="80"/>
+                        <Setter Target="AvatarBorder.CornerRadius" Value="40"/>
+                        <Setter Target="AvatarText.FontSize" Value="32"/>
+                        <Setter Target="CustomerNameText.FontSize" Value="28"/>
+                        <Setter Target="DynamicTabContainer.Margin" Value="24,0,24,24"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
 
-        <Border Padding="24,14" Background="White" BorderThickness="0,0,0,1" BorderBrush="#E5E7EB">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border x:Name="HeaderBorder" Padding="24,14" Background="White" BorderThickness="0,0,0,1" BorderBrush="#E5E7EB">
             <StackPanel Orientation="Horizontal" Spacing="15">
                 <Button Command="{Binding GoBackCommand}" Background="Transparent" Content="&#xE72B;" FontFamily="Segoe MDL2 Assets"/>
-                <TextBlock Text="Customer Profile" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="HeaderTitle" Text="Customer Profile" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Margin="24,16" Padding="20" Background="White" CornerRadius="12">
-            <StackPanel Orientation="Horizontal" Spacing="20">
-                <Border Width="80" Height="80" CornerRadius="40" Background="#BB4D00">
-                    <TextBlock Text="{Binding SelectedCustomer.Customer.Initials}" Foreground="White" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Border x:Name="ProfileSummaryBorder" Grid.Row="1" Margin="24,16" Padding="20" Background="White" CornerRadius="12">
+            <StackPanel x:Name="ProfileSummaryStack" Orientation="Horizontal" Spacing="20">
+                <Border x:Name="AvatarBorder" Width="80" Height="80" CornerRadius="40" Background="#BB4D00">
+                    <TextBlock x:Name="AvatarText" Text="{Binding SelectedCustomer.Customer.Initials}" Foreground="White" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
                 <StackPanel VerticalAlignment="Center">
-    <TextBlock Text="{Binding SelectedCustomer.Customer.Name}" FontSize="28" FontWeight="Bold"/>
-    
-    <TextBlock Text="{Binding SelectedCustomer.Email}" Foreground="#64748B"/>
-    
-    <TextBlock Text="{Binding SelectedCustomer.Customer.Phone}" Foreground="#64748B"/>
-</StackPanel>
+                    <TextBlock x:Name="CustomerNameText" Text="{Binding SelectedCustomer.Customer.Name}" FontSize="28" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding SelectedCustomer.Email}" Foreground="#64748B"/>
+                    <TextBlock Text="{Binding SelectedCustomer.Customer.Phone}" Foreground="#64748B"/>
+                </StackPanel>
             </StackPanel>
         </Border>
 
-        <ContentControl x:Name="DynamicTabContainer" 
-                Grid.Row="2" 
-                Margin="24,0,24,24" 
-                HorizontalContentAlignment="Stretch" 
-                VerticalContentAlignment="Stretch" />
-         </Grid>
+        <ContentControl x:Name="DynamicTabContainer"
+                        Grid.Row="2"
+                        Margin="24,0,24,24"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch" />
+    </Grid>
 </Page>

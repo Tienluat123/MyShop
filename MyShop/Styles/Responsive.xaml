@@ -1,0 +1,21 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Unified app breakpoints -->
+    <x:Double x:Key="BreakpointMobile">0</x:Double>
+    <x:Double x:Key="BreakpointTablet">768</x:Double>
+    <x:Double x:Key="BreakpointDesktop">1200</x:Double>
+
+    <!-- Shared shell values -->
+    <x:Double x:Key="ShellCompactPaneLength">72</x:Double>
+
+    <!-- Shared content spacing tokens (for future page migration) -->
+    <Thickness x:Key="PagePaddingMobile">16</Thickness>
+    <Thickness x:Key="PagePaddingTablet">20</Thickness>
+    <Thickness x:Key="PagePaddingDesktop">24</Thickness>
+
+    <x:Double x:Key="CardGapMobile">12</x:Double>
+    <x:Double x:Key="CardGapTablet">16</x:Double>
+    <x:Double x:Key="CardGapDesktop">24</x:Double>
+</ResourceDictionary>

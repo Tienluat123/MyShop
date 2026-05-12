@@ -8,6 +8,7 @@ public sealed partial class DatabaseConfigPage : Page
 {
     public DatabaseConfigViewModel ViewModel { get; }
     public event EventHandler? ConfigurationSaved;
+    public event EventHandler? BackToOnboardingRequested;
 
     public DatabaseConfigPage()
     {
@@ -36,6 +37,11 @@ public sealed partial class DatabaseConfigPage : Page
     private void OnConfigSavedSuccessfully(object? sender, EventArgs e)
     {
         ConfigurationSaved?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void BackToOnboardingButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        BackToOnboardingRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void DatabaseConfigPage_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

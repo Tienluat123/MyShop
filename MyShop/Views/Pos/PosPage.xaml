@@ -104,13 +104,22 @@
 
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="380" />
+            <ColumnDefinition x:Name="SidebarColumn" Width="380" />
         </Grid.ColumnDefinitions>
 
         <!--  LEFT PANEL (Main Content)  -->
-        <Grid Grid.Column="0">
+        <Grid
+            x:Name="MainShellGrid"
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <!--  Top Bar  -->
@@ -126,6 +135,7 @@
 
             <!--  Top Bar  -->
             <Grid
+                x:Name="HeaderBar"
                 Grid.Row="0"
                 Padding="24,16"
                 Background="{StaticResource SurfaceBackground}"
@@ -164,6 +174,7 @@
                 </StackPanel>
 
                 <StackPanel
+                    x:Name="HeaderActionsPanel"
                     Grid.Column="2"
                     Orientation="Horizontal"
                     Spacing="16">
@@ -217,51 +228,63 @@
 
             <!--  Categories  -->
             <Grid
+                x:Name="CategorySection"
                 Grid.Row="1"
                 Padding="24,16,24,8"
                 Background="{StaticResource SurfaceBackground}"
                 BorderBrush="{StaticResource SurfaceAlt}"
                 BorderThickness="0,0,0,1">
-                <ItemsControl ItemsSource="{Binding Categories}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="8" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button
-                                Background="{Binding IsActive, Converter={StaticResource CategoryBackgroundConverter}}"
-                                Command="{Binding DataContext.SetCategoryCommand, ElementName=PageRoot}"
-                                CommandParameter="{Binding}"
-                                Style="{StaticResource CategoryButtonStyle}">
 
-                                <StackPanel Orientation="Horizontal" Spacing="8">
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Auto"
+                    HorizontalScrollMode="Enabled"
+                    VerticalScrollMode="Disabled">
 
-                                    <Path
-                                        Width="18"
-                                        Height="18"
-                                        VerticalAlignment="Center"
-                                        Data="{Binding IconKey, Converter={StaticResource IconKeyToPathConverter}}"
-                                        Fill="Transparent"
-                                        Stretch="Uniform"
-                                        Stroke="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
-                                        StrokeThickness="1" />
+                    <ItemsControl ItemsSource="{Binding Categories}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
 
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
-                                        Text="{Binding Name}" />
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Background="{Binding IsActive, Converter={StaticResource CategoryBackgroundConverter}}"
+                                    Command="{Binding DataContext.SetCategoryCommand, ElementName=PageRoot}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource CategoryButtonStyle}">
 
-                                </StackPanel>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+
+                                        <Path
+                                            Width="18"
+                                            Height="18"
+                                            VerticalAlignment="Center"
+                                            Data="{Binding IconKey, Converter={StaticResource IconKeyToPathConverter}}"
+                                            Fill="Transparent"
+                                            Stretch="Uniform"
+                                            Stroke="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                                            StrokeThickness="1" />
+
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Text="{Binding Name}" />
+
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
+
+                </ScrollViewer>
             </Grid>
 
             <!--  Search Area  -->
             <Grid
+                x:Name="SearchSection"
                 Grid.Row="2"
                 Padding="24,12"
                 Background="{StaticResource SurfaceBackground}">
@@ -283,10 +306,14 @@
             </Grid>
 
             <!--  Products Grid  -->
-            <ScrollViewer Grid.Row="3" Padding="24,8">
+            <ScrollViewer
+                x:Name="ProductsSection"
+                Grid.Row="3"
+                Padding="24,8">
                 <ItemsRepeater ItemsSource="{Binding PagedProducts}">
                     <ItemsRepeater.Layout>
                         <UniformGridLayout
+                            x:Name="ProductsLayout"
                             ItemsStretch="Fill"
                             MaximumRowsOrColumns="2"
                             MinColumnSpacing="12"
@@ -398,6 +425,9 @@
 
         <!--  RIGHT PANEL (Order Sidebar)  -->
         <Grid
+            x:Name="SidebarGrid"
+            Grid.Row="0"
+            Grid.RowSpan="2"
             Grid.Column="1"
             Background="{StaticResource SurfaceBackground}"
             BorderBrush="{StaticResource BorderBrush}"
@@ -676,7 +706,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <Grid ColumnDefinitions="*,*,*">
+                    <Grid x:Name="OrderTypeButtonsGrid" ColumnDefinitions="*,*,*">
                         <Button
                             Margin="0,0,4,0"
                             Background="{Binding OrderType, Converter={StaticResource OrderTypeBackgroundConverter}, ConverterParameter='Dine-in'}"
@@ -726,6 +756,7 @@
                                 Text="Select Table" />
                         </StackPanel>
                         <VariableSizedWrapGrid
+                            x:Name="TableChoicesGrid"
                             ItemHeight="40"
                             ItemWidth="100"
                             Orientation="Horizontal">
@@ -785,5 +816,77 @@
                 </Button>
             </StackPanel>
         </Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="PosResponsiveStates">
+                <VisualState x:Name="PosMobileState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="MainShellGrid.(Grid.Row)" Value="0" />
+                        <Setter Target="MainShellGrid.(Grid.Column)" Value="0" />
+                        <Setter Target="MainShellGrid.(Grid.ColumnSpan)" Value="2" />
+                        <Setter Target="SidebarGrid.(Grid.Row)" Value="2" />
+                        <Setter Target="SidebarGrid.(Grid.Column)" Value="0" />
+                        <Setter Target="SidebarGrid.(Grid.ColumnSpan)" Value="2" />
+                        <Setter Target="SidebarColumn.Width" Value="0" />
+                        <Setter Target="ProductsLayout.MaximumRowsOrColumns" Value="2" />
+                        <Setter Target="HeaderActionsPanel.Orientation" Value="Vertical" />
+                        <Setter Target="HeaderActionsPanel.Spacing" Value="8" />
+                        <Setter Target="HeaderActionsPanel.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="HeaderBar.Padding" Value="16,12" />
+                        <Setter Target="CategorySection.Padding" Value="16,12,16,8" />
+                        <Setter Target="SearchSection.Padding" Value="16,12" />
+                        <Setter Target="ProductsSection.Padding" Value="16,8" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="PosTabletState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointTablet}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="MainShellGrid.(Grid.Row)" Value="0" />
+                        <Setter Target="MainShellGrid.(Grid.Column)" Value="0" />
+                        <Setter Target="MainShellGrid.(Grid.ColumnSpan)" Value="2" />
+                        <Setter Target="SidebarGrid.(Grid.Row)" Value="2" />
+                        <Setter Target="SidebarGrid.(Grid.Column)" Value="0" />
+                        <Setter Target="SidebarGrid.(Grid.ColumnSpan)" Value="2" />
+                        <Setter Target="SidebarColumn.Width" Value="0" />
+                        <Setter Target="ProductsLayout.MaximumRowsOrColumns" Value="2" />
+                        <Setter Target="HeaderActionsPanel.Orientation" Value="Horizontal" />
+                        <Setter Target="HeaderActionsPanel.Spacing" Value="12" />
+                        <Setter Target="HeaderActionsPanel.HorizontalAlignment" Value="Right" />
+                        <Setter Target="HeaderBar.Padding" Value="20,14" />
+                        <Setter Target="CategorySection.Padding" Value="20,14,20,8" />
+                        <Setter Target="SearchSection.Padding" Value="20,12" />
+                        <Setter Target="ProductsSection.Padding" Value="20,8" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="PosDesktopState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource BreakpointDesktop}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="MainShellGrid.(Grid.Row)" Value="0" />
+                        <Setter Target="MainShellGrid.(Grid.Column)" Value="0" />
+                        <Setter Target="MainShellGrid.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="SidebarGrid.(Grid.Row)" Value="0" />
+                        <Setter Target="SidebarGrid.(Grid.Column)" Value="1" />
+                        <Setter Target="SidebarGrid.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="SidebarColumn.Width" Value="380" />
+                        <Setter Target="ProductsLayout.MaximumRowsOrColumns" Value="2" />
+                        <Setter Target="HeaderActionsPanel.Orientation" Value="Horizontal" />
+                        <Setter Target="HeaderActionsPanel.Spacing" Value="16" />
+                        <Setter Target="HeaderActionsPanel.HorizontalAlignment" Value="Right" />
+                        <Setter Target="HeaderBar.Padding" Value="24,16" />
+                        <Setter Target="CategorySection.Padding" Value="24,16,24,8" />
+                        <Setter Target="SearchSection.Padding" Value="24,12" />
+                        <Setter Target="ProductsSection.Padding" Value="24,8" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>

@@ -5,10 +5,53 @@
     xmlns:models="using:MyShop.Models"
     CornerRadius="20">
 
-    <Grid Width="450"
+    <Grid x:Name="DialogRoot"
+          Width="450"
           Height="650"
           Margin="0"
           Padding="0">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="EmployeeFormResponsiveStates">
+                <VisualState x:Name="EmployeeFormNarrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="DialogRoot.Width" Value="Auto"/>
+                        <Setter Target="DialogRoot.MaxWidth" Value="360"/>
+                        <Setter Target="DialogRoot.Height" Value="Auto"/>
+                        <Setter Target="FormScrollViewer.Padding" Value="0,0,0,0"/>
+                        <Setter Target="NameGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="NameGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="TxtLastName.(Grid.Column)" Value="0"/>
+                        <Setter Target="TxtLastName.(Grid.Row)" Value="1"/>
+                        <Setter Target="CompGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="CompGrid.(Grid.ColumnDefinitions)[1].Width" Value="0"/>
+                        <Setter Target="CboRole.(Grid.Column)" Value="0"/>
+                        <Setter Target="CboRole.(Grid.Row)" Value="1"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="EmployeeFormWideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="600"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="DialogRoot.Width" Value="450"/>
+                        <Setter Target="DialogRoot.MaxWidth" Value="450"/>
+                        <Setter Target="DialogRoot.Height" Value="650"/>
+                        <Setter Target="FormScrollViewer.Padding" Value="0,0,10,0"/>
+                        <Setter Target="NameGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="NameGrid.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="TxtLastName.(Grid.Column)" Value="1"/>
+                        <Setter Target="TxtLastName.(Grid.Row)" Value="0"/>
+                        <Setter Target="CompGrid.(Grid.ColumnDefinitions)[0].Width" Value="*"/>
+                        <Setter Target="CompGrid.(Grid.ColumnDefinitions)[1].Width" Value="*"/>
+                        <Setter Target="CboRole.(Grid.Column)" Value="1"/>
+                        <Setter Target="CboRole.(Grid.Row)" Value="0"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -29,9 +72,10 @@
                            VerticalAlignment="Center"/>
         </Grid>
 
-        <ScrollViewer Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
-                      Padding="0,0,10,0">
+        <ScrollViewer x:Name="FormScrollViewer"
+                  Grid.Row="1"
+                  VerticalScrollBarVisibility="Auto"
+                  Padding="0,0,10,0">
             <StackPanel Spacing="20">
 
                 <StackPanel Spacing="12">
@@ -51,7 +95,11 @@
                             Background="#F9F9F9"
                             Padding="15">
                         <StackPanel Spacing="12">
-                            <Grid ColumnSpacing="12">
+                            <Grid x:Name="NameGrid" ColumnSpacing="12" RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
@@ -61,8 +109,9 @@
                                          FontFamily="Segoe UI"
                                          Header="First Name"
                                          CornerRadius="8"/>
-                                <TextBox Grid.Column="1"
-                                         x:Name="TxtLastName"
+                                <TextBox x:Name="TxtLastName"
+                                         Grid.Column="1"
+                                         Grid.Row="0"
                                          FontFamily="Segoe UI"
                                          Text="{x:Bind ViewModel.LastName, Mode=TwoWay}"
                                          Header="Last Name"
@@ -107,7 +156,11 @@
                                          PasswordRevealMode="Peek"
                                          CornerRadius="8"/>
 
-                            <Grid ColumnSpacing="12">
+                            <Grid x:Name="CompGrid" ColumnSpacing="12" RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
@@ -121,6 +174,7 @@
                                           SelectedIndex="{x:Bind ViewModel.SelectedRoleIndex, Mode=TwoWay}"
                                           Header="Role"
                                           Grid.Column="1"
+                                          Grid.Row="0"
                                           HorizontalAlignment="Stretch"
                                           CornerRadius="8">
                                     <ComboBoxItem Content="Admin"
