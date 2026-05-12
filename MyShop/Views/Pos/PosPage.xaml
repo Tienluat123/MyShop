@@ -140,6 +140,8 @@
                 <!--  Search  -->
                 <RowDefinition Height="*"/>
                 <!--  Products Grid  -->
+                <RowDefinition Height="Auto"/>
+                <!--  Paging  -->
             </Grid.RowDefinitions>
 
             <!--  Top Bar  -->
@@ -306,7 +308,7 @@
             <!--  Products Grid  -->
             <ScrollViewer Grid.Row="3"
                     Padding="24,8">
-                <ItemsRepeater ItemsSource="{Binding FilteredProducts}">
+                <ItemsRepeater ItemsSource="{Binding PagedProducts}">
                     <ItemsRepeater.Layout>
                         <UniformGridLayout
                             ItemsStretch="Fill"
@@ -374,6 +376,52 @@
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
             </ScrollViewer>
+
+            <!--  Paging Controls  -->
+            <Grid
+                Grid.Row="4"
+                Padding="24,8,24,16"
+                Background="{StaticResource SurfaceBackground}">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="12">
+                    <Button
+                        MinWidth="44"
+                        Height="36"
+                        Padding="12,0"
+                        Command="{Binding PreviousProductPageCommand}"
+                        CornerRadius="10"
+                        Style="{StaticResource AppSecondaryButtonStyle}"
+                        ToolTipService.ToolTip="Previous page">
+                        <FontIcon
+                            FontSize="14"
+                            Glyph="&#xE72B;"/>
+                    </Button>
+
+                    <TextBlock
+                        MinWidth="104"
+                        VerticalAlignment="Center"
+                        FontWeight="{StaticResource FontWeightSemiBold}"
+                        Foreground="{StaticResource TextSecondary}"
+                        Style="{StaticResource CaptionTextStyle}"
+                        Text="{Binding ProductPageDisplay}"
+                        TextAlignment="Center"/>
+
+                    <Button
+                        MinWidth="44"
+                        Height="36"
+                        Padding="12,0"
+                        Command="{Binding NextProductPageCommand}"
+                        CornerRadius="10"
+                        Style="{StaticResource AppSecondaryButtonStyle}"
+                        ToolTipService.ToolTip="Next page">
+                        <FontIcon
+                            FontSize="14"
+                            Glyph="&#xE72A;"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Grid>
 
         <!--  RIGHT PANEL (Order Sidebar)  -->

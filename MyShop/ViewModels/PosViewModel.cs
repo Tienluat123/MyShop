@@ -27,6 +27,9 @@ public partial class PosViewModel : ObservableObject
     public Helpers.BulkObservableCollection<OrderItem> Order { get; } = new();
     public ObservableCollection<PosOrder> ActiveOrders { get; } = new();
     public Helpers.BulkObservableCollection<Product> FilteredProducts { get; } = new();
+    public Helpers.BulkObservableCollection<Product> PagedProducts { get; } = new();
+
+    private const int ProductPageSize = 6;
 
     public Order? CurrentDraftOrder => _currentDraftOrder;
 
@@ -38,6 +41,16 @@ public partial class PosViewModel : ObservableObject
 
     [ObservableProperty]
     private string searchQuery = "";
+
+    [ObservableProperty]
+    private int currentProductPage = 1;
+
+    [ObservableProperty]
+    private int totalProductPages;
+
+    public string ProductPageDisplay => TotalProductPages == 0
+        ? "Page 0 of 0"
+        : $"Page {CurrentProductPage} of {TotalProductPages}";
 
     [ObservableProperty]
     private decimal subtotal;
@@ -176,6 +189,8 @@ public partial class PosViewModel : ObservableObject
                         .ToList();
 
                     FilteredProducts.ReplaceAll(filtered);
+                    CurrentProductPage = 1;
+                    UpdatePagedProducts();
                 });
             }
         });
@@ -183,6 +198,60 @@ public partial class PosViewModel : ObservableObject
 
     partial void OnSearchQueryChanged(string value) => RebuildFilter();
     partial void OnActiveCategoryChanged(string value) => RebuildFilter();
+    partial void OnCurrentProductPageChanged(int value) => OnPropertyChanged(nameof(ProductPageDisplay));
+    partial void OnTotalProductPagesChanged(int value) => OnPropertyChanged(nameof(ProductPageDisplay));
+
+    private void UpdatePagedProducts()
+    {
+        if (FilteredProducts.Count == 0)
+        {
+            TotalProductPages = 0;
+            CurrentProductPage = 1;
+            PagedProducts.Clear();
+            UpdateProductPageCommandStates();
+            return;
+        }
+
+        TotalProductPages = (int)Math.Ceiling(FilteredProducts.Count / (double)ProductPageSize);
+        if (CurrentProductPage < 1) CurrentProductPage = 1;
+        if (CurrentProductPage > TotalProductPages) CurrentProductPage = TotalProductPages;
+
+        var pageItems = FilteredProducts
+            .Skip((CurrentProductPage - 1) * ProductPageSize)
+            .Take(ProductPageSize)
+            .ToList();
+
+        PagedProducts.ReplaceAll(pageItems);
+        UpdateProductPageCommandStates();
+    }
+
+    private bool CanPreviousProductPage() => CurrentProductPage > 1;
+
+    private bool CanNextProductPage() => CurrentProductPage < TotalProductPages;
+
+    private void UpdateProductPageCommandStates()
+    {
+        PreviousProductPageCommand.NotifyCanExecuteChanged();
+        NextProductPageCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanPreviousProductPage))]
+    private void PreviousProductPage()
+    {
+        if (CurrentProductPage <= 1) return;
+
+        CurrentProductPage--;
+        UpdatePagedProducts();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanNextProductPage))]
+    private void NextProductPage()
+    {
+        if (CurrentProductPage >= TotalProductPages) return;
+
+        CurrentProductPage++;
+        UpdatePagedProducts();
+    }
 
     [RelayCommand]
     public async Task LoadCategories()
