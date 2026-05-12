@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using MyShop.Models;
 using MyShop.Services;
 using MyShop.ViewModels;
@@ -11,6 +12,12 @@ namespace MyShop.Views.Pos;
 public sealed partial class PosPage : Page
 {
     public PosViewModel ViewModel { get; }
+
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        await ViewModel.InitializeSessionAsync();
+    }
 
     public PosPage()
     {

@@ -74,12 +74,12 @@ public interface IOrderService
     /// <summary>
     /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang kép
     /// </summary>
-    Task<PagedResult<Order>> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null);
+    Task<PagedResult<Order>> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null, int? userId = null);
 
     /// <summary>
     /// Đếm số lượng đơn hàng theo danh sách trạng thái
     /// </summary>
-    Task<int> GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null);
+    Task<int> GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null, int? userId = null);
 
     /// <summary>
     /// Lấy danh sách đơn hàng Active (chưa hoàn tất và chưa hủy)
@@ -447,12 +447,15 @@ public class OrderService : IOrderService
     /// <summary>
     /// Đếm số lượng đơn hàng theo danh sách trạng thái (Bất đồng bộ)
     /// </summary>
-    public async Task<int> GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null)
+    public async Task<int> GetCountByStatus(DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null, int? userId = null)
     {
         try
         {
             // Build filter expression
             Expression<Func<Order, bool>> filter = o => true;
+
+            if (userId != null)
+                filter = CombineFilters(filter, o => o.UserId == userId.Value);
 
             if (paymentStatuses != null && paymentStatuses.Count > 0)
                 filter = CombineFilters(filter, o => paymentStatuses.Contains(o.PaymentStatus));
@@ -483,7 +486,7 @@ public class OrderService : IOrderService
     /// <summary>
     /// Lấy danh sách đơn hàng được lọc và sắp xếp, hỗ trợ phân trang kép (Bất đồng bộ)
     /// </summary>
-    public async Task<PagedResult<Order>> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null)
+    public async Task<PagedResult<Order>> GetPagedOrdersByStatuses(PagingRequest paging, bool sortDescending, DateTime? startDate = null, DateTime? endDate = null, List<string>? paymentStatuses = null, List<string>? fulfillmentStatuses = null, int? userId = null)
     {
         if (paging == null) throw new ArgumentNullException(nameof(paging));
         paging.Validate();
@@ -492,6 +495,9 @@ public class OrderService : IOrderService
         {
             // Build filter expression
             Expression<Func<Order, bool>> filter = o => true; // Start with always true
+
+            if (userId != null)
+                filter = CombineFilters(filter, o => o.UserId == userId.Value);
 
             if (paymentStatuses != null && paymentStatuses.Count > 0)
                 filter = CombineFilters(filter, o => paymentStatuses.Contains(o.PaymentStatus));

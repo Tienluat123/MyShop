@@ -307,7 +307,8 @@ public partial class App : Application
                 container.Get<ICategoryService>(),
                 container.Get<IOrderService>(),
                 container.Get<IPromotionService>(),
-                container.Get<ILoyaltyService>()
+                container.Get<ILoyaltyService>(),
+                container.Get<ISessionService>()
             ));
 
             container.Register<ConfigViewModel>(new ConfigViewModel(

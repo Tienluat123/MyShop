@@ -18,6 +18,7 @@ public partial class PosViewModel : ObservableObject
     private readonly IOrderService _orderService;
     private readonly IPromotionService _promoService;
     private readonly ILoyaltyService _loyaltyService;
+    private readonly ISessionService _sessionService;
     private readonly Helpers.Debouncer _filterDebouncer = new();
 
     private Order? _currentDraftOrder;
@@ -102,7 +103,8 @@ public partial class PosViewModel : ObservableObject
         App.Services.GetRequiredService<ICategoryService>(),
         App.Services.GetRequiredService<IOrderService>(),
         App.Services.GetRequiredService<IPromotionService>(),
-        App.Services.GetRequiredService<ILoyaltyService>())
+        App.Services.GetRequiredService<ILoyaltyService>(),
+        App.Services.GetRequiredService<ISessionService>())
     {
     }
 
@@ -111,13 +113,15 @@ public partial class PosViewModel : ObservableObject
         ICategoryService categoryService,
         IOrderService orderService,
         IPromotionService promoService,
-        ILoyaltyService loyaltyService)
+        ILoyaltyService loyaltyService,
+        ISessionService sessionService)
     {
         _productService = productService ?? throw new ArgumentNullException(nameof(productService));
         _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         _promoService = promoService ?? throw new ArgumentNullException(nameof(promoService));
         _loyaltyService = loyaltyService ?? throw new ArgumentNullException(nameof(loyaltyService));
+        _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
 
         // Initial data loading
         InitializeAsync();
@@ -140,13 +144,17 @@ public partial class PosViewModel : ObservableObject
 
         await LoadCategories();
         await LoadProductsForSale();
-        await LoadCurrentDraftOrder();
 
         RebuildFilter();
 
         // Final explicit check for command enablement
         CalculateTotals();
         PlaceOrderCommand.NotifyCanExecuteChanged();
+    }
+
+    public async Task InitializeSessionAsync()
+    {
+        await LoadCurrentDraftOrder();
     }
 
     //private void LoadMockData()
@@ -439,7 +447,8 @@ public partial class PosViewModel : ObservableObject
         var result = await _orderService.GetPagedOrdersByStatuses(
             new PagingRequest { PageNumber = 1, PageSize = 1 },
             true,
-            paymentStatuses: new List<string> { "Draft" });
+            paymentStatuses: new List<string> { "Draft" },
+            userId: _sessionService.CurrentUser?.Id);
 
         _currentDraftOrder = result.Items.FirstOrDefault();
 
@@ -452,7 +461,7 @@ public partial class PosViewModel : ObservableObject
         _currentDraftOrder = new Order
         {
             CustomerId = null, // Guest
-            UserId = 1,     // Default Staff
+            UserId = _sessionService.CurrentUser?.Id ?? 1,     // Current Staff or fallback
             PaymentStatus = "Draft",
             // Set defaults
             OrderDate = DateTime.UtcNow,
@@ -464,12 +473,14 @@ public partial class PosViewModel : ObservableObject
 
     private async Task LoadCurrentDraftOrder()
     {
+        if (_sessionService.CurrentUser == null) return;
         try
         {
             var result = await _orderService.GetPagedOrdersByStatuses(
                 new PagingRequest { PageNumber = 1, PageSize = 1 },
                 true,
-                paymentStatuses: new List<string> { "Draft" });
+                paymentStatuses: new List<string> { "Draft" },
+                userId: _sessionService.CurrentUser?.Id);
 
             _currentDraftOrder = result.Items.FirstOrDefault();
             if (_currentDraftOrder != null)
