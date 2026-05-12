@@ -145,12 +145,17 @@ public class LoyaltyService : ILoyaltyService
             customer.Tier = newTier;
         }
 
+        // Update visit stats
+        customer.TotalVisits++;
+        customer.TotalSpent += (double)orderSubTotal;
+        customer.LastVisitDate = DateTime.UtcNow;
+
         // Persist to DB
         await _customerRepo.UpdateAsync(customer);
         await _customerRepo.SaveChangesAsync();
 
         System.Diagnostics.Debug.WriteLine(
-            $"[Loyalty] Earned {earnedPoints} pts. Total={customer.TotalAccumulatedPoints}, Available={customer.CurrentAvailablePoints}, Tier={customer.Tier}");
+            $"[Loyalty] Earned {earnedPoints} pts. Total={customer.TotalAccumulatedPoints}, Available={customer.CurrentAvailablePoints}, Tier={customer.Tier}, Visits={customer.TotalVisits}, LastVisit={customer.LastVisitDate}");
 
         return earnedPoints;
     }
