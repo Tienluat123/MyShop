@@ -763,38 +763,38 @@
                             <Button
                                 Width="96"
                                 Margin="0,0,4,4"
-                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='Table 1'}"
+                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='1'}"
                                 Command="{Binding SetTableNumberCommand}"
-                                CommandParameter="Table 1"
+                                CommandParameter="1"
                                 Content="Table 1"
-                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='Table 1'}"
+                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='1'}"
                                 Style="{StaticResource OrderTypeButtonStyle}" />
                             <Button
                                 Width="96"
                                 Margin="0,0,4,4"
-                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='Table 2'}"
+                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='2'}"
                                 Command="{Binding SetTableNumberCommand}"
-                                CommandParameter="Table 2"
+                                CommandParameter="2"
                                 Content="Table 2"
-                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='Table 2'}"
+                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='2'}"
                                 Style="{StaticResource OrderTypeButtonStyle}" />
                             <Button
                                 Width="96"
                                 Margin="0,0,4,4"
-                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='Table 3'}"
+                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='3'}"
                                 Command="{Binding SetTableNumberCommand}"
-                                CommandParameter="Table 3"
+                                CommandParameter="3"
                                 Content="Table 3"
-                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='Table 3'}"
+                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='3'}"
                                 Style="{StaticResource OrderTypeButtonStyle}" />
                             <Button
                                 Width="96"
                                 Margin="0,0,4,4"
-                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='Table 4'}"
+                                Background="{Binding TableNumber, Converter={StaticResource TableBackgroundConverter}, ConverterParameter='4'}"
                                 Command="{Binding SetTableNumberCommand}"
-                                CommandParameter="Table 4"
+                                CommandParameter="4"
                                 Content="Table 4"
-                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='Table 4'}"
+                                Foreground="{Binding TableNumber, Converter={StaticResource TableForegroundConverter}, ConverterParameter='4'}"
                                 Style="{StaticResource OrderTypeButtonStyle}" />
                         </VariableSizedWrapGrid>
                     </StackPanel>
