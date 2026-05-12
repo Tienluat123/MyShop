@@ -144,13 +144,17 @@ public partial class PosViewModel : ObservableObject
 
         await LoadCategories();
         await LoadProductsForSale();
-        await LoadCurrentDraftOrder();
 
         RebuildFilter();
 
         // Final explicit check for command enablement
         CalculateTotals();
         PlaceOrderCommand.NotifyCanExecuteChanged();
+    }
+
+    public async Task InitializeSessionAsync()
+    {
+        await LoadCurrentDraftOrder();
     }
 
     //private void LoadMockData()
@@ -469,6 +473,7 @@ public partial class PosViewModel : ObservableObject
 
     private async Task LoadCurrentDraftOrder()
     {
+        if (_sessionService.CurrentUser == null) return;
         try
         {
             var result = await _orderService.GetPagedOrdersByStatuses(
