@@ -29,9 +29,9 @@ public sealed partial class ReceiptModal : ContentDialog
         OrderIdText.Text = $"Order #{_order.OrderId}";
         DateText.Text = _order.CreatedAt.ToString("g");
         ItemsList.ItemsSource = _order.Items;
-        SubtotalText.Text = $"${_order.Subtotal:F2}";
-        TaxText.Text = $"${_order.Tax:F2}";
-        TotalText.Text = $"${_order.Total:F2}";
+        SubtotalText.Text = $"{_order.Subtotal:F2}đ";
+        TaxText.Text = $"{_order.Tax:F2}đ";
+        TotalText.Text = $"{_order.Total:F2}đ";
 
         CustomerNameText.Text = _order.CustomerName ?? "Guest";
         PaymentMethodText.Text = _order.Method.ToString();
