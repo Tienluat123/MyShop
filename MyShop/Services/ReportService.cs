@@ -34,74 +34,89 @@ public class ReportService : IReportService
         start = start.Date;
         end = end.Date.AddDays(1).AddTicks(-1);
 
-        // 1. Fetch Summary Stats
-        data.Summary.OrdersCount = await _orderRepository.CountAsync(o => 
-            o.OrderDate >= start && o.OrderDate <= end && o.PaymentStatus == "Paid");
-
-        // 2. Fetch Detailed Data
+        // 1. Fetch all detailed data for the period once
+        // This includes all Paid orders and their details
         var details = await _orderDetailRepository.GetAsync(
             od => od.Order!.OrderDate >= start && od.Order!.OrderDate <= end && od.Order!.PaymentStatus == "Paid",
             "Order", "Product.Category");
 
-        // Apply Scope Filtering
-        var filteredDetails = categoryScope == "All" 
-            ? details 
-            : details.Where(od => od.Product?.Category?.Name == categoryScope).ToList();
-
-        // 3. Calculate Metrics
-        if (categoryScope == "All")
+        // 2. Pre-process details to calculate attributed Net Revenue and Net Profit
+        // We use a ratio (TotalPaid / SubTotal) to attribute discounts and taxes proportionally to each item.
+        var processed = details.Select(od =>
         {
-            var orders = await _orderRepository.GetAsync(o => 
-                o.OrderDate >= start && o.OrderDate <= end && o.PaymentStatus == "Paid");
-            data.Summary.TotalRevenue = orders.Sum(o => o.TotalAmount);
-        }
-        else
-        {
-            data.Summary.TotalRevenue = filteredDetails.Sum(od => od.Quantity * od.UnitPrice);
-        }
+            decimal orderSubtotal = od.Order?.SubTotal ?? 0;
+            decimal orderTotalPaid = od.Order?.TotalAmount ?? 0;
 
-        data.Summary.TotalProfit = filteredDetails.Sum(od => od.Quantity * (od.UnitPrice - od.UnitCostPrice));
-        data.Summary.ProductsCount = filteredDetails.Sum(od => od.Quantity);
+            // Ratio accounts for both discounts and tax proportionally
+            decimal ratio = orderSubtotal > 0 ? orderTotalPaid / orderSubtotal : 1;
 
-        // Fetch Expenses for net profit
-        var expenses = await _expenseRepository.GetAsync(e => 
+            decimal itemGrossRevenue = od.Quantity * od.UnitPrice;
+            decimal itemNetRevenue = itemGrossRevenue * ratio;
+
+            // Profit = Net Revenue - Total cost for this item
+            decimal itemNetProfit = itemNetRevenue - (od.Quantity * od.UnitCostPrice);
+
+            return new
+            {
+                Detail = od,
+                NetRevenue = itemNetRevenue,
+                NetProfit = itemNetProfit,
+                CategoryName = od.Product?.Category?.Name ?? "Others",
+                Date = od.Order?.OrderDate ?? start
+            };
+        }).ToList();
+
+        // 3. Filter by Category Scope
+        var filtered = categoryScope == "All"
+            ? processed
+            : processed.Where(p => p.CategoryName == categoryScope).ToList();
+
+        // 4. Populate Summary Stats
+        data.Summary.OrdersCount = filtered.Select(p => p.Detail.OrderId).Distinct().Count();
+        data.Summary.ProductsCount = filtered.Sum(p => p.Detail.Quantity);
+        data.Summary.TotalRevenue = filtered.Sum(p => p.NetRevenue);
+        data.Summary.TotalProfit = filtered.Sum(p => p.NetProfit);
+
+        // Fetch Expenses for net profit (Global only)
+        var expenses = await _expenseRepository.GetAsync(e =>
             e.Date >= start.ToUniversalTime() && e.Date <= end.ToUniversalTime());
+        
         if (categoryScope == "All")
         {
             data.Summary.TotalProfit -= expenses.Sum(e => e.Amount);
         }
 
-        // 4. Trends with Hole-Filling
-        data.SalesTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = d.Quantity }), start, end, granularity);
-        data.RevenueTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * d.UnitPrice) }), start, end, granularity);
-        
-        var grossProfitTrend = filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * (d.UnitPrice - d.UnitCostPrice)) });
-        var expenseTrend = categoryScope == "All" 
-            ? expenses.Select(e => new TrendItem { Date = e.Date, Value = -(double)e.Amount }) 
-            : Enumerable.Empty<TrendItem>();
-            
-        data.ProfitTrend = GroupAndFillHoles(grossProfitTrend.Concat(expenseTrend), start, end, granularity);
+        // 5. Trends
+        data.SalesTrend = GroupAndFillHoles(filtered.Select(p => new TrendItem { Date = p.Date, Value = p.Detail.Quantity }), start, end, granularity);
+        data.RevenueTrend = GroupAndFillHoles(filtered.Select(p => new TrendItem { Date = p.Date, Value = (double)p.NetRevenue }), start, end, granularity);
 
-        // 5. Rankings (All products with 1+ sales)
-        data.TopProducts = filteredDetails
-            .GroupBy(od => od.Product?.Name ?? "Unknown")
+        var netProfitTrendPerItem = filtered.Select(p => new TrendItem { Date = p.Date, Value = (double)p.NetProfit });
+        var expenseTrend = categoryScope == "All"
+            ? expenses.Select(e => new TrendItem { Date = e.Date, Value = -(double)e.Amount })
+            : Enumerable.Empty<TrendItem>();
+
+        data.ProfitTrend = GroupAndFillHoles(netProfitTrendPerItem.Concat(expenseTrend), start, end, granularity);
+
+        // 6. Product Rankings
+        data.TopProducts = filtered
+            .GroupBy(p => p.Detail.Product?.Name ?? "Unknown")
             .Select(g => new RankingPoint
             {
                 Name = g.Key,
-                Volume = g.Sum(od => od.Quantity),
-                Amount = g.Sum(od => (decimal)(od.Quantity * (od.UnitPrice - od.UnitCostPrice)))
+                Volume = g.Sum(p => p.Detail.Quantity),
+                Amount = g.Sum(p => p.NetProfit)
             })
             .Where(x => x.Volume > 0)
             .OrderByDescending(x => x.Amount)
             .ToList();
 
-        // 6. Category Leaders
-        data.CategoryProfit = details
-            .GroupBy(od => od.Product?.Category?.Name ?? "Others")
+        // 7. Category Leaders (Comparison remains global to show context)
+        data.CategoryProfit = processed
+            .GroupBy(p => p.CategoryName)
             .Select(g => new ProfitPoint
             {
                 Category = g.Key,
-                Amount = (double)g.Sum(od => od.Quantity * (od.UnitPrice - od.UnitCostPrice)),
+                Amount = (double)g.Sum(p => p.NetProfit),
                 Color = GetCategoryColor(g.Key)
             })
             .OrderByDescending(x => x.Amount)
