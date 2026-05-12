@@ -114,12 +114,30 @@ public partial class ReportViewModel : ObservableObject
 
     partial void OnIsTopProductsSelectedChanged(bool value)
     {
-        if (value) SelectedAnalyticsMode = "Top Products";
+        if (value) 
+        {
+            IsTopCategoriesSelected = false;
+            SelectedAnalyticsMode = "Top Products";
+        }
+        else if (!IsTopCategoriesSelected)
+        {
+            // Prevent deselecting both
+            IsTopProductsSelected = true;
+        }
     }
 
     partial void OnIsTopCategoriesSelectedChanged(bool value)
     {
-        if (value) SelectedAnalyticsMode = "Top Categories";
+        if (value)
+        {
+            IsTopProductsSelected = false;
+            SelectedAnalyticsMode = "Top Categories";
+        }
+        else if (!IsTopProductsSelected)
+        {
+            // Prevent deselecting both
+            IsTopCategoriesSelected = true;
+        }
     }
 
     partial void OnSelectedAnalyticsModeChanged(string value)
