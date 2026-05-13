@@ -8,27 +8,21 @@
         <converters:StatusToBrushConverter x:Key="StatusBgConverter" IsBackground="True" />
         <converters:StatusToBrushConverter x:Key="StatusFgConverter" IsBackground="False" />
         <converters:CurrencyConverter x:Key="CurrencyConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
-        <converters:BoolToVisibilityConverter x:Key="InverseBoolToVis" Inverse="True" />
+        <converters:NullToVisibilityConverter x:Key="NullToVis" />
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        <converters:StringToVisibilityConverter x:Key="StringToVis" />
     </UserControl.Resources>
 
-    <!--  Overlay Background  -->
-    <Grid
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch"
-        Background="{StaticResource OverlayBlack40}">
-
-        <!--  Modal Container  -->
+    <Grid Background="{StaticResource OverlayBlack40}">
         <Border
-            Width="600"
-            MinHeight="500"
-            MaxHeight="700"
+            Width="430"
+            MaxHeight="760"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Background="{StaticResource SurfaceAlt}"
+            Background="{StaticResource SurfaceBackground}"
             BorderBrush="{StaticResource BorderBrush}"
             BorderThickness="1"
-            CornerRadius="{StaticResource RadiusXLarge}"
+            CornerRadius="24"
             Shadow="{ThemeResource SharedShadow}">
             <Grid>
                 <Grid.RowDefinitions>
@@ -37,442 +31,289 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!--  Header  -->
-                <Border
+                <Grid
                     Grid.Row="0"
-                    Padding="24"
-                    Background="{StaticResource SurfaceBackground}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="0,0,0,1"
-                    CornerRadius="24,24,0,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Spacing="8">
-                            <TextBlock Style="{StaticResource HeadingStyle}" Text="Order Details" />
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Border
-                                    Padding="8,2"
-                                    Background="{StaticResource WarningSurfaceSoft}"
-                                    CornerRadius="6">
-                                    <TextBlock
-                                        FontSize="14"
-                                        FontWeight="Bold"
-                                        Foreground="{StaticResource BrandPrimary}"
-                                        Text="{Binding SelectedOrderDetails.OrderId}" />
-                                </Border>
-                                <Border
-                                    Padding="8,2"
-                                    Background="{Binding SelectedOrderDetails.PaymentStatus, Converter={StaticResource StatusBgConverter}}"
-                                    CornerRadius="6">
-                                    <TextBlock
-                                        FontSize="14"
-                                        FontWeight="Bold"
-                                        Foreground="{Binding SelectedOrderDetails.PaymentStatus, Converter={StaticResource StatusFgConverter}}"
-                                        Text="{Binding SelectedOrderDetails.PaymentStatus}" />
-                                </Border>
-                                <Border
-                                    Padding="8,2"
-                                    Background="{Binding SelectedOrderDetails.FulfillmentStatus, Converter={StaticResource StatusBgConverter}}"
-                                    CornerRadius="6">
-                                    <TextBlock
-                                        FontSize="14"
-                                        FontWeight="Bold"
-                                        Foreground="{Binding SelectedOrderDetails.FulfillmentStatus, Converter={StaticResource StatusFgConverter}}"
-                                        Text="{Binding SelectedOrderDetails.FulfillmentStatus}" />
-                                </Border>
+                    Padding="20,16"
+                    BorderBrush="{StaticResource SurfaceAlt}"
+                    BorderThickness="0,0,0,1">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                Foreground="{StaticResource IconSelectedBgBrush}"
+                                Glyph="&#xE7BF;"
+                                Style="{StaticResource IconSubtitleStyle}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource Gray900}"
+                                Text="Order Detail" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border
+                                Padding="8,2"
+                                Background="{StaticResource WarningSurfaceSoft}"
+                                CornerRadius="6">
                                 <TextBlock
-                                    Margin="8,0,0,0"
-                                    VerticalAlignment="Center"
-                                    Foreground="{StaticResource TextSecondary}"
-                                    Text="{Binding SelectedOrderDetails.CreatedAt}" />
-                            </StackPanel>
-                            <!-- Thêm dòng này để hiện tên khách hàng -->
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="Customer:" Foreground="Gray" FontSize="14"/>
-                                <TextBlock Text="{Binding SelectedOrderDetails.CustomerName}" FontWeight="SemiBold" FontSize="14"/>
-                            </StackPanel>
-                        </StackPanel>
-                        <StackPanel
-                            Grid.Column="1"
-                            VerticalAlignment="Top"
-                            Orientation="Horizontal"
-                            Spacing="8">
-                            <Button
-                                Command="{Binding EditOrderDetailCommand}"
-                                Style="{StaticResource AppIconButtonStyle}"
-                                Visibility="{Binding IsEditingDetail, Converter={StaticResource InverseBoolToVis}}">
-                                <FontIcon Glyph="&#xE70F;" />
-                            </Button>
-                            <Button Command="{Binding CloseOrderDetailCommand}" Style="{StaticResource AppIconButtonStyle}">
-                                <FontIcon Glyph="&#xE711;" />
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!--  Body  -->
-                <ScrollViewer Grid.Row="1" Padding="24">
-                    <StackPanel Spacing="24">
-                        <!--  Items View (View Mode)  -->
-                        <ItemsControl
-                            ItemsSource="{Binding SelectedOrderDetails.Items}"
-                            Visibility="{Binding IsEditingDetail, Converter={StaticResource InverseBoolToVis}}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,0,16">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Style="{StaticResource SubheadingStyle}" Text="{Binding Product.Name}" />
-                                            <TextBlock Foreground="{StaticResource TextSecondary}">
-                                                <Run Text="x" />
-                                                <Run Text="{Binding Quantity}" />
-                                            </TextBlock>
-                                        </StackPanel>
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Style="{StaticResource SubheadingStyle}">
-                                            <Run Text="{Binding BasePrice, Converter={StaticResource CurrencyConverter}}" />
-                                        </TextBlock>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <!--  Items Edit Mode  -->
-                        <StackPanel Spacing="16" Visibility="{Binding IsEditingDetail, Converter={StaticResource BoolToVis}}">
-                            <TextBlock FontWeight="SemiBold" Text="Order Items" />
-                            <ItemsControl ItemsSource="{Binding EditableItems}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,0,0,12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock Style="{StaticResource BodyStyle}" Text="{Binding Product.Name}" />
-                                                <TextBlock Foreground="{StaticResource TextSecondary}" Style="{StaticResource CaptionTextStyle}">
-                                                    <Run Text="{Binding BasePrice, Converter={StaticResource CurrencyConverter}}" />
-                                                    <Run Text="each" />
-                                                </TextBlock>
-                                            </StackPanel>
-                                            <StackPanel
-                                                Grid.Column="1"
-                                                Orientation="Horizontal"
-                                                Spacing="8">
-                                                <!--  Quantity Controls (Unpaid)  -->
-                                                <StackPanel
-                                                    Orientation="Horizontal"
-                                                    Spacing="4"
-                                                    Visibility="{Binding DataContext.CanEditItems, ElementName=Root, Converter={StaticResource BoolToVis}}">
-                                                    <Button
-                                                        Width="32"
-                                                        Height="32"
-                                                        Padding="0"
-                                                        Command="{Binding DataContext.DecreaseItemQtyCommand, ElementName=Root}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource AppSecondaryButtonStyle}">
-                                                        <FontIcon FontSize="12" Glyph="&#xE738;" />
-                                                    </Button>
-                                                    <TextBlock
-                                                        Width="24"
-                                                        VerticalAlignment="Center"
-                                                        Text="{Binding Quantity}"
-                                                        TextAlignment="Center" />
-                                                    <Button
-                                                        Width="32"
-                                                        Height="32"
-                                                        Padding="0"
-                                                        Command="{Binding DataContext.IncreaseItemQtyCommand, ElementName=Root}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource AppSecondaryButtonStyle}">
-                                                        <FontIcon FontSize="12" Glyph="&#xE710;" />
-                                                    </Button>
-                                                    <Button
-                                                        Width="32"
-                                                        Height="32"
-                                                        Margin="8,0,0,0"
-                                                        Padding="0"
-                                                        Command="{Binding DataContext.RemoveItemFromEditCommand, ElementName=Root}"
-                                                        CommandParameter="{Binding}"
-                                                        Foreground="{StaticResource ErrorSurface}"
-                                                        Style="{StaticResource AppIconButtonStyle}">
-                                                        <FontIcon FontSize="12" Glyph="&#xE74D;" />
-                                                    </Button>
-                                                </StackPanel>
-
-                                                <!--  Readonly Qty (Paid)  -->
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource BodyStyle}"
-                                                    Visibility="{Binding DataContext.CanEditItems, ElementName=Root, Converter={StaticResource InverseBoolToVis}}">
-                                                    <Run Text="x" />
-                                                    <Run Text="{Binding Quantity}" />
-                                                </TextBlock>
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-
-                            <!--  Edit Mode Actions  -->
-                            <StackPanel Orientation="Horizontal" Spacing="12">
-                                <!--  Add Item (Unpaid)  -->
-                                <Button
-                                    Command="{Binding AddProductToEditCommand}"
-                                    Content="Add Item"
-                                    Style="{StaticResource AppSecondaryButtonStyle}"
-                                    Visibility="{Binding CanEditItems, Converter={StaticResource BoolToVis}}">
-                                    <Button.Flyout>
-                                        <Flyout>
-                                            <StackPanel Width="250" Spacing="8">
-                                                <TextBlock FontWeight="Bold" Text="Select Product" />
-                                                <ListView
-                                                    MaxHeight="300"
-                                                    ItemsSource="{Binding AllProducts}"
-                                                    SelectionMode="None">
-                                                    <ListView.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Grid Padding="0,4">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="Auto" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
-                                                                <Button
-                                                                    Grid.Column="1"
-                                                                    Command="{Binding DataContext.AddProductToEditCommand, ElementName=Root}"
-                                                                    CommandParameter="{Binding}"
-                                                                    Style="{StaticResource AppIconButtonStyle}">
-                                                                    <FontIcon Glyph="&#xE710;" />
-                                                                </Button>
-                                                            </Grid>
-                                                        </DataTemplate>
-                                                    </ListView.ItemTemplate>
-                                                </ListView>
-                                            </StackPanel>
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-
-                                <Button Content="Price Adjustment" Style="{StaticResource AppSecondaryButtonStyle}">
-                                    <Button.Flyout>
-                                        <Flyout>
-                                            <StackPanel Width="220" Spacing="12">
-                                                <TextBlock FontWeight="Bold" Text="Manual Adjustment" />
-                                                <NumberBox
-                                                    Header="Amount (e.g. 5000)"
-                                                    PlaceholderText="Enter amount"
-                                                    Value="{Binding EditManualAdjustment, Mode=TwoWay}" />
-                                                <TextBox
-                                                    Header="Reason"
-                                                    PlaceholderText="e.g. Service fee, Discount"
-                                                    Text="{Binding EditManualAdjustmentReason, Mode=TwoWay}" />
-                                            </StackPanel>
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </StackPanel>
+                                    FontSize="{StaticResource FontCaption}"
+                                    FontWeight="Black"
+                                    Foreground="{StaticResource BrandPrimary}"
+                                    Text="{Binding SelectedOrderDetails.OrderId}" />
+                            </Border>
+                            <Border
+                                Padding="8,2"
+                                Background="{Binding SelectedOrderDetails.PaymentStatus, Converter={StaticResource StatusBgConverter}}"
+                                CornerRadius="6">
+                                <TextBlock
+                                    FontSize="{StaticResource FontCaption}"
+                                    FontWeight="Bold"
+                                    Foreground="{Binding SelectedOrderDetails.PaymentStatus, Converter={StaticResource StatusFgConverter}}"
+                                    Text="{Binding SelectedOrderDetails.PaymentStatus}" />
+                            </Border>
+                            <Border
+                                Padding="8,2"
+                                Background="{Binding SelectedOrderDetails.FulfillmentStatus, Converter={StaticResource StatusBgConverter}}"
+                                CornerRadius="6">
+                                <TextBlock
+                                    FontSize="{StaticResource FontCaption}"
+                                    FontWeight="Bold"
+                                    Foreground="{Binding SelectedOrderDetails.FulfillmentStatus, Converter={StaticResource StatusFgConverter}}"
+                                    Text="{Binding SelectedOrderDetails.FulfillmentStatus}" />
+                            </Border>
                         </StackPanel>
 
-                        <MenuFlyoutSeparator />
-
-                        <!--  Additional Details (View Mode)  -->
-                        <StackPanel Spacing="12" Visibility="{Binding IsEditingDetail, Converter={StaticResource InverseBoolToVis}}">
-                            <StackPanel
-                                Orientation="Horizontal"
-                                Spacing="8"
-                                Visibility="{Binding SelectedOrderDetails.Type, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='Dine-in'}">
-                                <TextBlock FontWeight="SemiBold" Text="Table Number:" />
-                                <TextBlock Text="{Binding SelectedOrderDetails.Table}" />
-                            </StackPanel>
-                            <StackPanel
-                                Orientation="Horizontal"
-                                Spacing="8"
-                                Visibility="{Binding SelectedOrderDetails.Notes, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='NotNull'}">
-                                <TextBlock FontWeight="SemiBold" Text="Notes:" />
-                                <TextBlock Text="{Binding SelectedOrderDetails.Notes}" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </StackPanel>
-
-                        <!--  Edit Form (Edit Mode)  -->
-                        <StackPanel Spacing="16" Visibility="{Binding IsEditingDetail, Converter={StaticResource BoolToVis}}">
-                            <TextBlock FontWeight="SemiBold" Text="Order Settings" />
-                            <TextBox
-                                Header="Table Number"
-                                Text="{Binding EditTableNumber, Mode=TwoWay}"
-                                Visibility="{Binding SelectedOrderDetails.Type, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='Dine-in'}" />
-                            <Grid ColumnSpacing="12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <ComboBox
-                                    Grid.Column="0"
-                                    HorizontalAlignment="Stretch"
-                                    Header="Payment Status"
-                                    ItemsSource="{Binding PaymentStatusOptions}"
-                                    SelectedItem="{Binding EditPaymentStatus, Mode=TwoWay}" />
-                                <ComboBox
-                                    Grid.Column="1"
-                                    HorizontalAlignment="Stretch"
-                                    Header="Fulfillment Status"
-                                    ItemsSource="{Binding FulfillmentStatusOptions}"
-                                    SelectedItem="{Binding EditFulfillmentStatus, Mode=TwoWay}" />
-                            </Grid>
-                            <TextBox
-                                AcceptsReturn="True"
-                                Header="Notes (Admin Override)"
-                                PlaceholderText="Add internal notes..."
-                                Text="{Binding EditNotes, Mode=TwoWay}" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                FontWeight="SemiBold"
+                                Style="{StaticResource CaptionMutedTextStyle}"
+                                Text="{Binding SelectedOrderDetails.Type}" />
+                            <TextBlock
+                                FontWeight="SemiBold"
+                                Style="{StaticResource CaptionMutedTextStyle}"
+                                Text="{Binding SelectedOrderDetails.Table, Converter={StaticResource StringFormatConverter}, ConverterParameter='· Table {0}'}"
+                                Visibility="{Binding SelectedOrderDetails.Table, Converter={StaticResource StringToVis}, ConverterParameter='NotNull'}" />
+                            <TextBlock
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource BrandPrimary}"
+                                Style="{StaticResource CaptionTextStyle}"
+                                Text="{Binding SelectedOrderDetails.CustomerName, Converter={StaticResource StringFormatConverter}, ConverterParameter='· {0}'}" />
                         </StackPanel>
                     </StackPanel>
-                </ScrollViewer>
 
-                <!--  Footer  -->
-                <Border
+                    <Button
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        Command="{Binding CloseOrderDetailCommand}"
+                        CornerRadius="12"
+                        Style="{StaticResource AppIconButtonStyle}">
+                        <FontIcon Glyph="&#xE711;" Style="{StaticResource IconBodyStyle}" />
+                    </Button>
+                </Grid>
+
+                <ListView
+                    Grid.Row="1"
+                    Padding="0,10"
+                    ItemsSource="{Binding SelectedOrderDetails.Items}"
+                    SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid
+                                Padding="16,12"
+                                BorderBrush="{StaticResource SurfaceAlt}"
+                                BorderThickness="0,0,0,1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Width="48"
+                                    Height="48"
+                                    VerticalAlignment="Top"
+                                    Background="{StaticResource SurfaceAlt}"
+                                    CornerRadius="12">
+                                    <FontIcon
+                                        Foreground="{StaticResource Gray200}"
+                                        Glyph="&#xEB9F;"
+                                        Style="{StaticResource IconTitleStyle}" />
+                                </Border>
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Margin="12,0,12,0"
+                                    VerticalAlignment="Top">
+                                    <TextBlock
+                                        FontWeight="SemiBold"
+                                        MaxLines="2"
+                                        Style="{StaticResource BodyTextStyle}"
+                                        Text="{Binding Product.Name}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource CaptionMutedTextStyle}"
+                                        Text="{Binding BasePrice, Converter={StaticResource CurrencyConverter}}" />
+
+                                    <StackPanel
+                                        Margin="0,4,0,0"
+                                        Visibility="{Binding DrinkOptions, Converter={StaticResource NullToVis}}">
+                                        <WrapPanel>
+                                            <Border
+                                                Margin="0,0,4,4"
+                                                Padding="6,2"
+                                                Background="{StaticResource WarningSurfaceSoft}"
+                                                CornerRadius="6">
+                                                <TextBlock
+                                                    FontSize="{StaticResource FontCaption}"
+                                                    FontWeight="Medium"
+                                                    Foreground="{StaticResource BrandPrimary}"
+                                                    Text="{Binding DrinkOptions.Size}" />
+                                            </Border>
+                                            <Border
+                                                Margin="0,0,4,4"
+                                                Padding="6,2"
+                                                Background="{StaticResource AccentPinkSurface}"
+                                                CornerRadius="6">
+                                                <TextBlock
+                                                    FontSize="{StaticResource FontCaption}"
+                                                    FontWeight="Medium"
+                                                    Foreground="{StaticResource AccentPink}"
+                                                    Text="{Binding DrinkOptions.Sugar}" />
+                                            </Border>
+                                            <Border
+                                                Margin="0,0,4,4"
+                                                Padding="6,2"
+                                                Background="{StaticResource AccentBlueSurface}"
+                                                CornerRadius="6">
+                                                <TextBlock
+                                                    FontSize="{StaticResource FontCaption}"
+                                                    FontWeight="Medium"
+                                                    Foreground="{StaticResource AccentBlue}"
+                                                    Text="{Binding DrinkOptions.Ice}" />
+                                            </Border>
+                                            <ItemsControl ItemsSource="{Binding DrinkOptions.AddOns}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            Margin="0,0,4,4"
+                                                            Padding="6,2"
+                                                            Background="{StaticResource AccentPurpleSurface}"
+                                                            CornerRadius="6">
+                                                            <TextBlock
+                                                                FontSize="{StaticResource FontCaption}"
+                                                                FontWeight="Medium"
+                                                                Foreground="{StaticResource AccentPurple}"
+                                                                Text="{Binding}" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </WrapPanel>
+                                        <TextBlock
+                                            FontStyle="Italic"
+                                            Style="{StaticResource CaptionMutedTextStyle}"
+                                            Text="{Binding DrinkOptions.Notes}"
+                                            Visibility="{Binding DrinkOptions.Notes, Converter={StaticResource NullToVis}}" />
+                                    </StackPanel>
+
+                                    <Border
+                                        Margin="0,8,0,0"
+                                        Padding="10,4"
+                                        HorizontalAlignment="Left"
+                                        Background="{StaticResource SurfaceAlt}"
+                                        CornerRadius="8">
+                                        <TextBlock
+                                            FontWeight="Bold"
+                                            Style="{StaticResource CaptionTextStyle}"
+                                            Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Qty {0}'}" />
+                                    </Border>
+                                </StackPanel>
+
+                                <TextBlock
+                                    Grid.Column="2"
+                                    VerticalAlignment="Top"
+                                    FontWeight="Bold"
+                                    Style="{StaticResource BodyTextStyle}"
+                                    Text="{Binding TotalPrice, Converter={StaticResource CurrencyConverter}}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <StackPanel
                     Grid.Row="2"
-                    Padding="24"
-                    Background="{StaticResource SurfaceBackground}"
-                    BorderBrush="{StaticResource BorderBrush}"
+                    Padding="20"
+                    Background="{StaticResource SurfaceAlt}"
+                    BorderBrush="{StaticResource Gray100}"
                     BorderThickness="0,1,0,0"
-                    CornerRadius="0,0,24,24">
+                    Spacing="16">
                     <StackPanel Spacing="8">
-                        <!--  View Mode Totals  -->
-                        <StackPanel Spacing="8" Visibility="{Binding IsEditingDetail, Converter={StaticResource InverseBoolToVis}}">
-                            <Grid>
-                                <TextBlock
-                                    HorizontalAlignment="Left"
-                                    Style="{StaticResource BodyStyle}"
-                                    Text="Subtotal" />
-                                <TextBlock
-                                    HorizontalAlignment="Right"
-                                    FontWeight="Bold"
-                                    Style="{StaticResource BodyStyle}">
-                                    <Run Text="{Binding SelectedOrderDetails.Subtotal, Converter={StaticResource CurrencyConverter}}" />
-                                </TextBlock>
-                            </Grid>
-                            <Grid Visibility="{Binding SelectedOrderDetails.Discount, Converter={StaticResource NumberToVisibilityConverter}}">
-                                <TextBlock
-                                    HorizontalAlignment="Left"
-                                    Style="{StaticResource BodyStyle}"
-                                    Text="Discount" />
-                                <TextBlock
-                                    HorizontalAlignment="Right"
-                                    Foreground="{StaticResource ErrorSurface}"
-                                    Style="{StaticResource BodyStyle}">
-                                    <Run Text="-" />
-                                    <Run Text="{Binding SelectedOrderDetails.Discount, Converter={StaticResource CurrencyConverter}}" />
-                                </TextBlock>
-                            </Grid>
-                            <Grid Visibility="{Binding SelectedOrderDetails.Tax, Converter={StaticResource NumberToVisibilityConverter}}">
-                                <TextBlock
-                                    HorizontalAlignment="Left"
-                                    Style="{StaticResource BodyStyle}"
-                                    Text="Tax" />
-                                <TextBlock
-                                    HorizontalAlignment="Right"
-                                    Style="{StaticResource BodyStyle}">
-                                    <Run Text="{Binding SelectedOrderDetails.Tax, Converter={StaticResource CurrencyConverter}}" />
-                                </TextBlock>
-                            </Grid>
-                            <Grid Visibility="{Binding SelectedOrderDetails.ManualAdjustment, Converter={StaticResource NumberToVisibilityConverter}}">
-                                <TextBlock
-                                    HorizontalAlignment="Left"
-                                    Style="{StaticResource BodyStyle}"
-                                    Text="Adjustment" />
-                                <TextBlock
-                                    HorizontalAlignment="Right"
-                                    Foreground="{StaticResource ErrorSurface}"
-                                    Style="{StaticResource BodyStyle}">
-                                    <Run Text="{Binding SelectedOrderDetails.ManualAdjustment, Converter={StaticResource CurrencyConverter}}" />
-                                </TextBlock>
-                                <ToolTipService.ToolTip>
-                                    <TextBlock Text="{Binding SelectedOrderDetails.ManualAdjustmentReason}" />
-                                </ToolTipService.ToolTip>
-                            </Grid>
-                            <Grid>
-                                <TextBlock
-                                    HorizontalAlignment="Left"
-                                    Style="{StaticResource SubheadingStyle}"
-                                    Text="Total" />
-                                <TextBlock
-                                    HorizontalAlignment="Right"
-                                    Foreground="{StaticResource BrandPrimary}"
-                                    Style="{StaticResource SubheadingStyle}">
-                                    <Run Text="{Binding SelectedOrderDetails.Total, Converter={StaticResource CurrencyConverter}}" />
-                                </TextBlock>
-                            </Grid>
-                        </StackPanel>
-
-                        <!--  Edit Mode Totals  -->
-                        <StackPanel Spacing="8" Visibility="{Binding IsEditingDetail, Converter={StaticResource BoolToVis}}">
-                            <Grid>
-                                <TextBlock HorizontalAlignment="Left" Text="New Subtotal" />
-                                <TextBlock HorizontalAlignment="Right" Text="{Binding EditSubtotal, Converter={StaticResource CurrencyConverter}}" />
-                            </Grid>
-                            <Grid>
-                                <TextBlock HorizontalAlignment="Left" Text="New Tax" />
-                                <TextBlock HorizontalAlignment="Right" Text="{Binding EditTax, Converter={StaticResource CurrencyConverter}}" />
-                            </Grid>
-                            <Grid Visibility="{Binding EditManualAdjustment, Converter={StaticResource NumberToVisibilityConverter}}">
-                                <TextBlock HorizontalAlignment="Left" Text="Adjustment" />
-                                <TextBlock
-                                    HorizontalAlignment="Right"
-                                    Foreground="{StaticResource ErrorSurface}"
-                                    Text="{Binding EditManualAdjustment, Converter={StaticResource CurrencyConverter}}" />
-                            </Grid>
-                            <Grid Visibility="{Binding EditDiscount, Converter={StaticResource NumberToVisibilityConverter}}">
-                                <TextBlock HorizontalAlignment="Left" Text="Discount" />
-                                <TextBlock
-                                    HorizontalAlignment="Right"
-                                    Foreground="{StaticResource ErrorSurface}"
-                                    Text="{Binding EditDiscount, Converter={StaticResource CurrencyConverter}}" />
-                            </Grid>
-                            <Grid>
-                                <TextBlock
-                                    HorizontalAlignment="Left"
-                                    FontWeight="Bold"
-                                    Text="New Total" />
-                                <TextBlock
-                                    HorizontalAlignment="Right"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource BrandPrimary}"
-                                    Text="{Binding EditTotal, Converter={StaticResource CurrencyConverter}}" />
-                            </Grid>
-                        </StackPanel>
-
-                        <!--  Action Buttons (Edit Mode)  -->
-                        <Grid
-                            Margin="0,12,0,0"
-                            ColumnSpacing="12"
-                            Visibility="{Binding IsEditingDetail, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Button
-                                Grid.Column="0"
-                                HorizontalAlignment="Stretch"
-                                Command="{Binding CancelEditOrderDetailCommand}"
-                                Content="Cancel"
-                                Style="{StaticResource AppSecondaryButtonStyle}" />
-                            <Button
-                                Grid.Column="1"
-                                HorizontalAlignment="Stretch"
-                                Command="{Binding SaveOrderDetailCommand}"
-                                Content="Save Changes"
-                                Style="{StaticResource AppPrimaryButtonStyle}" />
+                        <Grid>
+                            <TextBlock Style="{StaticResource BodySecondaryTextStyle}" Text="Subtotal" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                FontWeight="Medium"
+                                Foreground="{StaticResource Gray700}"
+                                Text="{Binding SelectedOrderDetails.Subtotal, Converter={StaticResource CurrencyConverter}}" />
+                        </Grid>
+                        <Grid Visibility="{Binding SelectedOrderDetails.Discount, Converter={StaticResource NumberToVisibilityConverter}}">
+                            <TextBlock Style="{StaticResource BodyMutedTextStyle}" Text="Discount" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Foreground="{StaticResource ErrorStrong}"
+                                Style="{StaticResource BodyMutedTextStyle}"
+                                Text="{Binding SelectedOrderDetails.Discount, Converter={StaticResource CurrencyConverter}}" />
+                        </Grid>
+                        <Grid Visibility="{Binding SelectedOrderDetails.ManualAdjustment, Converter={StaticResource NumberToVisibilityConverter}}">
+                            <TextBlock Style="{StaticResource BodyMutedTextStyle}" Text="Adjustment" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Foreground="{StaticResource ErrorStrong}"
+                                Style="{StaticResource BodyMutedTextStyle}"
+                                Text="{Binding SelectedOrderDetails.ManualAdjustment, Converter={StaticResource CurrencyConverter}}" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock Style="{StaticResource BodyMutedTextStyle}" Text="Tax (8.75%)" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource BodyMutedTextStyle}"
+                                Text="{Binding SelectedOrderDetails.Tax, Converter={StaticResource CurrencyConverter}}" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{StaticResource Gray900}"
+                                Text="Total" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource BrandPrimary}"
+                                Text="{Binding SelectedOrderDetails.Total, Converter={StaticResource CurrencyConverter}}" />
                         </Grid>
                     </StackPanel>
-                </Border>
+
+                    <Button
+                        Padding="0,16"
+                        HorizontalAlignment="Stretch"
+                        Background="{StaticResource IconSelectedBgBrush}"
+                        Command="{Binding EditOrderDetailCommand}"
+                        CornerRadius="12"
+                        FontWeight="Bold"
+                        Foreground="White"
+                        IsEnabled="{Binding CanEditItems}"
+                        Style="{StaticResource AppPrimaryButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE70F;" Style="{StaticResource IconCaptionStyle}" />
+                            <TextBlock Text="Edit Order" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

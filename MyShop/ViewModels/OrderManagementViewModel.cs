@@ -33,6 +33,12 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private PosOrder? _selectedOrderDetails;
 
+    partial void OnSelectedOrderDetailsChanged(PosOrder? value)
+    {
+        OnPropertyChanged(nameof(CanEditItems));
+        OnPropertyChanged(nameof(IsPaid));
+    }
+
     [ObservableProperty]
     private bool _isOrderDetailOpen;
 
@@ -108,6 +114,7 @@ public partial class OrderManagementViewModel : ObservableObject
 
     public Action? ScrollToTopAction { get; set; }
     public Action? CloseOrderDetailAction { get; set; }
+    public Func<int, Task>? EditOrderInPosAction { get; set; }
 
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
     public ObservableCollection<OrderItem> EditableItems { get; } = new();
@@ -300,7 +307,22 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void EditOrderDetail()
+    private async Task EditOrderDetail()
+    {
+        if (SelectedOrderDetails == null) return;
+
+        int numericId = ExtractId(SelectedOrderDetails.OrderId);
+        if (numericId <= 0) return;
+
+        IsOrderDetailOpen = false;
+        IsEditingDetail = false;
+        if (EditOrderInPosAction != null)
+        {
+            await EditOrderInPosAction.Invoke(numericId);
+        }
+    }
+
+    private void StartInlineOrderDetailEdit()
     {
         if (SelectedOrderDetails == null) return;
 

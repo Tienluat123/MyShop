@@ -157,6 +157,10 @@ public class OrderService : IOrderService
             return await context.Set<Order>()
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Product)
+                .ThenInclude(p => p!.Category)
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .ThenInclude(p => p!.ProductImages)
                 .Include(o => o.Customer)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }, "GetByIdWithDetails");

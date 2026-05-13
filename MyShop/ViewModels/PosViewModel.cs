@@ -22,6 +22,8 @@ public partial class PosViewModel : ObservableObject
     private readonly Helpers.Debouncer _filterDebouncer = new();
 
     private Order? _currentDraftOrder;
+    private Order? _parkedDraftOrder;
+    private bool _isEditingExistingOrder;
 
     public ObservableCollection<Product> Products { get; } = new Helpers.BulkObservableCollection<Product>();
     public ObservableCollection<CategoryItem> Categories { get; } = new();
@@ -33,6 +35,7 @@ public partial class PosViewModel : ObservableObject
     private const int ProductPageSize = 6;
 
     public Order? CurrentDraftOrder => _currentDraftOrder;
+    public bool IsEditingExistingOrder => _isEditingExistingOrder;
 
     [ObservableProperty]
     private bool isLoading;
@@ -476,6 +479,7 @@ public partial class PosViewModel : ObservableObject
     private async Task LoadCurrentDraftOrder()
     {
         if (_sessionService.CurrentUser == null) return;
+        if (_isEditingExistingOrder) return;
         try
         {
             var result = await _orderService.GetPagedOrdersByStatuses(
@@ -519,6 +523,58 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder == null) return;
         await _orderService.UpdateWithDetails(_currentDraftOrder, _currentDraftOrder.OrderDetails.ToList());
+    }
+
+    public async Task BeginEditOrderAsync(int orderId)
+    {
+        if (orderId <= 0) return;
+
+        if (_currentDraftOrder?.Id != orderId && _currentDraftOrder?.PaymentStatus == "Draft")
+        {
+            await SaveDraftOrder();
+            _parkedDraftOrder = _currentDraftOrder;
+        }
+
+        var orderToEdit = _currentDraftOrder?.Id == orderId
+            ? _currentDraftOrder
+            : await _orderService.GetById(orderId);
+
+        if (orderToEdit == null) return;
+
+        _currentDraftOrder = orderToEdit;
+        _isEditingExistingOrder = true;
+        SelectedCustomer = orderToEdit.Customer;
+        LoyaltyDiscount = orderToEdit.ManualAdjustment;
+        PointsToRedeem = 0;
+
+        SyncCartFromDraft();
+        OnPropertyChanged(nameof(CurrentDraftOrder));
+        OnPropertyChanged(nameof(IsEditingExistingOrder));
+        PlaceOrderCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RestoreParkedDraftAfterEdit()
+    {
+        _isEditingExistingOrder = false;
+        _currentDraftOrder = _parkedDraftOrder;
+        _parkedDraftOrder = null;
+        SelectedCustomer = _currentDraftOrder?.Customer;
+        LoyaltyDiscount = 0;
+        PointsToRedeem = 0;
+
+        if (_currentDraftOrder != null)
+        {
+            SyncCartFromDraft();
+        }
+        else
+        {
+            Order.Clear();
+            CalculateTotals();
+        }
+
+        OnPropertyChanged(nameof(CurrentDraftOrder));
+        OnPropertyChanged(nameof(IsEditingExistingOrder));
+        PlaceOrderCommand.NotifyCanExecuteChanged();
     }
 
     private void SyncCartFromDraft()
@@ -614,13 +670,27 @@ public partial class PosViewModel : ObservableObject
         {
             try
             {
-                await _orderService.Delete(_currentDraftOrder.Id);
+                if (_isEditingExistingOrder)
+                {
+                    _currentDraftOrder.PaymentStatus = "Cancelled";
+                    await _orderService.Update(_currentDraftOrder);
+                }
+                else
+                {
+                    await _orderService.Delete(_currentDraftOrder.Id);
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error clearing cart from DB: {ex.Message}");
             }
             _currentDraftOrder = null;
+        }
+
+        if (_isEditingExistingOrder)
+        {
+            RestoreParkedDraftAfterEdit();
+            return;
         }
 
         Order.Clear();
@@ -737,7 +807,14 @@ public partial class PosViewModel : ObservableObject
         {
             _currentDraftOrder.PaymentStatus = "Draft";
             await SaveDraftOrder();
-            PlaceOrderCommand.NotifyCanExecuteChanged();
+            if (_isEditingExistingOrder)
+            {
+                RestoreParkedDraftAfterEdit();
+            }
+            else
+            {
+                PlaceOrderCommand.NotifyCanExecuteChanged();
+            }
         }
     }
 
@@ -823,6 +900,11 @@ public partial class PosViewModel : ObservableObject
         if (completedOrder != null)
         {
             OrderFinalized?.Invoke(this, completedOrder);
+        }
+
+        if (_isEditingExistingOrder)
+        {
+            RestoreParkedDraftAfterEdit();
         }
 
         return newOrder;
