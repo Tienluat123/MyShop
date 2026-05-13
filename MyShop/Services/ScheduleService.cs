@@ -9,7 +9,7 @@ public interface IScheduleService
     Task<bool> CreateAsync(WorkSchedule schedule);
     Task<bool> UpdateAsync(WorkSchedule schedule);
     Task<bool> DeleteAsync(int id);
-    Task<bool> IsUserAlreadyScheduledOnDateAsync(int userId, DateOnly date);
+    Task<bool> IsUserAlreadyScheduledForShiftAsync(int userId, DateOnly date, string shiftName);
 
     event Action? OnScheduleChanged;
 }
@@ -32,8 +32,11 @@ public class ScheduleService : IScheduleService
         );
     }
 
-    public async Task<bool> IsUserAlreadyScheduledOnDateAsync(int userId, DateOnly date)
-        => (await _repo.GetAsync(s => s.UserId == userId && s.WorkDate == date)).Any();
+    public async Task<bool> IsUserAlreadyScheduledForShiftAsync(int userId, DateOnly date, string shiftName)
+        => (await _repo.GetAsync(s =>
+            s.UserId == userId &&
+            s.WorkDate == date &&
+            s.ShiftName == shiftName)).Any();
 
     private async Task<bool> ExecuteWithNotifyAsync(Func<Task> action, string actionName)
     {
