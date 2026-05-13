@@ -191,9 +191,7 @@ public partial class OrderManagementViewModel : ObservableObject
                 DisplayOrders.Clear();
                 foreach (var o in mappedOrders) DisplayOrders.Add(o);
 
-                int historyCountFromDb = await _orderService.GetHistoryCount(
-                    SearchStartDate?.DateTime,
-                    SearchEndDate?.DateTime);
+                int historyCountFromDb = pagedResult.Pagination.TotalItems;
 
                 TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
                 if (TotalPagesHistory < 1) TotalPagesHistory = 1;

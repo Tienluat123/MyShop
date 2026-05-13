@@ -9,10 +9,16 @@ public class TimeAgoConverter : IValueConverter
     {
         if (value is not DateTime createdAt) return "";
 
-        var diff = DateTime.UtcNow - createdAt.ToUniversalTime();
+        var utcCreatedAt = createdAt.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(createdAt, DateTimeKind.Utc)
+            : createdAt.ToUniversalTime();
+
+        var diff = DateTime.UtcNow - utcCreatedAt;
         if (diff.TotalSeconds < 0) return "just now";
         if (diff.TotalSeconds < 60) return $"{(int)diff.TotalSeconds}s";
-        return $"{(int)diff.TotalMinutes}m";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h";
+        return $"{(int)diff.TotalDays}d";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
