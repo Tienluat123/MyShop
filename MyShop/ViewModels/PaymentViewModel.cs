@@ -139,16 +139,9 @@ public partial class PaymentViewModel : ObservableObject
         _order.PaymentStatus = "Paid";
         _order.FulfillmentStatus = "None"; // Or Preparing
         _order.OrderDate = DateTime.UtcNow;
-        
-        try 
-        {
-            await _orderService.Update(_order);
-            PaymentConfirmed?.Invoke(Method);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error finalizing payment: {ex.Message}");
-        }
+
+        await Task.CompletedTask;
+        PaymentConfirmed?.Invoke(Method);
     }
 
     [RelayCommand]
