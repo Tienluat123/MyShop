@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Text.Json;
+using System.Threading.Tasks;
 using MyShop.Models;
 using MyShop.Services;
 using MyShop.Data;
@@ -533,12 +535,28 @@ public partial class OrderManagementViewModel : ObservableObject
                 {
                     Product = product,
                     Quantity = detail.Quantity,
-                    BasePrice = detail.UnitPrice
+                    BasePrice = detail.UnitPrice,
+                    DrinkOptions = ParseOptions(detail.Notes)
                 });
             }
         }
 
         return posOrder;
+    }
+
+    private DrinkOptions? ParseOptions(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes)) return null;
+        try
+        {
+            // Simple check to avoid crashing if it's just regular notes
+            if (!notes.TrimStart().StartsWith("{")) return null;
+            return JsonSerializer.Deserialize<DrinkOptions>(notes);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private PaymentStatus MapToPaymentStatus(string status)
