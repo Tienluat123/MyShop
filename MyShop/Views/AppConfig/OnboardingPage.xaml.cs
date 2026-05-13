@@ -67,10 +67,10 @@ public sealed partial class OnboardingPage : Page
         StepTwoText.Foreground = isStepOne ? _inactiveText : _activeText;
 
         BackButton.Visibility = isStepOne ? Visibility.Collapsed : Visibility.Visible;
-        PrimaryButtonText.Text = isStepOne ? "Tiếp tục" : "Bắt đầu cấu hình";
+        PrimaryButtonText.Text = isStepOne ? "Continue" : "Start configuration";
         FooterText.Text = isStepOne
-            ? "Tiếp theo: xem nhanh các màn hình chính trước khi cấu hình database."
-            : "Sẵn sàng: mở form cấu hình database, bấm Test để kiểm tra kết nối, rồi lưu cấu hình.";
+            ? "Next: preview the main screens before configuring the database."
+            : "Ready: open database configuration, click Test to check the connection, then save.";
     }
 
     private void RootGrid_SizeChanged(object sender, SizeChangedEventArgs e)

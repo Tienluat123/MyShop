@@ -90,7 +90,7 @@ public partial class CustomerFormViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[ERROR] Load customer details failed: {ex.Message}");
-            _notificationService?.ShowError("Không thể tải thông tin khách hàng");
+            _notificationService?.ShowError("Unable to load customer details");
         }
         finally
         {
@@ -100,15 +100,15 @@ public partial class CustomerFormViewModel : ObservableObject
     [RelayCommand]
     private async Task Submit()
     {
-        Console.WriteLine("[DEBUG] Đang nhấn nút Submit...");
+        Console.WriteLine("[DEBUG] Submit button clicked...");
 
         if (!ValidateForm())
         {
-            Console.WriteLine($"[DEBUG] Validate THẤT BẠI: NameErr={NameError}, PhoneErr={PhoneError}");
+            Console.WriteLine($"[DEBUG] Validate FAILED: NameErr={NameError}, PhoneErr={PhoneError}");
             return;
         }
 
-        Console.WriteLine("[DEBUG] Validate THÀNH CÔNG. Đang chuẩn bị lưu...");
+        Console.WriteLine("[DEBUG] Validate SUCCESS. Preparing to save...");
 
         try
         {
@@ -118,14 +118,14 @@ public partial class CustomerFormViewModel : ObservableObject
             {
                 if (_editingCustomerId <= 0)
                 {
-                    _notificationService?.ShowError("ID khách hàng không hợp lệ");
+                    _notificationService?.ShowError("Invalid customer ID");
                     return;
                 }
 
                 var existing = await _customerService.GetById(_editingCustomerId);
                 if (existing == null)
                 {
-                    _notificationService?.ShowError("Không tìm thấy khách hàng để cập nhật");
+                    _notificationService?.ShowError("Customer not found for update");
                     return;
                 }
 
@@ -149,9 +149,9 @@ public partial class CustomerFormViewModel : ObservableObject
                     Tier = existing.Tier
                 };
 
-                Console.WriteLine($"[DEBUG] Đang gọi UPDATE cho ID: {customer.Id}");
+                Console.WriteLine($"[DEBUG] Calling UPDATE for ID: {customer.Id}");
                 await _customerService.Update(customer);
-                _notificationService?.ShowSuccess("Cập nhật khách hàng thành công!");
+                _notificationService?.ShowSuccess("Customer updated successfully!");
             }
             else
             {
@@ -173,19 +173,19 @@ public partial class CustomerFormViewModel : ObservableObject
                     TotalSpent = 0
                 };
 
-                Console.WriteLine("[DEBUG] Đang gọi ADD khách hàng mới");
+                Console.WriteLine("[DEBUG] Calling ADD for new customer");
                 await _customerService.Add(customer);
-                _notificationService?.ShowSuccess("Thêm khách hàng mới thành công!");
+                _notificationService?.ShowSuccess("Customer added successfully!");
             }
 
-            Console.WriteLine("[DEBUG] Lưu Database THÀNH CÔNG!");
+            Console.WriteLine("[DEBUG] Database save SUCCESS!");
             _onSuccess?.Invoke();
         }
         catch (Exception ex)
         {
             var errorMsg = BuildDetailedErrorMessage(ex);
             Console.WriteLine($"[ERROR] Submit failed:\n{errorMsg}");
-            _notificationService?.ShowError($"Lỗi: {ex.Message}");
+            _notificationService?.ShowError($"Error: {ex.Message}");
         }
         finally
         {

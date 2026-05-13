@@ -29,9 +29,9 @@ public sealed partial class ReceiptModal : ContentDialog
         OrderIdText.Text = $"Order #{_order.OrderId}";
         DateText.Text = _order.CreatedAt.ToString("g");
         ItemsList.ItemsSource = _order.Items;
-        SubtotalText.Text = $"{_order.Subtotal:F2}đ";
-        TaxText.Text = $"{_order.Tax:F2}đ";
-        TotalText.Text = $"{_order.Total:F2}đ";
+        SubtotalText.Text = $"{_order.Subtotal:F2}VND";
+        TaxText.Text = $"{_order.Tax:F2}VND";
+        TotalText.Text = $"{_order.Total:F2}VND";
 
         CustomerNameText.Text = _order.CustomerName ?? "Guest";
         PaymentMethodText.Text = _order.Method.ToString();
@@ -92,7 +92,7 @@ public sealed partial class ReceiptModal : ContentDialog
         }
 
         var filePath = Path.Combine(folderPath, $"receipt-{safeOrderId}-{DateTime.Now:yyyyMMdd-HHmmss}.pdf");
-        var currency = "VNĐ";
+        var currency = "VND";
 
         Document.Create(container =>
         {

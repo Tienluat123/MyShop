@@ -173,7 +173,7 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"LoadCustomersAsync error: {ex.Message}");
-            _notificationService.ShowError("Không thể tải danh sách khách hàng");
+            _notificationService.ShowError("Unable to load customers");
         }
         finally
         {
@@ -270,12 +270,12 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
             await _customerService.Delete(customer.Id);
             CurrentPage = 1;
             await LoadCustomersAsync();
-            _notificationService.ShowSuccess($"Đã xóa khách hàng '{customer.Name}'");
+            _notificationService.ShowSuccess($"Deleted customer '{customer.Name}'");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($" Delete error: {ex.Message}");
-            _notificationService.ShowError("Không thể xóa khách hàng");
+            _notificationService.ShowError("Unable to delete customer");
         }
     }
 
@@ -338,7 +338,7 @@ public partial class CustomerManagementViewModel : ListManagementViewModelBase
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"UpdateCustomerStatusAsync error: {ex.Message}");
-            _notificationService.ShowError("Không thể cập nhật trạng thái khách hàng");
+            _notificationService.ShowError("Unable to update customer status");
             customer.Status = oldStatus;
             await LoadCustomersAsync();
         }

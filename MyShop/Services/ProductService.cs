@@ -152,7 +152,7 @@ public class ProductService : IProductService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi lấy danh sách sản phẩm", ex);
+            throw new InvalidOperationException("Failed to load products", ex);
         }
     }
 
@@ -215,7 +215,7 @@ public class ProductService : IProductService
     public async Task<Product?> GetById(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
+            throw new ArgumentException("ID must be greater than 0", nameof(id));
 
         try
         {
@@ -224,7 +224,7 @@ public class ProductService : IProductService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi lấy sản phẩm với ID {id}", ex);
+            throw new InvalidOperationException($"Failed to load product with ID {id}", ex);
         }
     }
 
@@ -235,7 +235,7 @@ public class ProductService : IProductService
     public async Task<List<Product>> GetByCategory(int categoryId)
     {
         if (categoryId <= 0)
-            throw new ArgumentException("Category ID phải lớn hơn 0", nameof(categoryId));
+            throw new ArgumentException("Category ID must be greater than 0", nameof(categoryId));
 
         try
         {
@@ -246,7 +246,7 @@ public class ProductService : IProductService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi lấy sản phẩm theo category {categoryId}", ex);
+            throw new InvalidOperationException($"Failed to load products by category {categoryId}", ex);
         }
     }
 
@@ -269,7 +269,7 @@ public class ProductService : IProductService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi tìm kiếm sản phẩm với từ khóa '{keyword}'", ex);
+            throw new InvalidOperationException($"Failed to search products with keyword '{keyword}'", ex);
         }
     }
 
@@ -282,17 +282,17 @@ public class ProductService : IProductService
             throw new ArgumentNullException(nameof(product));
 
         if (string.IsNullOrWhiteSpace(product.Name))
-            throw new ArgumentException("Tên sản phẩm không được để trống", nameof(product.Name));
+            throw new ArgumentException("Product name is required", nameof(product.Name));
 
         if (product.Price < 0)
-            throw new ArgumentException("Giá sản phẩm không được âm", nameof(product.Price));
+            throw new ArgumentException("Product price cannot be negative", nameof(product.Price));
 
         if (product.CategoryId <= 0)
-            throw new ArgumentException("Phải chọn category hợp lệ", nameof(product.CategoryId));
+            throw new ArgumentException("A valid category is required", nameof(product.CategoryId));
 
         var category = await _categoryRepository.GetByIdAsync(product.CategoryId);
         if (category == null)
-            throw new InvalidOperationException($"Category với ID {product.CategoryId} không tồn tại");
+            throw new InvalidOperationException($"Category with ID {product.CategoryId} does not exist");
 
         try
         {
@@ -300,7 +300,7 @@ public class ProductService : IProductService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi thêm sản phẩm", ex);
+            throw new InvalidOperationException("Failed to add product", ex);
         }
     }
 
@@ -313,13 +313,13 @@ public class ProductService : IProductService
             throw new ArgumentNullException(nameof(product));
 
         if (product.Id <= 0)
-            throw new ArgumentException("ID sản phẩm không hợp lệ", nameof(product.Id));
+            throw new ArgumentException("Invalid product ID", nameof(product.Id));
 
         if (string.IsNullOrWhiteSpace(product.Name))
-            throw new ArgumentException("Tên sản phẩm không được để trống", nameof(product.Name));
+            throw new ArgumentException("Product name is required", nameof(product.Name));
 
         if (product.Price < 0)
-            throw new ArgumentException("Giá sản phẩm không được âm", nameof(product.Price));
+            throw new ArgumentException("Product price cannot be negative", nameof(product.Price));
 
         try
         {
@@ -327,7 +327,7 @@ public class ProductService : IProductService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi cập nhật sản phẩm", ex);
+            throw new InvalidOperationException("Failed to update product", ex);
         }
     }
 
@@ -337,7 +337,7 @@ public class ProductService : IProductService
     public async Task Delete(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID sản phẩm không hợp lệ", nameof(id));
+            throw new ArgumentException("Invalid product ID", nameof(id));
 
         try
         {
@@ -345,7 +345,7 @@ public class ProductService : IProductService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi xóa sản phẩm với ID {id}", ex);
+            throw new InvalidOperationException($"Failed to delete product with ID {id}", ex);
         }
     }
     public async Task<int> GetTotalCount()

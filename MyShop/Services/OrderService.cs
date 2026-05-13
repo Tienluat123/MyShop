@@ -140,7 +140,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi lấy danh sách đơn hàng", ex);
+            throw new InvalidOperationException("Failed to load orders", ex);
         }
     }
 
@@ -150,7 +150,7 @@ public class OrderService : IOrderService
     public async Task<Order?> GetById(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
+            throw new ArgumentException("ID must be greater than 0", nameof(id));
 
         return await _orderRepository.ExecuteAsync(async context =>
         {
@@ -168,7 +168,7 @@ public class OrderService : IOrderService
     public async Task<List<Order>> GetByCustomerId(int customerId)
     {
         if (customerId <= 0)
-            throw new ArgumentException("Customer ID phải lớn hơn 0", nameof(customerId));
+            throw new ArgumentException("Customer ID must be greater than 0", nameof(customerId));
 
         try
         {
@@ -177,7 +177,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi lấy đơn hàng của khách hàng {customerId}", ex);
+            throw new InvalidOperationException($"Failed to load customer orders {customerId}", ex);
         }
     }
 
@@ -187,7 +187,7 @@ public class OrderService : IOrderService
     public async Task<List<Order>> GetByPaymentStatus(string status)
     {
         if (string.IsNullOrWhiteSpace(status))
-            throw new ArgumentException("Trạng thái không được để trống", nameof(status));
+            throw new ArgumentException("Status is required", nameof(status));
 
         try
         {
@@ -196,7 +196,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi lấy đơn hàng theo thanh toán '{status}'", ex);
+            throw new InvalidOperationException($"Failed to load orders by payment status '{status}'", ex);
         }
     }
 
@@ -211,7 +211,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi lấy đơn hàng chưa thanh toán", ex);
+            throw new InvalidOperationException("Failed to load unpaid orders", ex);
         }
     }
 
@@ -238,7 +238,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi tính doanh thu", ex);
+            throw new InvalidOperationException("Failed to calculate revenue", ex);
         }
     }
 
@@ -252,10 +252,10 @@ public class OrderService : IOrderService
 
         // CustomerId is nullable, but if provided it should be positive (or the DB will fail)
         if (order.CustomerId.HasValue && order.CustomerId.Value < 0)
-            throw new ArgumentException("CustomerId không hợp lệ", nameof(order.CustomerId));
+            throw new ArgumentException("Invalid customer ID", nameof(order.CustomerId));
 
         if (order.UserId <= 0)
-            throw new ArgumentException("Phải chọn nhân viên hợp lệ", nameof(order.UserId));
+            throw new ArgumentException("A valid employee is required", nameof(order.UserId));
 
         if (order.OrderDetails?.Any() == true)
         {
@@ -266,18 +266,18 @@ public class OrderService : IOrderService
         }
 
         if (order.TotalAmount < 0)
-            throw new ArgumentException("Tổng tiền không được âm", nameof(order.TotalAmount));
+            throw new ArgumentException("Total amount cannot be negative", nameof(order.TotalAmount));
 
         if (order.CustomerId.HasValue)
         {
             var customer = await _customerRepository.GetByIdAsync(order.CustomerId.Value);
             if (customer == null)
-                throw new InvalidOperationException($"Khách hàng với ID {order.CustomerId} không tồn tại");
+                throw new InvalidOperationException($"Customer with ID {order.CustomerId} does not exist");
         }
 
         var user = await _userRepository.GetByIdAsync(order.UserId);
         if (user == null)
-            throw new InvalidOperationException($"Nhân viên với ID {order.UserId} không tồn tại");
+            throw new InvalidOperationException($"Employee with ID {order.UserId} does not exist");
 
         // Ensure date is UTC to prevent Npgsql timezone shifts
         order.OrderDate = DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc);
@@ -288,7 +288,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi thêm đơn hàng", ex);
+            throw new InvalidOperationException("Failed to add order", ex);
         }
     }
 
@@ -301,7 +301,7 @@ public class OrderService : IOrderService
             throw new ArgumentNullException(nameof(order));
 
         if (order.Id <= 0)
-            throw new ArgumentException("ID đơn hàng không hợp lệ", nameof(order.Id));
+            throw new ArgumentException("Invalid order ID", nameof(order.Id));
 
         try
         {
@@ -311,14 +311,14 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi cập nhật đơn hàng", ex);
+            throw new InvalidOperationException("Failed to update order", ex);
         }
     }
 
     public async Task UpdateWithDetails(Order order, List<OrderDetail> details)
     {
         if (order == null || order.Id <= 0)
-            throw new ArgumentException("Đơn hàng không hợp lệ");
+            throw new ArgumentException("Invalid order");
 
         await _orderRepository.ExecuteAsync(async context =>
         {
@@ -374,7 +374,7 @@ public class OrderService : IOrderService
     public async Task Delete(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID đơn hàng không hợp lệ", nameof(id));
+            throw new ArgumentException("Invalid order ID", nameof(id));
 
         try
         {
@@ -382,7 +382,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi xóa đơn hàng với ID {id}", ex);
+            throw new InvalidOperationException($"Failed to delete order with ID {id}", ex);
         }
     }
 
@@ -392,29 +392,29 @@ public class OrderService : IOrderService
     public async Task UpdatePaymentStatus(int orderId, string newStatus)
     {
         if (orderId <= 0)
-            throw new ArgumentException("Order ID không hợp lệ", nameof(orderId));
+            throw new ArgumentException("Invalid order ID", nameof(orderId));
 
         if (string.IsNullOrWhiteSpace(newStatus))
-            throw new ArgumentException("Trạng thái thanh toán mới không được để trống", nameof(newStatus));
+            throw new ArgumentException("New payment status is required", nameof(newStatus));
 
         try
         {
             var order = await GetById(orderId);
             if (order == null)
-                throw new KeyNotFoundException($"Đơn hàng với ID {orderId} không tìm thấy");
+                throw new KeyNotFoundException($"Order with ID {orderId} was not found");
 
             if (order.PaymentStatus == "Paid" && newStatus != "Paid" && newStatus != "Refunded")
-                throw new InvalidOperationException("Không thể thay đổi trạng thái của đơn hàng đã thanh toán");
+                throw new InvalidOperationException("Paid orders cannot be changed");
 
             if (order.PaymentStatus == "Cancelled")
-                throw new InvalidOperationException("Không thể thay đổi trạng thái của đơn hàng đã hủy");
+                throw new InvalidOperationException("Canceled orders cannot be changed");
 
             order.PaymentStatus = newStatus;
             await Update(order);
         }
         catch (Exception ex) when (ex is not InvalidOperationException && ex is not KeyNotFoundException)
         {
-            throw new InvalidOperationException($"Lỗi hệ thống khi cập nhật trạng thái thanh toán", ex);
+            throw new InvalidOperationException($"System error while updating payment status", ex);
         }
     }
 
@@ -424,23 +424,23 @@ public class OrderService : IOrderService
     public async Task UpdateFulfillmentStatus(int orderId, string newStatus)
     {
         if (orderId <= 0)
-            throw new ArgumentException("Order ID không hợp lệ", nameof(orderId));
+            throw new ArgumentException("Invalid order ID", nameof(orderId));
 
         if (string.IsNullOrWhiteSpace(newStatus))
-            throw new ArgumentException("Trạng thái giao/nhận không được để trống", nameof(newStatus));
+            throw new ArgumentException("New fulfillment status is required", nameof(newStatus));
 
         try
         {
             var order = await GetById(orderId);
             if (order == null)
-                throw new KeyNotFoundException($"Đơn hàng với ID {orderId} không tìm thấy");
+                throw new KeyNotFoundException($"Order with ID {orderId} was not found");
 
             order.FulfillmentStatus = newStatus;
             await Update(order);
         }
         catch (Exception ex) when (ex is not InvalidOperationException && ex is not KeyNotFoundException)
         {
-            throw new InvalidOperationException($"Lỗi hệ thống khi cập nhật trạng thái fulfillment", ex);
+            throw new InvalidOperationException($"System error while updating fulfillment status", ex);
         }
     }
 
@@ -479,7 +479,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi đếm số lượng đơn hàng", ex);
+            throw new InvalidOperationException("Failed to count orders", ex);
         }
     }
 
@@ -533,7 +533,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi lấy danh sách đơn hàng phân trang", ex);
+            throw new InvalidOperationException("Failed to load paged orders", ex);
         }
     }
 
@@ -576,7 +576,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi lấy danh sách đơn hàng active", ex);
+            throw new InvalidOperationException("Failed to load orders active", ex);
         }
     }
 
@@ -652,7 +652,7 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi lấy danh sách đơn hàng lịch sử", ex);
+            throw new InvalidOperationException("Failed to load order history", ex);
         }
     }
 

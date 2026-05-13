@@ -30,7 +30,7 @@ public sealed partial class DashboardPage : Page
     {
         // Cập nhật ngày tháng hiển thị
         DateLabel.Text = DateTime.Now.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"));
-        ChartMonthLabel.Text = $"Doanh thu Tháng {DateTime.Now.Month}/{DateTime.Now.Year}";
+        ChartMonthLabel.Text = $"Revenue Month {DateTime.Now.Month}/{DateTime.Now.Year}";
 
         // Đăng ký sự kiện (đảm bảo không bị lặp)
         ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
@@ -85,7 +85,7 @@ public sealed partial class DashboardPage : Page
         if (!trend.Any() || RevenueChartCanvas == null) return;
 
         var total = trend.Sum(x => (long)x.Value);
-        ChartTotalLabel.Text = $"Tổng tháng: {total:N0} VND";
+        ChartTotalLabel.Text = $"Monthly total: {total:N0} VND";
     
         var canvas = RevenueChartCanvas;
         canvas.Children.Clear();
@@ -166,7 +166,7 @@ public sealed partial class DashboardPage : Page
             var currentAmount = values[i];
 
             // Hiện số tiền khi hover
-            ToolTipService.SetToolTip(dot, $"Ngày {currentLabel}: {currentAmount:N0} VND");
+            ToolTipService.SetToolTip(dot, $"Day {currentLabel}: {currentAmount:N0} VND");
             
             // Hiệu ứng hover
             dot.PointerEntered += (s, e) => {
@@ -187,7 +187,7 @@ public sealed partial class DashboardPage : Page
             // Bấm vào hiện Flyout
             dot.Tapped += (s, e) => {
                 var flyoutContent = new StackPanel { Padding = new Thickness(12), Spacing = 4 };
-                flyoutContent.Children.Add(new TextBlock { Text = $"Ngày {currentLabel}", FontSize = 12, Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray) });
+                flyoutContent.Children.Add(new TextBlock { Text = $"Day {currentLabel}", FontSize = 12, Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray) });
                 flyoutContent.Children.Add(new TextBlock { Text = $"{currentAmount:N0} VND", FontSize = 16, FontWeight = Microsoft.UI.Text.FontWeights.Bold, Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 187, 77, 0)) });
                 
                 var flyout = new Flyout { Content = flyoutContent };

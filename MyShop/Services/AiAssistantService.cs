@@ -136,7 +136,7 @@ public class AiAssistantService : IAiAssistantService
 
     private string GetSystemPrompt(string context, string mode)
     {
-        bool isActionMode = mode.Contains("Yêu cầu");
+        bool isActionMode = mode.Contains("Request");
 
         return $@"You are a Senior Business Strategy and Marketing Expert for MyShop.
 Shop Data:

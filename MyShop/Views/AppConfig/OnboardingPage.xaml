@@ -49,7 +49,7 @@
                                    FontSize="18"
                                    FontWeight="SemiBold"
                                    Foreground="#111827"/>
-                        <TextBlock Text="Onboarding lần đầu sử dụng"
+                        <TextBlock Text="First-time onboarding"
                                    FontSize="12"
                                    Foreground="#6B7280"/>
                     </StackPanel>
@@ -71,7 +71,7 @@
                                        FontSize="12"
                                        FontWeight="SemiBold"/>
                             <TextBlock x:Name="StepOneText"
-                                       Text="Chuẩn bị"
+                                       Text="Preparation"
                                        FontSize="12"
                                        FontWeight="SemiBold"/>
                         </StackPanel>
@@ -89,7 +89,7 @@
                                        FontSize="12"
                                        FontWeight="SemiBold"/>
                             <TextBlock x:Name="StepTwoText"
-                                       Text="Tính năng"
+                                       Text="Features"
                                        FontSize="12"
                                        FontWeight="SemiBold"/>
                         </StackPanel>
@@ -136,7 +136,7 @@
                                         Spacing="8">
                                 <SymbolIcon Symbol="ContactInfo"
                                             Foreground="#EA580C"/>
-                                <TextBlock Text="Bước 1/2: Chuẩn bị cấu hình"
+                                <TextBlock Text="Step 1/2: Prepare configuration"
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="#9A3412"/>
@@ -144,13 +144,13 @@
                         </Border>
 
                         <TextBlock x:Name="StepOneTitle"
-                                   Text="Chào mừng đến với MyShop"
+                                   Text="Welcome to MyShop"
                                    FontSize="38"
                                    FontWeight="Bold"
                                    Foreground="#111827"
                                    TextWrapping="Wrap"/>
                         <TextBlock x:Name="StepOneDescription"
-                                   Text="Trước khi đăng nhập lần đầu, MyShop cần kết nối tới PostgreSQL. Hãy chuẩn bị sẵn các thông tin dưới đây để bước cấu hình diễn ra nhanh hơn."
+                                   Text="Before your first sign-in, MyShop needs to connect to PostgreSQL. Have the information below ready so setup goes faster."
                                    FontSize="16"
                                    Foreground="#4B5563"
                                    TextWrapping="Wrap"
@@ -183,11 +183,11 @@
                                 <SymbolIcon Symbol="MapDrive"
                                             Foreground="#EA580C"
                                             HorizontalAlignment="Left"/>
-                                <TextBlock Text="PostgreSQL đang chạy"
+                                <TextBlock Text="PostgreSQL is running"
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            Foreground="#111827"/>
-                                <TextBlock Text="Máy chủ database cần hoạt động trước khi bấm Test kết nối."
+                                <TextBlock Text="The database server must be running before you test the connection."
                                            FontSize="13"
                                            Foreground="#6B7280"
                                            TextWrapping="Wrap"/>
@@ -205,11 +205,11 @@
                                 <SymbolIcon Symbol="Document"
                                             Foreground="#EA580C"
                                             HorizontalAlignment="Left"/>
-                                <TextBlock Text="Có tên database"
+                                <TextBlock Text="Database name is ready"
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            Foreground="#111827"/>
-                                <TextBlock Text="Mặc định app gợi ý myshop; bạn có thể đổi theo database thật."
+                                <TextBlock Text="The app suggests myshop by default; you can change it to your real database."
                                            FontSize="13"
                                            Foreground="#6B7280"
                                            TextWrapping="Wrap"/>
@@ -227,11 +227,11 @@
                                 <SymbolIcon Symbol="Permissions"
                                             Foreground="#EA580C"
                                             HorizontalAlignment="Left"/>
-                                <TextBlock Text="Tài khoản có quyền"
+                                <TextBlock Text="Account has permissions"
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            Foreground="#111827"/>
-                                <TextBlock Text="Username và password cần có quyền tạo hoặc cập nhật bảng."
+                                <TextBlock Text="The username and password need permission to create or update tables."
                                            FontSize="13"
                                            Foreground="#6B7280"
                                            TextWrapping="Wrap"/>
@@ -250,11 +250,11 @@
                                 <SymbolIcon Symbol="Accept"
                                             Foreground="#EA580C"
                                             HorizontalAlignment="Left"/>
-                                <TextBlock Text="Test rồi lưu"
+                                <TextBlock Text="Test and save"
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            Foreground="#111827"/>
-                                <TextBlock Text="Khi kết nối thành công, MyShop sẽ chuyển sang màn đăng nhập."
+                                <TextBlock Text="After the connection succeeds, MyShop will open the sign-in screen."
                                            FontSize="13"
                                            Foreground="#6B7280"
                                            TextWrapping="Wrap"/>
@@ -274,12 +274,12 @@
                         VerticalAlignment="Center">
                     <StackPanel Spacing="18">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Bạn sẽ nhập gì ở màn cấu hình?"
+                            <TextBlock Text="What will you enter on the configuration screen?"
                                        FontSize="22"
                                        FontWeight="SemiBold"
                                        Foreground="#111827"
                                        TextWrapping="Wrap"/>
-                            <TextBlock Text="Checklist này khớp với form database ở bước sau."
+                            <TextBlock Text="This checklist matches the database form in the next step."
                                        FontSize="13"
                                        Foreground="#6B7280"
                                        TextWrapping="Wrap"/>
@@ -303,10 +303,10 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="2">
-                                    <TextBlock Text="Server và Port"
+                                    <TextBlock Text="Server and Port"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Ví dụ: localhost và 5432."
+                                    <TextBlock Text="Example: localhost and 5432."
                                                FontSize="13"
                                                Foreground="#6B7280"/>
                                 </StackPanel>
@@ -332,7 +332,7 @@
                                     <TextBlock Text="Database Name"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Tên database PostgreSQL dùng cho MyShop."
+                                    <TextBlock Text="The PostgreSQL database name used by MyShop."
                                                FontSize="13"
                                                Foreground="#6B7280"/>
                                 </StackPanel>
@@ -355,10 +355,10 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="2">
-                                    <TextBlock Text="Username và Password"
+                                    <TextBlock Text="Username and Password"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Thông tin database, không phải tài khoản bán hàng."
+                                    <TextBlock Text="Database credentials, not a sales account."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -374,7 +374,7 @@
                                             Spacing="10">
                                     <SymbolIcon Symbol="Important"
                                                 Foreground="#EA580C"/>
-                                    <TextBlock Text="Nếu chưa có PostgreSQL, hãy cài và tạo database trước khi lưu cấu hình."
+                                    <TextBlock Text="If PostgreSQL is not installed yet, install it and create a database before saving the configuration."
                                                FontSize="13"
                                                Foreground="#9A3412"
                                                TextWrapping="Wrap"/>
@@ -401,7 +401,7 @@
                                         Spacing="8">
                                 <SymbolIcon Symbol="AllApps"
                                             Foreground="#059669"/>
-                                <TextBlock Text="Bước 2/2: Các màn hình chính"
+                                <TextBlock Text="Step 2/2: Main screens"
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="#047857"/>
@@ -409,13 +409,13 @@
                         </Border>
 
                         <TextBlock x:Name="StepTwoTitle"
-                                   Text="Khám phá nhanh MyShop"
+                                   Text="Quick MyShop tour"
                                    FontSize="38"
                                    FontWeight="Bold"
                                    Foreground="#111827"
                                    TextWrapping="Wrap"/>
                         <TextBlock x:Name="StepTwoDescription"
-                                   Text="Sau khi cấu hình database và đăng nhập, bạn sẽ dùng các màn hình dưới đây để vận hành cửa hàng: bán hàng, quản lý sản phẩm, khách hàng, khuyến mãi, nhân viên và báo cáo."
+                                   Text="After database setup and sign-in, you will use these screens to run the store: sales, products, customers, promotions, staff, and reports."
                                    FontSize="16"
                                    Foreground="#4B5563"
                                    TextWrapping="Wrap"
@@ -468,7 +468,7 @@
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Theo dõi nhanh doanh thu, đơn hàng và tình hình bán hàng."
+                                    <TextBlock Text="Quickly track revenue, orders, and sales activity."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -503,7 +503,7 @@
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Tạo đơn, chọn sản phẩm, áp dụng khuyến mãi và thanh toán."
+                                    <TextBlock Text="Create orders, select products, apply promotions, and take payments."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -534,11 +534,11 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="4">
-                                    <TextBlock Text="Sản phẩm"
+                                    <TextBlock Text="Products"
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Quản lý danh mục, giá bán, hình ảnh và số lượng tồn."
+                                    <TextBlock Text="Manage categories, prices, images, and stock quantity."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -570,11 +570,11 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="4">
-                                    <TextBlock Text="Khách hàng"
+                                    <TextBlock Text="Customers"
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Lưu hồ sơ, điểm tích lũy, hạng thành viên và lịch sử mua."
+                                    <TextBlock Text="Store profiles, loyalty points, membership tiers, and purchase history."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -605,11 +605,11 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="4">
-                                    <TextBlock Text="Khuyến mãi"
+                                    <TextBlock Text="Promotions"
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Tạo chương trình giảm giá và chọn điều kiện áp dụng."
+                                    <TextBlock Text="Create discount campaigns and choose eligibility rules."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -641,11 +641,11 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="4">
-                                    <TextBlock Text="Nhân viên"
+                                    <TextBlock Text="Staff"
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Quản lý hồ sơ, lịch làm việc, ca trực và chi phí nhân sự."
+                                    <TextBlock Text="Manage profiles, schedules, shifts, and staffing costs."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -676,11 +676,11 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="4">
-                                    <TextBlock Text="Báo cáo"
+                                    <TextBlock Text="Reports"
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Xem doanh thu, chi phí, lợi nhuận và hiệu quả sản phẩm."
+                                    <TextBlock Text="View revenue, expenses, profit, and product performance."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -712,11 +712,11 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="4">
-                                    <TextBlock Text="Cài đặt"
+                                    <TextBlock Text="Settings"
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Cập nhật thông tin cửa hàng, hiển thị và thiết lập vận hành."
+                                    <TextBlock Text="Update shop information, display options, and operating settings."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -738,12 +738,12 @@
                         VerticalAlignment="Center">
                     <StackPanel Spacing="18">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Luồng sử dụng gợi ý"
+                            <TextBlock Text="Suggested workflow"
                                        FontSize="22"
                                        FontWeight="SemiBold"
                                        Foreground="#111827"
                                        TextWrapping="Wrap"/>
-                            <TextBlock Text="Bạn có thể bắt đầu theo thứ tự này sau khi cấu hình database."
+                            <TextBlock Text="You can start in this order after database setup."
                                        FontSize="13"
                                        Foreground="#6B7280"
                                        TextWrapping="Wrap"/>
@@ -767,10 +767,10 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="2">
-                                    <TextBlock Text="Cấu hình database"
+                                    <TextBlock Text="Configure database"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Kết nối PostgreSQL và để app tạo bảng cần thiết."
+                                    <TextBlock Text="Connect PostgreSQL and let the app create the required tables."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -794,10 +794,10 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="2">
-                                    <TextBlock Text="Đăng nhập"
+                                    <TextBlock Text="Sign in"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Admin vào trang quản trị, nhân viên bán hàng vào POS."
+                                    <TextBlock Text="Admins enter the management area, sales staff enter POS."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -821,10 +821,10 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="2">
-                                    <TextBlock Text="Thiết lập cửa hàng"
+                                    <TextBlock Text="Set up shop"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Cập nhật thông tin, cài đặt hiển thị và quy tắc vận hành."
+                                    <TextBlock Text="Update shop details, display settings, and operating rules."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -848,10 +848,10 @@
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             Spacing="2">
-                                    <TextBlock Text="Bán hàng và theo dõi"
+                                    <TextBlock Text="Sell and monitor"
                                                FontWeight="SemiBold"
                                                Foreground="#111827"/>
-                                    <TextBlock Text="Nhập sản phẩm, tạo đơn ở POS và xem báo cáo cuối ngày."
+                                    <TextBlock Text="Import products, create POS orders, and review end-of-day reports."
                                                FontSize="13"
                                                Foreground="#6B7280"
                                                TextWrapping="Wrap"/>
@@ -883,7 +883,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock x:Name="FooterText"
-                           Text="Tiếp theo: xem nhanh các màn hình chính trước khi cấu hình database."
+                           Text="Next: preview the main screens before configuring the database."
                            FontSize="13"
                            Foreground="#6B7280"
                            VerticalAlignment="Center"
@@ -907,7 +907,7 @@
                         <StackPanel Orientation="Horizontal"
                                     Spacing="8">
                             <SymbolIcon Symbol="Back"/>
-                            <TextBlock Text="Quay lại"
+                            <TextBlock Text="Back"
                                        FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
@@ -923,7 +923,7 @@
                         <StackPanel Orientation="Horizontal"
                                     Spacing="8">
                             <TextBlock x:Name="PrimaryButtonText"
-                                       Text="Tiếp tục"
+                                       Text="Continue"
                                        FontWeight="SemiBold"/>
                             <SymbolIcon Symbol="Forward"/>
                         </StackPanel>

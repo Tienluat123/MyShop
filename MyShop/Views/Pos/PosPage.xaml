@@ -216,7 +216,7 @@
                                 FontWeight="SemiBold"
                                 Foreground="#EF4444"
                                 Style="{StaticResource CaptionTextStyle}"
-                                Text="Đăng xuất" />
+                                Text="Log out" />
                         </StackPanel>
                     </Button>
                     <TextBlock

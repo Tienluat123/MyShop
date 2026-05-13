@@ -136,7 +136,7 @@
           </Grid.ColumnDefinitions>
 
           <PersonPicture ProfilePicture="https://myshop.com/avatar_an.png"
-                         DisplayName="Nguyễn Văn An"
+                         DisplayName="John Doe"
                          Width="40"
                          Height="40"
                          VerticalAlignment="Center"/>
@@ -145,7 +145,7 @@
                       VerticalAlignment="Center"
                       Visibility="{x:Bind NavView.IsPaneOpen, Mode=OneWay}">
             <TextBlock x:Name="ProfileNameText"
-                       Text="Nguyễn Văn An"
+                       Text="John Doe"
                        Style="{StaticResource BodyTextStyle}"
                        FontWeight="Bold"/>
             <Border Style="{StaticResource RoleTagStyle}">

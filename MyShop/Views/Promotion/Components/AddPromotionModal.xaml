@@ -126,7 +126,7 @@
                                                    FontSize="12"
                                                    Foreground="#EF4444"
                                                    Visibility="Collapsed"/>
-                                        <TextBlock Text="Mã khuyến mãi không được để trống"
+                                        <TextBlock Text="Promotion code is required"
                                                    FontSize="12"
                                                    Foreground="#EF4444"
                                                    Visibility="{Binding PromotionData.Code.Length, Converter={StaticResource StringNullOrEmptyToVisibilityConverter}}"/>
@@ -147,7 +147,7 @@
                                                            Style="{StaticResource LabelStyle}"/>
                                                 <ComboBox SelectedIndex="{Binding SelectedTypeIndex, Mode=TwoWay}">
                                                         <ComboBoxItem Content="Percent (%)"/>
-                                                        <ComboBoxItem Content="Fixed Amount (đ)"/>
+                                                        <ComboBoxItem Content="Fixed Amount (VND)"/>
                                                 </ComboBox>
                                         </StackPanel>
                                         <StackPanel x:Name="ValueStack" Grid.Column="1" Grid.Row="0">

@@ -141,7 +141,7 @@ public class PromotionService : IPromotionService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi lấy danh sách khuyến mãi", ex);
+            throw new InvalidOperationException("Failed to load promotions", ex);
         }
     }
 
@@ -168,7 +168,7 @@ public class PromotionService : IPromotionService
     public async Task<Promotion?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
+            throw new ArgumentException("ID must be greater than 0", nameof(id));
 
         try
         {
@@ -176,7 +176,7 @@ public class PromotionService : IPromotionService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi lấy khuyến mãi với ID {id}", ex);
+            throw new InvalidOperationException($"Failed to load promotion with ID {id}", ex);
         }
     }
 
@@ -197,7 +197,7 @@ public class PromotionService : IPromotionService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi tìm khuyến mãi theo mã '{code}'", ex);
+            throw new InvalidOperationException($"Failed to find promotion by code '{code}'", ex);
         }
     }
 
@@ -211,28 +211,28 @@ public class PromotionService : IPromotionService
 
         // Kiểm tra mã code không được trống
         if (string.IsNullOrWhiteSpace(promotion.PromoCode))
-            throw new ArgumentException("Mã khuyến mãi không được để trống", nameof(promotion.PromoCode));
+            throw new ArgumentException("Promotion code is required", nameof(promotion.PromoCode));
 
         // Kiểm tra mã không trùng lặp
         var existingPromo = await GetByCodeAsync(promotion.PromoCode, ct);
         if (existingPromo != null)
-            throw new InvalidOperationException($"Mã khuyến mãi '{promotion.PromoCode}' đã tồn tại");
+            throw new InvalidOperationException($"Promotion code '{promotion.PromoCode}' already exists");
 
         // Kiểm tra ngày hợp lệ
         if (promotion.EndDate < promotion.StartDate)
-            throw new InvalidOperationException("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu");
+            throw new InvalidOperationException("End date must be greater than or equal to start date");
 
         // Kiểm tra giá trị giảm
         if (promotion.DiscountValue <= 0)
-            throw new InvalidOperationException("Giá trị giảm phải lớn hơn 0");
+            throw new InvalidOperationException("Discount value must be greater than 0");
 
         // Nếu là phần trăm, giới hạn <= 100
         if (promotion.PromoType == "Percent" && promotion.DiscountValue > 100)
-            throw new InvalidOperationException("Giảm theo phần trăm không được vượt quá 100%");
+            throw new InvalidOperationException("Percentage discount cannot exceed 100%");
 
         // Kiểm tra ký tự đặc biệt trong mã code
         if (!IsValidPromoCode(promotion.PromoCode))
-            throw new InvalidOperationException("Mã khuyến mãi chỉ được chứa chữ cái, số và dấu gạch dưới");
+            throw new InvalidOperationException("Promotion code can only contain letters, numbers, and underscores");
 
         try
         {
@@ -240,7 +240,7 @@ public class PromotionService : IPromotionService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi thêm khuyến mãi: {ex.Message}", ex);
+            throw new InvalidOperationException($"Failed to add promotion: {ex.Message}", ex);
         }
     }
 
@@ -253,22 +253,22 @@ public class PromotionService : IPromotionService
             throw new ArgumentNullException(nameof(promotion));
 
         if (promotion.Id <= 0)
-            throw new ArgumentException("ID khuyến mãi không hợp lệ", nameof(promotion.Id));
+            throw new ArgumentException("Invalid promotion ID", nameof(promotion.Id));
 
         if (string.IsNullOrWhiteSpace(promotion.PromoCode))
-            throw new ArgumentException("Mã khuyến mãi không được để trống", nameof(promotion.PromoCode));
+            throw new ArgumentException("Promotion code is required", nameof(promotion.PromoCode));
 
         if (promotion.EndDate < promotion.StartDate)
-            throw new InvalidOperationException("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu");
+            throw new InvalidOperationException("End date must be greater than or equal to start date");
 
         if (promotion.DiscountValue <= 0)
-            throw new InvalidOperationException("Giá trị giảm phải lớn hơn 0");
+            throw new InvalidOperationException("Discount value must be greater than 0");
 
         if (promotion.PromoType == "Percent" && promotion.DiscountValue > 100)
-            throw new InvalidOperationException("Giảm theo phần trăm không được vượt quá 100%");
+            throw new InvalidOperationException("Percentage discount cannot exceed 100%");
 
         if (!IsValidPromoCode(promotion.PromoCode))
-            throw new InvalidOperationException("Mã khuyến mãi chỉ được chứa chữ cái, số và dấu gạch dưới");
+            throw new InvalidOperationException("Promotion code can only contain letters, numbers, and underscores");
 
         try
         {
@@ -276,7 +276,7 @@ public class PromotionService : IPromotionService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi cập nhật khuyến mãi ID {promotion.Id}", ex);
+            throw new InvalidOperationException($"Failed to update promotion ID {promotion.Id}", ex);
         }
     }
 
@@ -286,7 +286,7 @@ public class PromotionService : IPromotionService
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
         if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
+            throw new ArgumentException("ID must be greater than 0", nameof(id));
 
         try
         {
@@ -294,7 +294,7 @@ public class PromotionService : IPromotionService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi xóa khuyến mãi ID {id}", ex);
+            throw new InvalidOperationException($"Failed to delete promotion ID {id}", ex);
         }
     }
 
@@ -311,13 +311,13 @@ public class PromotionService : IPromotionService
 
         if (string.IsNullOrWhiteSpace(code))
         {
-            result.ErrorMessage = "Mã khuyến mãi không được để trống";
+            result.ErrorMessage = "Promotion code is required";
             return result;
         }
 
         if (orderTotal <= 0)
         {
-            result.ErrorMessage = "Tổng tiền đơn hàng không hợp lệ";
+            result.ErrorMessage = "Invalid order total";
             return result;
         }
 
@@ -326,14 +326,14 @@ public class PromotionService : IPromotionService
             var promo = await GetByCodeAsync(code.Trim(), ct);
             if (promo == null)
             {
-                result.ErrorMessage = "Mã khuyến mãi không tồn tại";
+                result.ErrorMessage = "Promotion code does not exist";
                 return result;
             }
 
             // Kiểm tra trạng thái hoạt động
             if (!promo.IsActive)
             {
-                result.ErrorMessage = "Mã khuyến mãi đã bị vô hiệu hóa";
+                result.ErrorMessage = "Promotion code has been disabled";
                 return result;
             }
 
@@ -341,7 +341,7 @@ public class PromotionService : IPromotionService
             if (promo.TargetAudience != "All" &&
                 !string.Equals(promo.TargetAudience, customerTier, StringComparison.OrdinalIgnoreCase))
             {
-                result.ErrorMessage = $"Mã khuyến mãi này chỉ dành cho {promo.TargetAudience}";
+                result.ErrorMessage = $"This promotion code is only for {promo.TargetAudience}";
                 return result;
             }
 
@@ -349,20 +349,20 @@ public class PromotionService : IPromotionService
             var now = DateTime.Now;
             if (now < promo.StartDate)
             {
-                result.ErrorMessage = $"Mã khuyến mãi chưa có hiệu lực. Bắt đầu từ {promo.StartDate:dd/MM/yyyy}";
+                result.ErrorMessage = $"Promotion code is not active yet. Starts on {promo.StartDate:dd/MM/yyyy}";
                 return result;
             }
 
             if (now > promo.EndDate)
             {
-                result.ErrorMessage = "Mã khuyến mãi đã hết hạn";
+                result.ErrorMessage = "Promotion code has expired";
                 return result;
             }
 
             // Kiểm tra đơn tối thiểu
             if (orderTotal < promo.MinOrderAmount)
             {
-                result.ErrorMessage = $"Đơn hàng tối thiểu {promo.MinOrderAmount:N0}đ để áp dụng mã này";
+                result.ErrorMessage = $"Minimum order amount is {promo.MinOrderAmount:N0} VND to apply this code";
                 return result;
             }
 
@@ -404,7 +404,7 @@ public class PromotionService : IPromotionService
         }
         catch (Exception ex)
         {
-            result.ErrorMessage = $"Lỗi khi áp dụng khuyến mãi: {ex.Message}";
+            result.ErrorMessage = $"Failed to apply promotion: {ex.Message}";
             return result;
         }
     }
