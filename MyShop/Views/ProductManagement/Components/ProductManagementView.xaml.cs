@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
+using System.IO;
+using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using MyShop.ViewModels;
@@ -68,17 +70,26 @@ public sealed partial class ProductManagementView : Page
             return;
         }
 
-        var filePath = await PickExcelFileAsync();
-        if (string.IsNullOrWhiteSpace(filePath))
+        try
         {
-            return;
-        }
+            var filePath = await PickExcelFileAsync();
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return;
+            }
 
-        await ViewModel.ImportFromExcelCommand.ExecuteAsync(filePath);
+            await ViewModel.ImportFromExcelCommand.ExecuteAsync(filePath);
+        }
+        catch (Exception ex)
+        {
+            ViewModel.ErrorMessage = $"Failed to start Excel import: {ex.Message}";
+        }
     }
 
     private async Task<string?> PickExcelFileAsync()
     {
+        string? pickerError = null;
+
         try
         {
             if (Application.Current is MyShop.App app && app.MainWindow != null)
@@ -93,14 +104,72 @@ public sealed partial class ProductManagementView : Page
                 InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(app.MainWindow));
 
                 var file = await picker.PickSingleFileAsync();
+                var resolvedPath = await ResolvePickedFilePathAsync(file);
+                if (!string.IsNullOrWhiteSpace(resolvedPath))
+                {
+                    return resolvedPath;
+                }
+
                 if (file != null)
                 {
-                    return file.Path;
+                    pickerError = "The selected Excel file did not expose a readable local path. Enter the file path manually.";
                 }
+            }
+        }
+        catch (Exception ex)
+        {
+            pickerError = $"The file picker could not be opened: {ex.Message}";
+        }
+
+        return await PromptForExcelPathAsync(pickerError);
+    }
+
+    private static async Task<string?> ResolvePickedFilePathAsync(StorageFile? file)
+    {
+        if (file == null)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(file.Path) && File.Exists(file.Path))
+        {
+            return file.Path;
+        }
+
+        try
+        {
+            var copiedFile = await file.CopyAsync(
+                ApplicationData.Current.TemporaryFolder,
+                file.Name,
+                NameCollisionOption.GenerateUniqueName);
+
+            if (!string.IsNullOrWhiteSpace(copiedFile.Path) && File.Exists(copiedFile.Path))
+            {
+                return copiedFile.Path;
             }
         }
         catch
         {
+        }
+
+        return null;
+    }
+
+    private async Task<string?> PromptForExcelPathAsync(string? pickerError)
+    {
+        var content = new StackPanel
+        {
+            Spacing = 10
+        };
+
+        if (!string.IsNullOrWhiteSpace(pickerError))
+        {
+            content.Children.Add(new TextBlock
+            {
+                Text = pickerError,
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 146, 64, 14))
+            });
         }
 
         var pathTextBox = new TextBox
@@ -108,11 +177,13 @@ public sealed partial class ProductManagementView : Page
             PlaceholderText = @"D:\data\catalog-phase1.xlsx"
         };
 
+        content.Children.Add(pathTextBox);
+
         var dialog = new ContentDialog
         {
             XamlRoot = this.XamlRoot,
             Title = "Import Product Catalog",
-            Content = pathTextBox,
+            Content = content,
             PrimaryButtonText = "Import",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Primary

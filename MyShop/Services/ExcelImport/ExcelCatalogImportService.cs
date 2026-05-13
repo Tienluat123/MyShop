@@ -101,8 +101,17 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
                 await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
                 var categoriesByName = await UpsertCategoriesAsync(context, categoryRows, result, cancellationToken);
+                if (!result.Success)
+                {
+                    return;
+                }
+
                 await context.SaveChangesAsync(cancellationToken);
                 await UpsertProductsAsync(context, productRows, categoriesByName, result, cancellationToken);
+                if (!result.Success)
+                {
+                    return;
+                }
 
                 await context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
@@ -170,7 +179,7 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
 
         foreach (var row in rows)
         {
-            var name = row.GetValue("Name");
+            var name = row.GetValue("Name").Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
                 result.Errors.Add(NewError(CategoriesSheet, row.RowNumber, "Name", "Name is required."));
@@ -219,7 +228,7 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
 
         foreach (var row in rows)
         {
-            var name = row.GetValue("Name");
+            var name = row.GetValue("Name").Trim();
             var priceRaw = row.GetValue("Price");
             var categoryName = GetFirstValue(row, "Category", "CategoryCode");
 
@@ -298,14 +307,31 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
     {
         var categoryByName = new Dictionary<string, Category>(StringComparer.OrdinalIgnoreCase);
         var existingCategories = await context.Categories.ToListAsync(cancellationToken);
-        var existingByName = existingCategories.ToDictionary(c => c.Name, StringComparer.OrdinalIgnoreCase);
+        var existingCategoryGroups = existingCategories
+            .Where(c => !string.IsNullOrWhiteSpace(c.Name))
+            .GroupBy(c => c.Name.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToList(),
+                StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in rows)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (existingByName.TryGetValue(row.Name, out var existing))
+            if (existingCategoryGroups.TryGetValue(row.Name, out var existingMatches))
             {
+                if (existingMatches.Count > 1)
+                {
+                    result.Errors.Add(NewError(
+                        CategoriesSheet,
+                        row.RowNumber,
+                        "Name",
+                        $"Database contains {existingMatches.Count} categories named '{row.Name}'. Please merge/delete duplicates before importing this category."));
+                    continue;
+                }
+
+                var existing = existingMatches[0];
                 var hasChanges = false;
 
                 if (row.HasCustomization.HasValue && existing.HasCustomization != row.HasCustomization.Value)
@@ -346,6 +372,7 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
             context.Categories.Add(created);
             result.CategoriesInserted++;
             categoryByName[row.Name] = created;
+            existingCategoryGroups[row.Name] = new List<Category> { created };
         }
 
         return categoryByName;
@@ -359,9 +386,12 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
         CancellationToken cancellationToken)
     {
         var existingProducts = await context.Products.ToListAsync(cancellationToken);
-        var existingByNameAndCategory = existingProducts.ToDictionary(
-            p => BuildProductKey(p.Name, p.CategoryId),
-            StringComparer.OrdinalIgnoreCase);
+        var existingProductGroups = existingProducts
+            .GroupBy(p => BuildProductKey(p.Name, p.CategoryId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToList(),
+                StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in rows)
         {
@@ -374,8 +404,19 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
 
             var productKey = BuildProductKey(row.Name, category.Id);
 
-            if (existingByNameAndCategory.TryGetValue(productKey, out var existing))
+            if (existingProductGroups.TryGetValue(productKey, out var existingMatches))
             {
+                if (existingMatches.Count > 1)
+                {
+                    result.Errors.Add(NewError(
+                        ProductsSheet,
+                        row.RowNumber,
+                        "Name",
+                        $"Database contains {existingMatches.Count} products named '{row.Name}' in category '{row.CategoryName}'. Please merge/delete duplicates before importing this product."));
+                    continue;
+                }
+
+                var existing = existingMatches[0];
                 var hasChanges = existing.Price != row.Price || existing.CategoryId != category.Id;
 
                 if (row.ImagePath != null && !string.Equals(existing.ImagePath, row.ImagePath, StringComparison.Ordinal))
@@ -405,18 +446,23 @@ public sealed class ExcelCatalogImportService : IExcelCatalogImportService
             context.Products.Add(created);
             result.ProductsInserted++;
             result.InsertedProductNames.Add(row.Name);
-            existingByNameAndCategory[productKey] = created;
+            existingProductGroups[productKey] = new List<Product> { created };
         }
     }
 
-    private static string BuildProductKey(string name, int categoryId)
+    private static string BuildProductKey(string? name, int categoryId)
     {
-        return $"{name}|{categoryId}";
+        return $"{NormalizeKeyPart(name)}|{categoryId}";
     }
 
-    private static string BuildProductKey(string name, string categoryName)
+    private static string BuildProductKey(string? name, string? categoryName)
     {
-        return $"{name}|{categoryName}";
+        return $"{NormalizeKeyPart(name)}|{NormalizeKeyPart(categoryName)}";
+    }
+
+    private static string NormalizeKeyPart(string? value)
+    {
+        return value?.Trim() ?? string.Empty;
     }
 
     private static string GetFirstValue(ExcelRowData row, params string[] headerNames)

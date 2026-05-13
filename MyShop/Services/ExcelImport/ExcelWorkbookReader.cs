@@ -16,7 +16,7 @@ internal sealed class ExcelWorkbookReader : IDisposable
 
     public ExcelWorkbookReader(string filePath)
     {
-        _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
         _archive = new ZipArchive(_fileStream, ZipArchiveMode.Read);
         _sharedStrings = LoadSharedStrings();
         _sheetPathByName = LoadSheetPaths();
