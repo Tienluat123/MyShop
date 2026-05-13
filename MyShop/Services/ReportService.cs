@@ -34,8 +34,8 @@ public class ReportService : IReportService
         start = start.Date;
         end = end.Date.AddDays(1).AddTicks(-1);
 
-        // 1. Fetch Summary Stats
-        data.Summary.OrdersCount = await _orderRepository.CountAsync(o => 
+        // 1. Fetch Paid Orders
+        var orders = await _orderRepository.GetAsync(o =>
             o.OrderDate >= start && o.OrderDate <= end && o.PaymentStatus == "Paid");
 
         // 2. Fetch Detailed Data
@@ -48,19 +48,20 @@ public class ReportService : IReportService
             ? details 
             : details.Where(od => od.Product?.Category?.Name == categoryScope).ToList();
 
-        // 3. Calculate Metrics
-        if (categoryScope == "All")
-        {
-            var orders = await _orderRepository.GetAsync(o => 
-                o.OrderDate >= start && o.OrderDate <= end && o.PaymentStatus == "Paid");
-            data.Summary.TotalRevenue = orders.Sum(o => o.TotalAmount);
-        }
-        else
-        {
-            data.Summary.TotalRevenue = filteredDetails.Sum(od => od.Quantity * od.UnitPrice);
-        }
+        var allLineMetrics = BuildLineMetrics(details);
+        var filteredDetailIds = filteredDetails.Select(od => od.Id).ToHashSet();
+        var lineMetrics = categoryScope == "All"
+            ? allLineMetrics
+            : allLineMetrics.Where(m => filteredDetailIds.Contains(m.DetailId)).ToList();
 
-        data.Summary.TotalProfit = filteredDetails.Sum(od => od.Quantity * (od.UnitPrice - od.UnitCostPrice));
+        // 3. Calculate Metrics
+        data.Summary.OrdersCount = categoryScope == "All"
+            ? orders.Count
+            : filteredDetails.Select(od => od.OrderId).Distinct().Count();
+        data.Summary.TotalRevenue = categoryScope == "All"
+            ? orders.Sum(o => o.TotalAmount)
+            : lineMetrics.Sum(m => m.Revenue);
+        data.Summary.TotalProfit = lineMetrics.Sum(m => m.Profit);
         data.Summary.ProductsCount = filteredDetails.Sum(od => od.Quantity);
 
         // Fetch Expenses for net profit
@@ -73,9 +74,12 @@ public class ReportService : IReportService
 
         // 4. Trends with Hole-Filling
         data.SalesTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = d.Quantity }), start, end, granularity);
-        data.RevenueTrend = GroupAndFillHoles(filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * d.UnitPrice) }), start, end, granularity);
+        var revenueTrendItems = categoryScope == "All"
+            ? orders.Select(o => new TrendItem { Date = o.OrderDate, Value = (double)o.TotalAmount })
+            : lineMetrics.Select(m => new TrendItem { Date = m.Date, Value = (double)m.Revenue });
+        data.RevenueTrend = GroupAndFillHoles(revenueTrendItems, start, end, granularity);
         
-        var grossProfitTrend = filteredDetails.Select(d => new TrendItem { Date = d.Order!.OrderDate, Value = (double)(d.Quantity * (d.UnitPrice - d.UnitCostPrice)) });
+        var grossProfitTrend = lineMetrics.Select(m => new TrendItem { Date = m.Date, Value = (double)m.Profit });
         var expenseTrend = categoryScope == "All" 
             ? expenses.Select(e => new TrendItem { Date = e.Date, Value = -(double)e.Amount }) 
             : Enumerable.Empty<TrendItem>();
@@ -84,26 +88,29 @@ public class ReportService : IReportService
 
         // 5. Rankings (All products with 1+ sales)
         data.TopProducts = filteredDetails
-            .GroupBy(od => od.Product?.Name ?? "Unknown")
+            .GroupJoin(lineMetrics, od => od.Id, m => m.DetailId, (od, metrics) => new { Detail = od, Metric = metrics.FirstOrDefault() })
+            .GroupBy(x => x.Detail.Product?.Name ?? "Unknown")
             .Select(g => new RankingPoint
             {
                 Name = g.Key,
-                Volume = g.Sum(od => od.Quantity),
-                Amount = g.Sum(od => (decimal)(od.Quantity * (od.UnitPrice - od.UnitCostPrice)))
+                Volume = g.Sum(x => x.Detail.Quantity),
+                Amount = g.Sum(x => x.Metric?.Revenue ?? 0m)
             })
             .Where(x => x.Volume > 0)
             .OrderByDescending(x => x.Amount)
             .ToList();
 
         // 6. Category Leaders
-        data.CategoryProfit = details
-            .GroupBy(od => od.Product?.Category?.Name ?? "Others")
+        data.CategoryProfit = filteredDetails
+            .GroupJoin(lineMetrics, od => od.Id, m => m.DetailId, (od, metrics) => new { Detail = od, Metric = metrics.FirstOrDefault() })
+            .GroupBy(x => x.Detail.Product?.Category?.Name ?? "Others")
             .Select(g => new ProfitPoint
             {
                 Category = g.Key,
-                Amount = (double)g.Sum(od => od.Quantity * (od.UnitPrice - od.UnitCostPrice)),
+                Amount = (double)g.Sum(x => x.Metric?.Revenue ?? 0m),
                 Color = GetCategoryColor(g.Key)
             })
+            .Where(x => x.Amount > 0)
             .OrderByDescending(x => x.Amount)
             .ToList();
 
@@ -111,6 +118,50 @@ public class ReportService : IReportService
     }
 
     private class TrendItem { public DateTime Date; public double Value; }
+
+    private class LineMetric
+    {
+        public int DetailId { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Revenue { get; set; }
+        public decimal Profit { get; set; }
+    }
+
+    private static List<LineMetric> BuildLineMetrics(IEnumerable<OrderDetail> details)
+    {
+        return details
+            .Where(d => d.Order != null)
+            .GroupBy(d => d.OrderId)
+            .SelectMany(group =>
+            {
+                var order = group.First().Order!;
+                var grossSubtotal = group.Sum(d => d.Quantity * d.UnitPrice);
+                var orderSubtotal = order.SubTotal > 0 ? order.SubTotal : grossSubtotal;
+                var taxableBase = Math.Max(0, order.TotalAmount - order.TaxAmount);
+                if (taxableBase == 0 && orderSubtotal > 0)
+                {
+                    taxableBase = Math.Max(0, orderSubtotal - order.DiscountAmount - order.ManualAdjustment);
+                }
+
+                return group.Select(detail =>
+                {
+                    var lineGross = detail.Quantity * detail.UnitPrice;
+                    var ratio = grossSubtotal > 0 ? lineGross / grossSubtotal : 0;
+                    var netSales = taxableBase * ratio;
+                    var revenue = order.TotalAmount > 0 ? order.TotalAmount * ratio : netSales;
+                    var cost = detail.Quantity * detail.UnitCostPrice;
+
+                    return new LineMetric
+                    {
+                        DetailId = detail.Id,
+                        Date = order.OrderDate,
+                        Revenue = revenue,
+                        Profit = netSales - cost
+                    };
+                });
+            })
+            .ToList();
+    }
 
     private List<TrendPoint> GroupAndFillHoles(IEnumerable<TrendItem> items, DateTime start, DateTime end, string granularity)
     {

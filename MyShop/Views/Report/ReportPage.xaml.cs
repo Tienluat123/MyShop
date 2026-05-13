@@ -106,9 +106,9 @@ public sealed partial class ReportPage : Page
         // 1. Categories Donut
         RenderDonutChart(CategoryChartCanvas, ViewModel.CategoryProfit.Select(p => new DonutPoint { Label = p.Category, Value = p.Amount, Color = p.Color }).ToList());
 
-        // 2. Products Donut (assign colors to top 10)
+        // 2. Products Donut
         string[] palette = { "#3B82F6", "#10B981", "#A855F7", "#F59E0B", "#EF4444", "#06B6D4", "#84CC16", "#6366F1", "#EC4899", "#64748B" };
-        var products = ViewModel.TopProducts.Take(10).ToList();
+        var products = ViewModel.TopProducts.ToList();
         var productPoints = products.Select((p, i) => new DonutPoint 
         { 
             Label = p.Name, 
@@ -143,27 +143,6 @@ public sealed partial class ReportPage : Page
             currentAngle += sweepAngle;
         }
 
-        // Center Text
-        var totalLabel = new TextBlock
-        {
-            Width = 100,
-            Text = "Total Share",
-            FontSize = 12,
-            Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-            TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(centerX - 50, centerY - 20, 0, 0)
-        };
-        var totalValue = new TextBlock
-        {
-            Width = 100,
-            Text = total > 1000000 ? $"${total / 1000000:N1}M" : $"${total:N0}",
-            FontSize = 16,
-            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
-            TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(centerX - 50, centerY, 0, 0)
-        };
-        canvas.Children.Add(totalLabel);
-        canvas.Children.Add(totalValue);
     }
 
     private Microsoft.UI.Xaml.Shapes.Path CreateArc(double cx, double cy, double r, double startAngle, double sweepAngle, string colorStr, double thickness)
