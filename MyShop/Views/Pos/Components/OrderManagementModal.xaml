@@ -214,7 +214,6 @@
             IsItemClickEnabled="True"
             ItemClickCommand="{Binding ViewOrderDetailCommand}"
             ItemsSource="{Binding DisplayOrders}"
-            Loaded="OrderGridView_Loaded"
             SelectionMode="None">
             <GridView.ItemTemplate>
                 <DataTemplate>
@@ -458,8 +457,7 @@
             Background="{StaticResource SurfaceBackground}"
             BorderBrush="{StaticResource Gray100}"
             BorderThickness="0,1,0,0"
-            CornerRadius="0,0,24,24"
-            Visibility="{Binding Filter, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='History'}">
+            CornerRadius="0,0,24,24">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
