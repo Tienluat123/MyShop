@@ -18,11 +18,6 @@ public sealed partial class ProductCustomizationModal : ContentDialog
         // Clear default title as we use custom header
         Title = "";
 
-        if (product.Category?.Name != "Coffee" && product.Category?.Name != "Tea")
-        {
-            BeverageOptions.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-        }
-
         //ViewModel.DrinkConfirmed += (opts, qty) => this.Hide();
     }
 
