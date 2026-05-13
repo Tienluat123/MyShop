@@ -505,7 +505,7 @@ public partial class OrderManagementViewModel : ObservableObject
             OrderId = $"ORD-{order.Id}",
             PaymentStatus = MapToPaymentStatus(order.PaymentStatus),
             FulfillmentStatus = MapToFulfillmentStatus(order.FulfillmentStatus),
-            CreatedAt = order.OrderDate,
+            CreatedAt = ToLocalOrderDate(order.OrderDate),
             Type = order.Type,
             Table = order.TableNumber,
             CustomerId = order.CustomerId?.ToString(),
@@ -562,6 +562,15 @@ public partial class OrderManagementViewModel : ObservableObject
             "Completed" => FulfillmentStatus.Completed,
             _ => FulfillmentStatus.None
         };
+    }
+
+    private static DateTime ToLocalOrderDate(DateTime orderDate)
+    {
+        var utcOrderDate = orderDate.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(orderDate, DateTimeKind.Utc)
+            : orderDate.ToUniversalTime();
+
+        return utcOrderDate.ToLocalTime();
     }
 
     [RelayCommand]
