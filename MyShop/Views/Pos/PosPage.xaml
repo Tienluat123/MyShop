@@ -498,17 +498,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <Border
-                                Width="48"
-                                Height="48"
-                                VerticalAlignment="Top"
-                                Background="{StaticResource SurfaceAlt}"
-                                CornerRadius="12">
-                                <FontIcon
-                                    Foreground="{StaticResource Gray200}"
-                                    Glyph="&#xEB9F;"
-                                    Style="{StaticResource IconTitleStyle}" />
-                            </Border>
+
 
                             <StackPanel
                                 Grid.Column="1"
