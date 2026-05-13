@@ -800,7 +800,8 @@
                     Foreground="White"
                     Style="{StaticResource AppPrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="Place Order ·" />
+                        <TextBlock Text="{Binding PlaceOrderButtonText}" />
+                        <TextBlock Text="·" />
                         <TextBlock Text="{Binding Total, Converter={StaticResource CurrencyConverter}}" />
                     </StackPanel>
                 </Button>

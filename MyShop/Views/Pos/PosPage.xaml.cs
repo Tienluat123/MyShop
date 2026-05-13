@@ -13,6 +13,7 @@ namespace MyShop.Views.Pos;
 public sealed partial class PosPage : Page
 {
     public PosViewModel ViewModel { get; }
+    private readonly INotificationService _notificationService;
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -23,9 +24,15 @@ public sealed partial class PosPage : Page
     public PosPage()
     {
         ViewModel = App.Services.GetRequiredService<PosViewModel>();
+        _notificationService = App.Services.GetRequiredService<INotificationService>();
         this.DataContext = ViewModel;
 
         InitializeComponent();
+
+        ViewModel.OrderEditConfirmed += (s, order) =>
+        {
+            _notificationService.ShowSuccess($"Order #{order.Id} updated successfully.", 2000);
+        };
 
         ViewModel.EditItemRequested += async (s, item) =>
         {
@@ -47,39 +54,44 @@ public sealed partial class PosPage : Page
         {
             if (ViewModel.CurrentDraftOrder == null) return;
 
-            // 1. Membership Selection (Loyalty)
-            var memberModal = new MembershipSelectionModal();
-            memberModal.XamlRoot = this.XamlRoot;
+            Customer? selectedCustomer = ViewModel.SelectedCustomer;
 
-            Customer? selectedCustomer = null;
-            memberModal.ViewModel.MemberSelected += (member) =>
+            if (!ViewModel.IsEditingExistingOrder)
             {
-                selectedCustomer = member;
-            };
+                // 1. Membership Selection (Loyalty)
+                var memberModal = new MembershipSelectionModal();
+                memberModal.XamlRoot = this.XamlRoot;
 
-            await memberModal.ShowAsync();
+                selectedCustomer = null;
+                memberModal.ViewModel.MemberSelected += (member) =>
+                {
+                    selectedCustomer = member;
+                };
 
-            // Sync customer association early to ensure it's saved in Supabase
-            ViewModel.SelectedCustomer = selectedCustomer;
+                await memberModal.ShowAsync();
 
-            if (selectedCustomer != null)
-            {
-                ViewModel.PointsToRedeem = memberModal.ViewModel.PointsToRedeem;
-                ViewModel.LoyaltyDiscount = memberModal.ViewModel.DiscountAmount;
+                // Sync customer association early to ensure it's saved in Supabase
+                ViewModel.SelectedCustomer = selectedCustomer;
+
+                if (selectedCustomer != null)
+                {
+                    ViewModel.PointsToRedeem = memberModal.ViewModel.PointsToRedeem;
+                    ViewModel.LoyaltyDiscount = memberModal.ViewModel.DiscountAmount;
+                }
+
+                // 2. Promotion Selection
+                var promoModal = new PromoSelectionModal(ViewModel.Subtotal, ViewModel.SelectedCustomer);
+                promoModal.XamlRoot = this.XamlRoot;
+
+                Models.Promotion? selectedPromo = null;
+                promoModal.ViewModel.PromotionSelected += (promo) =>
+                {
+                    selectedPromo = (Models.Promotion?)promo;
+                };
+
+                await promoModal.ShowAsync();
+                await ViewModel.ApplyPromotion(selectedPromo);
             }
-
-            // 2. Promotion Selection
-            var promoModal = new PromoSelectionModal(ViewModel.Subtotal, ViewModel.SelectedCustomer);
-            promoModal.XamlRoot = this.XamlRoot;
-
-            Models.Promotion? selectedPromo = null;
-            promoModal.ViewModel.PromotionSelected += (promo) =>
-            {
-                selectedPromo = (Models.Promotion?)promo;
-            };
-
-            await promoModal.ShowAsync();
-            await ViewModel.ApplyPromotion(selectedPromo);
 
             // 3. Payment Checkout
             var paymentModal = new PaymentModal(ViewModel.CurrentDraftOrder, App.Services.GetRequiredService<IOrderService>(), ViewModel.LoyaltyDiscount);
