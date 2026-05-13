@@ -14,7 +14,9 @@
 
     <ContentDialog.Resources>
         <converters:CurrencyConverter x:Key="CurrencyConverter"/>
+        <converters:DateFormatter x:Key="DateFormatter"/>
         <converters:PromoTypeConverter x:Key="PromoTypeConverter"/>
+        <converters:PromotionDiscountConverter x:Key="PromotionDiscountConverter"/>
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
     </ContentDialog.Resources>
 
@@ -56,13 +58,20 @@
                             <Grid ColumnDefinitions="*, Auto">
                                 <StackPanel Spacing="4">
                                     <TextBlock Text="{x:Bind PromoCode}" FontWeight="Bold" FontSize="16"/>
-                                    <TextBlock Foreground="{StaticResource TextSecondary}">
-                                        <Run Text="Discount: "/>
-                                        <Run Text="{x:Bind DiscountValue}"/>
-                                        <Run Text="{x:Bind PromoType, Converter={StaticResource PromoTypeConverter}}"/>
-                                    </TextBlock>
+                                    <TextBlock Text="{Binding Converter={StaticResource PromotionDiscountConverter}}"
+                                               Foreground="{StaticResource TextSecondary}"/>
                                     <TextBlock Text="{x:Bind MinOrderAmount, Converter={StaticResource CurrencyConverter}, ConverterParameter='Min order: {0}'}"
                                                FontSize="12" Foreground="{StaticResource TextMuted}"/>
+                                    <TextBlock FontSize="12" Foreground="{StaticResource TextMuted}">
+                                        <Run Text="For: "/>
+                                        <Run Text="{x:Bind TargetAudience}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="12" Foreground="{StaticResource TextMuted}">
+                                        <Run Text="Valid: "/>
+                                        <Run Text="{x:Bind StartDate, Mode=OneWay, Converter={StaticResource DateFormatter}}"/>
+                                        <Run Text=" - "/>
+                                        <Run Text="{x:Bind EndDate, Mode=OneWay, Converter={StaticResource DateFormatter}}"/>
+                                    </TextBlock>
                                 </StackPanel>
                                 <FontIcon Grid.Column="1" Glyph="&#xE73E;" FontSize="20" Foreground="{StaticResource BrandPrimary}"/>
                             </Grid>
