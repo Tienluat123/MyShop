@@ -486,7 +486,7 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     {
         if (importResult.InsertedProductNames.Count == 0)
         {
-            return "Import thành công, nhưng không có sản phẩm mới được thêm.";
+            return "Import succeeded, but no new products were added.";
         }
 
         var previewNames = importResult.InsertedProductNames.Take(3).ToList();
@@ -494,10 +494,10 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
 
         if (importResult.InsertedProductNames.Count > previewNames.Count)
         {
-            productList += $" và {importResult.InsertedProductNames.Count - previewNames.Count} sản phẩm khác";
+            productList += $" and {importResult.InsertedProductNames.Count - previewNames.Count} more products";
         }
 
-        return $"Đã thêm thành công {importResult.ProductsInserted} sản phẩm: {productList}.";
+        return $"Successfully added {importResult.ProductsInserted} products: {productList}.";
     }
 
     private static bool TryParsePriceInput(string input, out decimal? price, out string error)

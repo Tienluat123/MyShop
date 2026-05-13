@@ -96,13 +96,13 @@
                 VerticalAlignment="Center"
                 Spacing="8">
                 <TextBlock
-                    Text="Chào Mừng"
+                    Text="Welcome"
                     FontSize="42"
                     FontWeight="Bold"
                     Foreground="White"
                     TextWrapping="Wrap"/>
                 <TextBlock
-                    Text="Trở Lại!"
+                    Text="Back!"
                     FontSize="42"
                     FontWeight="Bold"
                     Foreground="White"
@@ -120,20 +120,20 @@
                 Spacing="0">
 
                 <TextBlock
-                    Text="Đăng Nhập"
+                    Text="Sign In"
                     FontSize="30"
                     FontWeight="Bold"
                     Foreground="#1A1A2E"
                     Margin="0,0,0,6"/>
 
                 <TextBlock
-                    Text="Vui lòng nhập thông tin tài khoản của bạn."
+                    Text="Enter your account information."
                     FontSize="13"
                     Foreground="#6B7280"
                     Margin="0,0,0,28"/>
 
                 <TextBlock
-                    Text="Tên đăng nhập"
+                    Text="Username"
                     FontSize="13"
                     FontWeight="SemiBold"
                     Foreground="#374151"
@@ -141,7 +141,7 @@
 
                 <TextBox
                     x:Name="UsernameBox"
-                    PlaceholderText="Nhập tên đăng nhập..."
+                    PlaceholderText="Enter username..."
                     Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     FontSize="14"
                     Padding="12,10"
@@ -151,7 +151,7 @@
                     Margin="0,0,0,18"/>
 
                 <TextBlock
-                    Text="Mật khẩu"
+                    Text="Password"
                     FontSize="13"
                     FontWeight="SemiBold"
                     Foreground="#374151"
@@ -160,7 +160,7 @@
                 <Grid Margin="0,0,0,8">
                     <PasswordBox
                         x:Name="PasswordBox"
-                        PlaceholderText="Nhập mật khẩu..."
+                        PlaceholderText="Enter password..."
                         FontSize="14"
                         Padding="12,10,40,10"
                         CornerRadius="8"
@@ -196,7 +196,7 @@
 
                 <Button
                     x:Name="LoginBtn"
-                    Content="Đăng nhập"
+                    Content="Sign in"
                     Command="{Binding LoginCommand}"
                     HorizontalAlignment="Stretch"
                     FontSize="15"
@@ -227,7 +227,7 @@
                     Margin="0,16,0,0">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <SymbolIcon Symbol="Setting" Foreground="#6B7280" />
-                        <TextBlock Text="Cấu hình Database" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock Text="Database Configuration" FontSize="13" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Button>
 

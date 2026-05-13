@@ -56,7 +56,7 @@ public partial class PromoViewModel : ObservableObject
         }
         else
         {
-            ErrorMessage = result.ErrorMessage ?? "Mã khuyến mãi không hợp lệ hoặc không đủ điều kiện.";
+            ErrorMessage = result.ErrorMessage ?? "Promotion code is invalid or not eligible.";
         }
     }
 

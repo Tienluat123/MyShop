@@ -75,15 +75,15 @@ public class LoginViewModel : BaseViewModel
         // Validate input cơ bản
         if (string.IsNullOrWhiteSpace(Username))
         {
-            SetOnUiThread(() => ErrorMessage = "Vui lòng nhập tên đăng nhập.");
-            _ = Task.Delay(3000).ContinueWith(_ => SetOnUiThread(() => { if (ErrorMessage == "Vui lòng nhập tên đăng nhập.") ErrorMessage = string.Empty; }));
+            SetOnUiThread(() => ErrorMessage = "Please enter your username.");
+            _ = Task.Delay(3000).ContinueWith(_ => SetOnUiThread(() => { if (ErrorMessage == "Please enter your username.") ErrorMessage = string.Empty; }));
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Password))
         {
-            SetOnUiThread(() => ErrorMessage = "Vui lòng nhập mật khẩu.");
-            _ = Task.Delay(3000).ContinueWith(_ => SetOnUiThread(() => { if (ErrorMessage == "Vui lòng nhập mật khẩu.") ErrorMessage = string.Empty; }));
+            SetOnUiThread(() => ErrorMessage = "Please enter your password.");
+            _ = Task.Delay(3000).ContinueWith(_ => SetOnUiThread(() => { if (ErrorMessage == "Please enter your password.") ErrorMessage = string.Empty; }));
             return;
         }
 
@@ -95,9 +95,9 @@ public class LoginViewModel : BaseViewModel
 
             if (user is null)
             {
-                SetOnUiThread(() => ErrorMessage = "Tên đăng nhập hoặc mật khẩu không đúng.");
+                SetOnUiThread(() => ErrorMessage = "Incorrect username or password.");
                 // Tự động tắt thông báo sau 3 giây
-                _ = Task.Delay(3000).ContinueWith(_ => SetOnUiThread(() => { if (ErrorMessage == "Tên đăng nhập hoặc mật khẩu không đúng.") ErrorMessage = string.Empty; }));
+                _ = Task.Delay(3000).ContinueWith(_ => SetOnUiThread(() => { if (ErrorMessage == "Incorrect username or password.") ErrorMessage = string.Empty; }));
                 return;
             }
 
@@ -110,7 +110,7 @@ public class LoginViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            SetOnUiThread(() => ErrorMessage = $"Lỗi kết nối: {ex.Message}");
+            SetOnUiThread(() => ErrorMessage = $"Connection error: {ex.Message}");
             _ = Task.Delay(3000).ContinueWith(_ => SetOnUiThread(() => ErrorMessage = string.Empty));
         }
         finally

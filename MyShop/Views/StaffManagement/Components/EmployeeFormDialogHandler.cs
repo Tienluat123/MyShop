@@ -40,11 +40,11 @@ internal sealed class EmployeeFormDialogHandler
         {
             await _employeeService.AddEmployeeAsync(dialog.SavedUser);
             await refreshAsync();
-            _notificationService.ShowSuccess($"Thêm nhân viên '{dialog.SavedUser.FullName}' thành công");
+            _notificationService.ShowSuccess($"Added employee '{dialog.SavedUser.FullName}' successfully");
         }
         catch
         {
-            _notificationService.ShowError("Không thể thêm nhân viên");
+            _notificationService.ShowError("Unable to add employee");
         }
     }
 
@@ -70,11 +70,11 @@ internal sealed class EmployeeFormDialogHandler
         {
             await _employeeService.UpdateEmployeeAsync(dialog.SavedUser);
             await refreshAsync();
-            _notificationService.ShowSuccess($"Cập nhật '{dialog.SavedUser.FullName}' thành công");
+            _notificationService.ShowSuccess($"Updated '{dialog.SavedUser.FullName}' successfully");
         }
         catch
         {
-            _notificationService.ShowError("Không thể cập nhật nhân viên");
+            _notificationService.ShowError("Unable to update employee");
         }
     }
 }

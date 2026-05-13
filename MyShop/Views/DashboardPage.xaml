@@ -144,14 +144,14 @@
 
                     <Border x:Name="Card1" Grid.Column="0" Grid.Row="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Đơn hàng hôm nay" Foreground="Gray" FontSize="13"/>
+                            <TextBlock Text="Today's Orders" Foreground="Gray" FontSize="13"/>
                             <TextBlock Text="{x:Bind ViewModel.TodayOrdersCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
                         </StackPanel>
                     </Border>
 
                     <Border x:Name="Card2" Grid.Column="1" Grid.Row="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Doanh thu hôm nay" Foreground="Gray" FontSize="13"/>
+                            <TextBlock Text="Today's Revenue" Foreground="Gray" FontSize="13"/>
                             <TextBlock Text="{x:Bind ViewModel.TodayRevenue, Mode=OneWay, Converter={StaticResource CurrencyConverter}}" 
                                        FontSize="24" FontWeight="Bold" Foreground="DodgerBlue"/>
                         </StackPanel>
@@ -159,14 +159,14 @@
 
                     <Border x:Name="Card3" Grid.Column="2" Grid.Row="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Tổng sản phẩm" Foreground="Gray" FontSize="13"/>
+                            <TextBlock Text="Total Products" Foreground="Gray" FontSize="13"/>
                             <TextBlock Text="{x:Bind ViewModel.ProductsCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
                         </StackPanel>
                     </Border>
 
                     <Border x:Name="Card4" Grid.Column="3" Grid.Row="0" Padding="16" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="SP sắp hết hàng" Foreground="Gray" FontSize="13"/>
+                            <TextBlock Text="Low Stock Products" Foreground="Gray" FontSize="13"/>
                             <TextBlock Text="{x:Bind ViewModel.LowStockProducts.Count, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="Red"/>
                         </StackPanel>
                     </Border>
@@ -201,7 +201,7 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel x:Name="TopProductsPanel" Grid.Column="0" Grid.Row="0" Spacing="12">
-                        <TextBlock Text="Top 5 Sản phẩm bán chạy" FontSize="18" FontWeight="Bold"/>
+                        <TextBlock Text="Top 5 Best-Selling Products" FontSize="18" FontWeight="Bold"/>
                         <ListView ItemsSource="{x:Bind ViewModel.TopProducts, Mode=OneWay}" SelectionMode="None" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="viewmodels:DashboardViewModel+TopProduct">
@@ -219,7 +219,7 @@
                     </StackPanel>
 
                     <StackPanel x:Name="LowStockPanel" Grid.Column="1" Grid.Row="0" Spacing="12">
-                        <TextBlock Text="Top 5 Sản phẩm sắp hết hàng" FontSize="18" FontWeight="Bold"/>
+                        <TextBlock Text="Top 5 Low-Stock Products" FontSize="18" FontWeight="Bold"/>
                         <ListView ItemsSource="{x:Bind ViewModel.LowStockProducts, Mode=OneWay}" SelectionMode="None" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Product">
@@ -230,7 +230,7 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="{x:Bind Name}" Grid.Column="0" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis"/>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12,0,0,0">
-                                            <TextBlock Text="Còn: " Foreground="Gray"/>
+                                            <TextBlock Text="Left: " Foreground="Gray"/>
                                             <TextBlock Text="{x:Bind StockQuantity}" FontWeight="Bold" Foreground="Red"/>
                                         </StackPanel>
                                     </Grid>
@@ -241,7 +241,7 @@
                 </Grid>
 
                 <StackPanel Spacing="12">
-                    <TextBlock Text="3 Đơn hàng gần nhất" FontSize="18" FontWeight="Bold"/>
+                    <TextBlock Text="3 Most Recent Orders" FontSize="18" FontWeight="Bold"/>
                     <ListView ItemsSource="{x:Bind ViewModel.RecentOrders, Mode=OneWay}" 
                               SelectionMode="Single" 
                               IsItemClickEnabled="True"
@@ -265,9 +265,9 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="150"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Ngày đặt" FontWeight="Bold" Foreground="Gray"/>
-                                    <TextBlock Grid.Column="1" Text="Khách hàng" FontWeight="Bold" Foreground="Gray"/>
-                                    <TextBlock Grid.Column="2" Text="Tổng tiền" FontWeight="Bold" Foreground="Gray" HorizontalAlignment="Right"/>
+                                    <TextBlock Grid.Column="0" Text="Order Date" FontWeight="Bold" Foreground="Gray"/>
+                                    <TextBlock Grid.Column="1" Text="Customer" FontWeight="Bold" Foreground="Gray"/>
+                                    <TextBlock Grid.Column="2" Text="Total" FontWeight="Bold" Foreground="Gray" HorizontalAlignment="Right"/>
                                 </Grid>
                             </DataTemplate>
                         </ListView.HeaderTemplate>

@@ -113,8 +113,8 @@ public partial class PromotionItem : ObservableObject
     }
 
     public string TypeDisplay => Type == PromoType.Percent ? "Percent" : "Fixed Amount";
-    public string ValueDisplay => Type == PromoType.Percent ? $"{Value:F0}%" : $"{Value:N0}đ";
-    public string MinimumOrderDisplay => $"{MinimumOrderAmount:N0}đ";
+    public string ValueDisplay => Type == PromoType.Percent ? $"{Value:F0}%" : $"{Value:N0} VND";
+    public string MinimumOrderDisplay => $"{MinimumOrderAmount:N0} VND";
     public string PeriodDisplay => $"{StartDate:dd/MM/yyyy} - {EndDate:dd/MM/yyyy}";
     public string TargetDisplay => Target.ToString();
 
@@ -150,7 +150,7 @@ public partial class PromotionItem : ObservableObject
 
 /// <summary>
 /// ViewModel cho trang quản lý khuyến mãi.
-/// Dùng list thay vì ObservableCollection để tránh lỗi
+/// Dùng list thay vì ObservableCollection VNDể tránh lỗi
 /// "Changes in data source are not allowed during layout" từ ItemsRepeater.
 /// </summary>
 public partial class PromotionsViewModel : ObservableObject
@@ -162,20 +162,20 @@ public partial class PromotionsViewModel : ObservableObject
     private List<PromotionItem> _allPromotions = new(); // No longer used for in-memory paging, but kept if needed for other logic
 
     /// <summary>
-    /// Cờ để View biết rằng đang trong quá trình cập nhật dữ liệu,
+    /// Cờ VNDể View biết rằng VNDang trong quá trình cập nhật dữ liệu,
     /// ToggleSwitch_Toggled không nên xử lý.
     /// </summary>
     public bool IsUpdatingData { get; set; }
 
     /// <summary>
-    /// Cờ nội bộ: True khi đang load/rebuild data từ database.
-    /// Dùng để phân biệt: thay đổi từ user click (cần save) vs thay đổi do refresh từ DB.
+    /// Cờ nội bộ: True khi VNDang load/rebuild data từ database.
+    /// Dùng VNDể phân biệt: thay VNDổi từ user click (cần save) vs thay VNDổi do refresh từ DB.
     /// </summary>
     private bool _isLoadingInternal = false;
 
     /// <summary>
     /// Danh sách hiển thị trên UI - gán lại toàn bộ thay vì Clear+Add
-    /// để tránh lỗi layout của ItemsRepeater.
+    /// VNDể tránh lỗi layout của ItemsRepeater.
     /// </summary>
     [ObservableProperty]
     private ObservableCollection<PromotionItem> pageItems = new();
@@ -343,7 +343,7 @@ public partial class PromotionsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Lỗi khi tải khuyến mãi: {ex.Message}";
+            ErrorMessage = $"Failed to load promotions: {ex.Message}";
         }
         finally
         {
@@ -377,7 +377,7 @@ public partial class PromotionsViewModel : ObservableObject
 
     /// <summary>
     /// Toggle trạng thái active/inactive.
-    /// Dùng GetById để lấy entity đang track, flip IsActive, rồi Update.
+    /// Dùng GetById VNDể lấy entity VNDang track, flip IsActive, rồi Update.
     /// </summary>
     [RelayCommand]
     private async Task ToggleStatusAsync(PromotionItem promo)
@@ -389,7 +389,7 @@ public partial class PromotionsViewModel : ObservableObject
             var entity = await _promoService.GetByIdAsync(promo.Id);
             if (entity == null)
             {
-                ErrorMessage = $"Không tìm thấy khuyến mãi ID {promo.Id}";
+                ErrorMessage = $"Promotion not found: ID {promo.Id}";
                 return;
             }
 
@@ -400,17 +400,17 @@ public partial class PromotionsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Lỗi khi cập nhật trạng thái: {ex.Message}";
+            ErrorMessage = $"Failed to update status: {ex.Message}";
         }
     }
 
     /// <summary>
     /// Xử lý khi user toggle switch trên một PromotionItem.
-    /// Chỉ được gọi khi user thực sự click toggle (không phải khi đang load data).
+    /// Chỉ VNDược gọi khi user thực sự click toggle (không phải khi VNDang load data).
     /// </summary>
     private async void OnPromotionItemIsActiveChanged(PromotionItem promo, bool newValue)
     {
-        // Bỏ qua nếu đang load data từ database
+        // Bỏ qua nếu VNDang load data từ database
         if (_isLoadingInternal) return;
 
         try
@@ -419,7 +419,7 @@ public partial class PromotionsViewModel : ObservableObject
             var entity = await _promoService.GetByIdAsync(promo.Id);
             if (entity == null) return;
 
-            // Nếu giá trị trong DB đã = newValue → đồng bộ rồi, bỏ qua
+            // Nếu giá trị trong DB VNDã = newValue → VNDồng bộ rồi, bỏ qua
             if (entity.IsActive == newValue) return;
 
             // Cập nhật vào database
@@ -431,7 +431,7 @@ public partial class PromotionsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Lỗi khi cập nhật trạng thái: {ex.Message}";
+            ErrorMessage = $"Failed to update status: {ex.Message}";
         }
     }
 
@@ -447,7 +447,7 @@ public partial class PromotionsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Lỗi khi xóa khuyến mãi: {ex.Message}";
+            ErrorMessage = $"Failed to delete promotion: {ex.Message}";
         }
     }
 
@@ -533,7 +533,7 @@ public partial class PromotionsViewModel : ObservableObject
         await RefreshFromDatabaseAsync();
     }
 
-    // Auto-rebuild khi search thay đổi
+    // Auto-rebuild khi search thay VNDổi
     partial void OnSearchQueryChanged(string value)
     {
         CurrentPage = 1;

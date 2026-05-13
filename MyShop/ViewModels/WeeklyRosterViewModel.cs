@@ -132,13 +132,13 @@ public partial class WeeklyRosterViewModel : ObservableObject
                 var result = await _scheduleService.CreateAsync(newSchedule);
                 if (result)
                 {
-                    _notificationService.ShowSuccess($"Thêm {dialog.SelectedUser.FullName} vào lịch thành công");
+                    _notificationService.ShowSuccess($"Added {dialog.SelectedUser.FullName} to the schedule successfully");
                     await LoadSchedulesCommand.ExecuteAsync(null);
                 }
             }
             catch (Exception)
             {
-                _notificationService.ShowError("Không thể thêm vào lịch. Vui lòng thử lại!");
+                _notificationService.ShowError("Unable to add to schedule. Please try again!");
             }
         }
     }
@@ -164,11 +164,11 @@ public partial class WeeklyRosterViewModel : ObservableObject
                     try
                     {
                         await _scheduleService.DeleteAsync(targetSchedule.Id);
-                        _notificationService.ShowSuccess($"Xóa {targetSchedule.User?.FullName} khỏi lịch thành công");
+                        _notificationService.ShowSuccess($"Removed {targetSchedule.User?.FullName} from the schedule successfully");
                     }
                     catch (Exception)
                     {
-                        _notificationService.ShowError("Không thể xóa khỏi lịch. Vui lòng thử lại!");
+                        _notificationService.ShowError("Unable to remove from schedule. Please try again!");
                     }
                 }
             }
@@ -176,7 +176,7 @@ public partial class WeeklyRosterViewModel : ObservableObject
             {
                 if (dialog.SelectedUser is null)
                 {
-                    _notificationService.ShowError("Vui lòng chọn nhân viên trước khi lưu.");
+                    _notificationService.ShowError("Please select an employee before saving.");
                     return;
                 }
 
@@ -188,11 +188,11 @@ public partial class WeeklyRosterViewModel : ObservableObject
                 try
                 {
                     await _scheduleService.UpdateAsync(targetSchedule);
-                    _notificationService.ShowSuccess($"Cập nhật lịch cho {dialog.SelectedUser.FullName} thành công");
+                    _notificationService.ShowSuccess($"Updated schedule for {dialog.SelectedUser.FullName} successfully");
                 }
                 catch (Exception)
                 {
-                    _notificationService.ShowError("Không thể cập nhật lịch. Vui lòng thử lại!");
+                    _notificationService.ShowError("Unable to update schedule. Please try again!");
                 }
             }
 

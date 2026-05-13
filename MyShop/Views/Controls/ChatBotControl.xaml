@@ -96,13 +96,13 @@
                                       Margin="0,0,0,8"
                                       CornerRadius="8"
                                       BorderThickness="1">
-                                <ComboBoxItem Content="🔍 Hỏi đáp &amp; Phân tích dữ liệu"/>
-                                <ComboBoxItem Content="🎟️ Yêu cầu tạo mã giảm giá"/>
+                                <ComboBoxItem Content="🔍 Q&amp;A &amp; Data Analysis"/>
+                                <ComboBoxItem Content="🎟️ Request Promotion Code"/>
                             </ComboBox>
 
                             <Grid Grid.Row="1" ColumnDefinitions="*, Auto">
                                 <TextBox x:Name="InputBox" 
-                                         PlaceholderText="Nhập nội dung..."
+                                         PlaceholderText="Enter a message..."
                                          KeyDown="InputBox_KeyDown"
                                          AcceptsReturn="False"
                                          CornerRadius="12">

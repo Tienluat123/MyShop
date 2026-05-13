@@ -106,7 +106,7 @@ public class ConfigService : IConfigService
     public async Task<(bool Success, string ErrorMessage)> TestConnectionAsync(DbConfig config)
     {
         if (config == null)
-            return (false, "Cấu hình database không hợp lệ.");
+            return (false, "Invalid database configuration.");
 
         try
         {
@@ -123,7 +123,7 @@ public class ConfigService : IConfigService
     public async Task<(bool Success, string ErrorMessage)> TestSavedConfigAsync()
     {
         if (!HasSavedConfig())
-            return (false, "Chưa có cấu hình database.");
+            return (false, "No database configuration has been saved.");
 
         var config = await LoadAsync();
         return await TestConnectionAsync(config);
