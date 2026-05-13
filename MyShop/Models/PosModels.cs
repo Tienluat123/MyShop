@@ -137,6 +137,7 @@ public partial class PosOrder : ObservableObject
 
     public bool CanCancel { get; set; }
     public bool CanDeleteFromHistory { get; set; }
+    public bool CanUpdateFulfillment { get; set; }
 
     partial void OnPaymentStatusChanged(PaymentStatus value) => OnPropertyChanged(nameof(IsFulfillmentActionEnabled));
     partial void OnFulfillmentStatusChanged(FulfillmentStatus value) => OnPropertyChanged(nameof(IsFulfillmentActionEnabled));

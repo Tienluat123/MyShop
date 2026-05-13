@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:MyShop.Converters"
     xmlns:local="using:MyShop.Views.Pos.Components"
+    xmlns:models="using:MyShop.Models"
     x:Name="ModalRoot"
     MinWidth="1000"
     MinHeight="800"
@@ -35,6 +36,14 @@
         <converters:StatusToNextStatusTextConverter x:Key="StatusToNextStatusTextConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:EqualityToBrushConverter
+            x:Key="PageButtonBackgroundConverter"
+            FalseBrush="{StaticResource SurfaceAlt}"
+            TrueBrush="{StaticResource BrandPrimary}" />
+        <converters:EqualityToBrushConverter
+            x:Key="PageButtonForegroundConverter"
+            FalseBrush="{StaticResource TextBrand}"
+            TrueBrush="White" />
 
         <Style x:Key="FilterButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
@@ -434,7 +443,7 @@
                                         IsEnabled="{Binding IsFulfillmentActionEnabled}"
                                         CornerRadius="10"
                                         Style="{StaticResource AppOutlineButtonStyle}"
-                                        Visibility="{Binding FulfillmentStatus, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Active'}">
+                                        Visibility="{Binding CanUpdateFulfillment, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <TextBlock
                                                 FontSize="{StaticResource FontCaption}"
@@ -495,17 +504,17 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="x:Int32">
+                            <DataTemplate x:DataType="models:PageNumberItem">
                                 <Button
                                     Width="36"
                                     Height="36"
-                                    Background="{StaticResource SurfaceAlt}"
+                                    Background="{Binding IsActive, Converter={StaticResource PageButtonBackgroundConverter}, ConverterParameter=True}"
                                     BorderBrush="{StaticResource Gray100}"
                                     Command="{Binding DataContext.GoToPageCommand, ElementName=ModalRoot}"
-                                    CommandParameter="{Binding}"
-                                    Content="{Binding}"
+                                    CommandParameter="{Binding PageNumber}"
+                                    Content="{Binding PageNumber}"
                                     CornerRadius="8"
-                                    Foreground="{StaticResource TextBrand}" />
+                                    Foreground="{Binding IsActive, Converter={StaticResource PageButtonForegroundConverter}, ConverterParameter=True}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

@@ -120,7 +120,7 @@ public partial class OrderManagementViewModel : ObservableObject
     public ObservableCollection<PosOrder> DisplayOrders { get; } = new();
     public ObservableCollection<OrderItem> EditableItems { get; } = new();
     public ObservableCollection<Product> AllProducts { get; } = new();
-    public ObservableCollection<int> PageNumbers { get; } = new();
+    public ObservableCollection<PageNumberItem> PageNumbers { get; } = new();
 
     public OrderManagementViewModel(IOrderService orderService, IProductService productService)
     {
@@ -221,11 +221,13 @@ public partial class OrderManagementViewModel : ObservableObject
     {
         PageNumbers.Clear();
         for (int i = 1; i <= totalPages; i++)
-            PageNumbers.Add(i);
+        {
+            PageNumbers.Add(new PageNumberItem(i, currentPage));
+        }
 
         var start = totalItems == 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
         var end = Math.Min(start + pageSize - 1, totalItems);
-        PagingSummary = $"Showing {start}-{end} in {totalItems} items";
+        PagingSummary = $"Showing {start}-{end} in {totalItems} items · Page {currentPage} of {totalPages}";
     }
 
     [RelayCommand]
@@ -531,7 +533,8 @@ public partial class OrderManagementViewModel : ObservableObject
             Subtotal = order.SubTotal,
             Total = order.TotalAmount,
             CanCancel = Filter == "Active" && order.PaymentStatus is "Draft" or "PendingPayment",
-            CanDeleteFromHistory = Filter == "History" && order.PaymentStatus != "Cancelled"
+            CanDeleteFromHistory = Filter == "History" && order.PaymentStatus != "Cancelled",
+            CanUpdateFulfillment = Filter == "Active" && order.FulfillmentStatus is "None" or "Preparing" or "Ready"
         };
 
         if (order.OrderDetails != null)
