@@ -345,11 +345,8 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
             var importResult = await _excelCatalogImportService.ImportAsync(filePath);
             if (!importResult.Success)
             {
-                var topErrors = importResult.Errors
-                    .Take(5)
-                    .Select(e => e.ToString());
-
-                ErrorMessage = string.Join(Environment.NewLine, topErrors);
+                ErrorMessage = BuildImportErrorMessage(importResult);
+                _notificationService.ShowError(ErrorMessage, 7000);
                 return;
             }
 
@@ -363,6 +360,7 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to import from Excel: {ex.Message}";
+            _notificationService.ShowError(ErrorMessage, 7000);
         }
     }
 
@@ -498,6 +496,28 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
         }
 
         return $"Successfully added {importResult.ProductsInserted} products: {productList}.";
+    }
+
+    private static string BuildImportErrorMessage(CatalogImportResult importResult)
+    {
+        var topErrors = importResult.Errors
+            .Take(5)
+            .Select(e => e.ToString())
+            .ToList();
+
+        if (topErrors.Count == 0)
+        {
+            return importResult.Summary;
+        }
+
+        var message = string.Join(Environment.NewLine, topErrors);
+        var remainingErrors = importResult.Errors.Count - topErrors.Count;
+        if (remainingErrors > 0)
+        {
+            message += $"{Environment.NewLine}...and {remainingErrors} more error(s).";
+        }
+
+        return message;
     }
 
     private static bool TryParsePriceInput(string input, out decimal? price, out string error)
