@@ -15,6 +15,7 @@ public sealed partial class MembershipSelectionModal : ContentDialog
         DataContext = ViewModel;
 
         SkipButton.Command = ViewModel.SelectMemberCommand;
+        CreateSelectButton.Command = ViewModel.RegisterCommand;
         
         ViewModel.MemberSelected += (member) => this.Hide();
     }

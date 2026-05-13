@@ -274,6 +274,12 @@
                             </StackPanel>
                         </StackPanel>
 
+                        <TextBlock
+                            FontSize="{StaticResource FontCaption}"
+                            Foreground="{StaticResource Error}"
+                            Text="{Binding ErrorMessage}"
+                            Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='NotNull'}" />
+
                         <Grid Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -285,6 +291,7 @@
                                 Content="Cancel"
                                 Style="{StaticResource SecondaryMembershipButtonStyle}" />
                             <Button
+                                x:Name="CreateSelectButton"
                                 Grid.Column="1"
                                 Margin="12,0,0,0"
                                 HorizontalAlignment="Stretch"

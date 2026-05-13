@@ -46,6 +46,9 @@ public partial class MembershipViewModel : ObservableObject
     private decimal _discountAmount;
 
     [ObservableProperty]
+    private string _errorMessage = "";
+
+    [ObservableProperty]
     private int _redemptionRate = 100; // Default if not loaded yet
 
     public ObservableCollection<Customer> FilteredCustomers { get; } = new();
@@ -76,6 +79,7 @@ public partial class MembershipViewModel : ObservableObject
         if (ShowRegister) ShowRedeemView = false;
         NewName = "";
         NewPhone = "";
+        ErrorMessage = "";
     }
 
     private async Task LoadCustomersAsync()
@@ -159,12 +163,21 @@ public partial class MembershipViewModel : ObservableObject
     [RelayCommand]
     private async Task RegisterAsync()
     {
-        if (string.IsNullOrEmpty(NewName) || string.IsNullOrEmpty(NewPhone)) return;
+        ErrorMessage = "";
+
+        var name = NewName.Trim();
+        var phone = NewPhone.Trim();
+
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(phone))
+        {
+            ErrorMessage = "Name and phone number are required.";
+            return;
+        }
 
         var newCust = new Customer
         {
-            Name = NewName,
-            Phone = NewPhone,
+            Name = name,
+            Phone = phone,
             TotalAccumulatedPoints = 0,
             CurrentAvailablePoints = 0,
             Tier = LoyaltyTier.Bronze,
@@ -181,6 +194,7 @@ public partial class MembershipViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            ErrorMessage = ex.Message;
             System.Diagnostics.Debug.WriteLine($"Register error: {ex.Message}");
         }
     }
