@@ -42,9 +42,12 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private bool _isOrderDetailOpen;
 
-    // Infinite scroll for active tab
+    // Active tab paging
     private int _currentPage = 1;
-    private const int PageSize = 20;
+    private const int PageSize = 10;
+
+    [ObservableProperty]
+    private int _totalPagesActive;
 
     // Standard paging for history tab
     private const int PageSizeHistory = 10;
@@ -177,9 +180,8 @@ public partial class OrderManagementViewModel : ObservableObject
                 DisplayOrders.Clear();
                 foreach (var o in mappedOrders) DisplayOrders.Add(o);
 
-                HasMoreData = _currentPage < pagedResult.Pagination.TotalPages;
-                PageNumbers.Clear();
-                PagingSummary = "";
+                TotalPagesActive = Math.Max(1, pagedResult.Pagination.TotalPages);
+                UpdatePagingDisplay(_currentPage, PageSize, pagedResult.Pagination.TotalItems, TotalPagesActive);
             }
             else
             {
@@ -198,16 +200,8 @@ public partial class OrderManagementViewModel : ObservableObject
 
                 int historyCountFromDb = pagedResult.Pagination.TotalItems;
 
-                TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
-                if (TotalPagesHistory < 1) TotalPagesHistory = 1;
-
-                PageNumbers.Clear();
-                for (int i = 1; i <= TotalPagesHistory; i++)
-                    PageNumbers.Add(i);
-
-                var start = historyCountFromDb == 0 ? 0 : ((CurrentPageHistory - 1) * PageSizeHistory) + 1;
-                var end = Math.Min(start + PageSizeHistory - 1, historyCountFromDb);
-                PagingSummary = $"Showing {start}-{end} in {historyCountFromDb} items";
+                TotalPagesHistory = Math.Max(1, pagedResult.Pagination.TotalPages);
+                UpdatePagingDisplay(CurrentPageHistory, PageSizeHistory, historyCountFromDb, TotalPagesHistory);
             }
 
             await LoadCounts();
@@ -223,36 +217,15 @@ public partial class OrderManagementViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    public async Task LoadMoreOrders()
+    private void UpdatePagingDisplay(int currentPage, int pageSize, int totalItems, int totalPages)
     {
-        if (Filter != "Active") return; // Only used for Active tab
-        if (IsLoadingMore || !HasMoreData) return;
+        PageNumbers.Clear();
+        for (int i = 1; i <= totalPages; i++)
+            PageNumbers.Add(i);
 
-        try
-        {
-            IsLoadingMore = true;
-            _currentPage++;
-
-            var pagedResult = await _orderService.GetPagedActiveOrders(
-                new PagingRequest { PageNumber = _currentPage, PageSize = PageSize },
-                SelectedStatusFilter);
-
-            var mappedOrders = await Task.WhenAll(pagedResult.Items.Select(MapToPosOrder));
-
-            foreach (var o in mappedOrders)
-                DisplayOrders.Add(o);
-
-            HasMoreData = _currentPage < pagedResult.Pagination.TotalPages;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ Error loading more orders: {ex.Message}");
-        }
-        finally
-        {
-            IsLoadingMore = false;
-        }
+        var start = totalItems == 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+        var end = Math.Min(start + pageSize - 1, totalItems);
+        PagingSummary = $"Showing {start}-{end} in {totalItems} items";
     }
 
     [RelayCommand]
@@ -489,8 +462,14 @@ public partial class OrderManagementViewModel : ObservableObject
     [RelayCommand]
     private async Task GoToPage(int page)
     {
-        if (page < 1 || page > TotalPagesHistory) return;
-        CurrentPageHistory = page;
+        var totalPages = Filter == "Active" ? TotalPagesActive : TotalPagesHistory;
+        if (page < 1 || page > totalPages) return;
+
+        if (Filter == "Active")
+            _currentPage = page;
+        else
+            CurrentPageHistory = page;
+
         ScrollToTopAction?.Invoke();
         await LoadOrders();
     }
@@ -498,23 +477,37 @@ public partial class OrderManagementViewModel : ObservableObject
     [RelayCommand]
     private async Task NextPage()
     {
-        if (CurrentPageHistory < TotalPagesHistory)
+        if (Filter == "Active")
         {
+            if (_currentPage >= TotalPagesActive) return;
+            _currentPage++;
+        }
+        else
+        {
+            if (CurrentPageHistory >= TotalPagesHistory) return;
             CurrentPageHistory++;
+        }
+
             ScrollToTopAction?.Invoke();
             await LoadOrders();
-        }
     }
 
     [RelayCommand]
     private async Task PreviousPage()
     {
-        if (CurrentPageHistory > 1)
+        if (Filter == "Active")
         {
+            if (_currentPage <= 1) return;
+            _currentPage--;
+        }
+        else
+        {
+            if (CurrentPageHistory <= 1) return;
             CurrentPageHistory--;
+        }
+
             ScrollToTopAction?.Invoke();
             await LoadOrders();
-        }
     }
 
     private async Task<PosOrder> MapToPosOrder(Order order)
@@ -672,7 +665,11 @@ public partial class OrderManagementViewModel : ObservableObject
                 CloseOrderDetail();
             }
 
-            if (Filter == "History" && DisplayOrders.Count == 1 && CurrentPageHistory > 1)
+            if (DisplayOrders.Count == 1 && Filter == "Active" && _currentPage > 1)
+            {
+                _currentPage--;
+            }
+            else if (DisplayOrders.Count == 1 && Filter == "History" && CurrentPageHistory > 1)
             {
                 CurrentPageHistory--;
             }
@@ -718,6 +715,8 @@ public partial class OrderManagementViewModel : ObservableObject
 
     partial void OnFilterChanged(string value)
     {
+        _currentPage = 1;
+        CurrentPageHistory = 1;
         InitializeFilterOptions();
         _ = LoadOrders();
     }

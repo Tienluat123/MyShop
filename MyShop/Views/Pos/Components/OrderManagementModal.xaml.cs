@@ -37,34 +37,6 @@ public sealed partial class OrderManagementModal : ContentDialog
         }
     }
 
-    private void OrderGridView_Loaded(object sender, RoutedEventArgs e)
-    {
-        var scrollViewer = GetScrollViewer(OrderGridView);
-        if (scrollViewer != null)
-        {
-            scrollViewer.ViewChanged += ScrollViewer_ViewChanged;
-        }
-    }
-
-    private void ScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
-    {
-        if (sender is not ScrollViewer sv)
-        {
-            return;
-        }
-
-        if (ViewModel.Filter != "Active") return;
-
-        // Load more when scrolled near the end (e.g. 90% of the way down)
-        if (sv.VerticalOffset >= sv.ScrollableHeight * 0.9)
-        {
-            if (ViewModel.LoadMoreOrdersCommand.CanExecute(null))
-            {
-                ViewModel.LoadMoreOrdersCommand.Execute(null);
-            }
-        }
-    }
-
     private ScrollViewer? GetScrollViewer(DependencyObject element)
     {
         if (element is ScrollViewer sv) return sv;
