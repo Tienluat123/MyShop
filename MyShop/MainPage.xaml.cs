@@ -44,7 +44,7 @@ public sealed partial class MainPage : Page
         if (user != null)
         {
             ProfileNameText.Text = $"{user.FirstName} {user.LastName}";
-            ProfileRoleText.Text = user.Role == "1" ? "Quản trị viên" : "Nhân viên bán hàng";
+            ProfileRoleText.Text = user.Role == "1" ? "Administrator" : "Sales Staff";
         }
 
         _ = LoadInitialPageAsync();

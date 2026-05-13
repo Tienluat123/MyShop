@@ -128,6 +128,11 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             paging.Validate();
             var totalItems = await query.CountAsync();
 
+            if (!string.IsNullOrWhiteSpace(paging.SortBy))
+            {
+                query = query.OrderBy(paging.SortBy);
+            }
+
             var items = await query
                 .Skip(paging.GetSkip())
                 .Take(paging.PageSize)
