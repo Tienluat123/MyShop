@@ -106,15 +106,16 @@ public partial class WeeklyRosterViewModel : ObservableObject
 
         if (dialog?.SelectedUser != null)
         {
-            // Check if user already scheduled on that date
-            var isDuplicate = await _scheduleService.IsUserAlreadyScheduledOnDateAsync(
+            var isDuplicate = await _scheduleService.IsUserAlreadyScheduledForShiftAsync(
                 dialog.SelectedUser.Id,
-                targetSlot.WorkDate
+                targetSlot.WorkDate,
+                targetSlot.ShiftName
             );
 
             if (isDuplicate)
             {
-                System.Diagnostics.Debug.WriteLine($"Duplicate: {dialog.SelectedUser.FullName} already scheduled on {targetSlot.WorkDate}");
+                System.Diagnostics.Debug.WriteLine($"Duplicate: {dialog.SelectedUser.FullName} already scheduled for {targetSlot.ShiftName} on {targetSlot.WorkDate}");
+                _notificationService.ShowError($"{dialog.SelectedUser.FullName} is already scheduled for this shift.");
                 return; // Block duplicate
             }
 
