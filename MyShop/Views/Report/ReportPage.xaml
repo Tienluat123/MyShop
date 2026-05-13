@@ -276,12 +276,7 @@
                     <TextBlock Style="{StaticResource CaptionMutedTextStyle}" Text="Statistics &amp; Advanced Analysis" />
                 </StackPanel>
             </StackPanel>
-            <TextBlock
-                x:Name="HeaderDateText"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Style="{StaticResource BodyMutedTextStyle}"
-                Text="{x:Bind ViewModel.EndDate, Mode=OneWay, Converter={StaticResource DateConverter}}" />
+            
         </Grid>
 
         <!--  Filter Bar  -->
