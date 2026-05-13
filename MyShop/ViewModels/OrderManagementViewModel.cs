@@ -656,11 +656,64 @@ public partial class OrderManagementViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ClearHistory()
+    private async Task DeleteOrder(PosOrder order)
     {
-        // Currently we don't have a bulk delete in service, so we do it one by one or just empty the local list for demo
-        DisplayOrders.Clear();
-        HistoryCount = 0;
+        if (order == null) return;
+
+        try
+        {
+            int numericId = ExtractId(order.OrderId);
+            if (numericId <= 0) return;
+
+            await _orderService.Delete(numericId);
+
+            if (SelectedOrderDetails?.OrderId == order.OrderId)
+            {
+                CloseOrderDetail();
+            }
+
+            if (Filter == "History" && DisplayOrders.Count == 1 && CurrentPageHistory > 1)
+            {
+                CurrentPageHistory--;
+            }
+
+            await LoadOrders();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Delete order failed: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ClearHistory()
+    {
+        try
+        {
+            while (true)
+            {
+                var pagedResult = await _orderService.GetPagedHistoryOrders(
+                    new PagingRequest { PageNumber = 1, PageSize = PageSizeHistory },
+                    SearchStartDate?.DateTime,
+                    SearchEndDate?.DateTime,
+                    SelectedStatusFilter);
+
+                if (!pagedResult.Items.Any()) break;
+
+                foreach (var order in pagedResult.Items)
+                {
+                    await _orderService.Delete(order.Id);
+                }
+            }
+
+            CurrentPageHistory = 1;
+            CloseOrderDetail();
+            await LoadOrders();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Clear history failed: {ex.Message}");
+        }
     }
 
     partial void OnFilterChanged(string value)

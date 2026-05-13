@@ -374,6 +374,23 @@
                                             Glyph="&#xE74D;"
                                             Style="{StaticResource IconCaptionStyle}" />
                                     </Button>
+                                    <Button
+                                        Width="40"
+                                        Height="40"
+                                        Padding="0"
+                                        Background="Transparent"
+                                        BorderBrush="{StaticResource ErrorSurface}"
+                                        BorderThickness="1"
+                                        Command="{Binding DataContext.DeleteOrderCommand, ElementName=ModalRoot}"
+                                        CommandParameter="{Binding}"
+                                        CornerRadius="10"
+                                        Style="{StaticResource AppIconButtonStyle}"
+                                        Visibility="{Binding DataContext.Filter, ElementName=ModalRoot, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='History'}">
+                                        <FontIcon
+                                            Foreground="{StaticResource Error}"
+                                            Glyph="&#xE74D;"
+                                            Style="{StaticResource IconCaptionStyle}" />
+                                    </Button>
                                 </StackPanel>
 
                                 <!-- Right Actions (Primary Buttons) -->
