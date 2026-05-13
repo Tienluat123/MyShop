@@ -48,6 +48,10 @@ public interface IPromotionService
     /// <param name="customerTier">Hạng khách hàng (VIP/Loyalty/Regular)</param>
     /// <returns>Kết quả áp dụng (số tiền giảm, lỗi nếu có)</returns>
     Task<ApplyPromoResult> ApplyPromotionAsync(string code, decimal orderTotal, string? customerTier = null, CancellationToken ct = default);
+
+    Task<ApplyPromoResult> ApplyPromotionAsync(string code, decimal orderTotal, Customer? customer, CancellationToken ct = default);
+
+    bool IsPromotionApplicable(Promotion promo, decimal orderTotal, Customer? customer, out string? errorMessage);
 }
 
 /// <summary>
@@ -407,6 +411,135 @@ public class PromotionService : IPromotionService
             result.ErrorMessage = $"Failed to apply promotion: {ex.Message}";
             return result;
         }
+    }
+
+    public async Task<ApplyPromoResult> ApplyPromotionAsync(string code, decimal orderTotal, Customer? customer, CancellationToken ct = default)
+    {
+        var result = new ApplyPromoResult { Success = false };
+
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            result.ErrorMessage = "Promotion code is required";
+            return result;
+        }
+
+        if (orderTotal <= 0)
+        {
+            result.ErrorMessage = "Invalid order total";
+            return result;
+        }
+
+        try
+        {
+            var promo = await GetByCodeAsync(code.Trim(), ct);
+            if (promo == null)
+            {
+                result.ErrorMessage = "Promotion code does not exist";
+                return result;
+            }
+
+            if (!IsPromotionApplicable(promo, orderTotal, customer, out var errorMessage))
+            {
+                result.ErrorMessage = errorMessage;
+                return result;
+            }
+
+            var discount = CalculateDiscount(promo, orderTotal);
+            result.Success = true;
+            result.DiscountAmount = discount;
+            result.FinalTotal = orderTotal - discount;
+            result.PointsMultiplier = GetPointsMultiplier(customer);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            result.ErrorMessage = $"Failed to apply promotion: {ex.Message}";
+            return result;
+        }
+    }
+
+    public bool IsPromotionApplicable(Promotion promo, decimal orderTotal, Customer? customer, out string? errorMessage)
+    {
+        errorMessage = null;
+
+        if (!promo.IsActive)
+        {
+            errorMessage = "Promotion code has been disabled";
+            return false;
+        }
+
+        var now = DateTime.Now;
+        if (now < promo.StartDate)
+        {
+            errorMessage = $"Promotion code is not active yet. Starts on {promo.StartDate:dd/MM/yyyy}";
+            return false;
+        }
+
+        if (now > promo.EndDate)
+        {
+            errorMessage = "Promotion code has expired";
+            return false;
+        }
+
+        if (orderTotal < promo.MinOrderAmount)
+        {
+            errorMessage = $"Minimum order amount is {promo.MinOrderAmount:N0} VND to apply this code";
+            return false;
+        }
+
+        if (!IsTargetAudienceMatch(promo.TargetAudience, customer))
+        {
+            errorMessage = promo.TargetAudience?.Equals("All", StringComparison.OrdinalIgnoreCase) == true
+                ? null
+                : $"This promotion code is only for {promo.TargetAudience}";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static decimal CalculateDiscount(Promotion promo, decimal orderTotal)
+    {
+        var discount = promo.PromoType == "Percent"
+            ? orderTotal * promo.DiscountValue / 100
+            : promo.DiscountValue;
+
+        return Math.Min(discount, orderTotal);
+    }
+
+    private static bool IsTargetAudienceMatch(string? targetAudience, Customer? customer)
+    {
+        if (string.IsNullOrWhiteSpace(targetAudience) ||
+            targetAudience.Equals("All", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (customer == null)
+        {
+            return false;
+        }
+
+        return targetAudience.Trim().ToLowerInvariant() switch
+        {
+            "vip" => customer.Tier is LoyaltyTier.Gold or LoyaltyTier.Platinum,
+            "newcustomer" => customer.TotalVisits == 0,
+            "loyalty" => true,
+            _ => targetAudience.Equals(customer.Tier.ToString(), StringComparison.OrdinalIgnoreCase)
+        };
+    }
+
+    private static decimal GetPointsMultiplier(Customer? customer)
+    {
+        if (customer == null) return 1.0m;
+
+        return customer.Tier switch
+        {
+            LoyaltyTier.Silver => 1.5m,
+            LoyaltyTier.Gold => 2.0m,
+            LoyaltyTier.Platinum => 2.5m,
+            _ => 1.0m
+        };
     }
 
     /// <summary>

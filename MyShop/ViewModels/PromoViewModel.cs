@@ -23,6 +23,9 @@ public partial class PromoViewModel : ObservableObject
     [ObservableProperty]
     private string? _customerTier;
 
+    [ObservableProperty]
+    private Customer? _customer;
+
     public ObservableCollection<Promotion> ActivePromotions { get; } = new();
 
     public event Action<Promotion?>? PromotionSelected;
@@ -30,16 +33,18 @@ public partial class PromoViewModel : ObservableObject
     public PromoViewModel(IPromotionService promoService)
     {
         _promoService = promoService;
-        _ = LoadActivePromotions();
     }
 
-    private async Task LoadActivePromotions()
+    public async Task LoadActivePromotions()
     {
         var result = await _promoService.GetAllAsync();
         ActivePromotions.Clear();
         foreach (var p in result.Items)
         {
-            ActivePromotions.Add(p);
+            if (_promoService.IsPromotionApplicable(p, OrderTotal, Customer, out _))
+            {
+                ActivePromotions.Add(p);
+            }
         }
     }
 
@@ -48,7 +53,8 @@ public partial class PromoViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(PromoCodeEntry)) return;
 
-        var result = await _promoService.ApplyPromotionAsync(PromoCodeEntry, OrderTotal, CustomerTier);
+        ErrorMessage = string.Empty;
+        var result = await _promoService.ApplyPromotionAsync(PromoCodeEntry, OrderTotal, Customer);
         if (result.Success)
         {
             var promo = await _promoService.GetByCodeAsync(PromoCodeEntry);
@@ -63,6 +69,13 @@ public partial class PromoViewModel : ObservableObject
     [RelayCommand]
     private void SelectPromotion(Promotion? promo)
     {
+        if (promo != null && !_promoService.IsPromotionApplicable(promo, OrderTotal, Customer, out var errorMessage))
+        {
+            ErrorMessage = errorMessage ?? "Promotion code is invalid or not eligible.";
+            return;
+        }
+
+        ErrorMessage = string.Empty;
         PromotionSelected?.Invoke(promo);
     }
 

@@ -781,6 +781,12 @@ public partial class PosViewModel : ObservableObject
     {
         if (_currentDraftOrder == null) return;
 
+        if (promo != null && !_promoService.IsPromotionApplicable(promo, Subtotal, SelectedCustomer, out var errorMessage))
+        {
+            System.Diagnostics.Debug.WriteLine(errorMessage);
+            return;
+        }
+
         _currentDraftOrder.PromotionId = promo?.Id;
         _currentDraftOrder.Promotion = promo;
 

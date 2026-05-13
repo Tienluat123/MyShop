@@ -11,13 +11,14 @@ public sealed partial class PromoSelectionModal : ContentDialog
 {
     public PromoViewModel ViewModel { get; }
 
-    public PromoSelectionModal(decimal orderTotal, string? customerTier = null)
+    public PromoSelectionModal(decimal orderTotal, Customer? customer = null)
     {
         this.InitializeComponent();
         ViewModel = new PromoViewModel(App.Services.GetRequiredService<IPromotionService>());
         ViewModel.OrderTotal = orderTotal;
-        ViewModel.CustomerTier = customerTier;
+        ViewModel.Customer = customer;
         DataContext = ViewModel;
+        _ = ViewModel.LoadActivePromotions();
 
         ViewModel.PromotionSelected += (promo) => this.Hide();
     }
