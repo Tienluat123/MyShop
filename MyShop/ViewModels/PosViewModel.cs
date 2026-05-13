@@ -89,7 +89,6 @@ public partial class PosViewModel : ObservableObject
         {
             _currentDraftOrder.CustomerId = value?.Id; // Now nullable, null means guest
             _currentDraftOrder.Customer = value;
-            _ = SaveDraftOrder();
         }
     }
 
@@ -844,25 +843,33 @@ public partial class PosViewModel : ObservableObject
     {
         if (!Order.Any()) return null;
 
+        var finalCustomer = customer ?? SelectedCustomer;
         var subtotal = Subtotal;
         var tax = Tax;
         var total = Total;
 
         if (_currentDraftOrder != null)
         {
-            _currentDraftOrder.CustomerId = customer?.Id;
-            _currentDraftOrder.Customer = customer;
+            _currentDraftOrder.CustomerId = finalCustomer?.Id;
+            _currentDraftOrder.Customer = finalCustomer;
+            _currentDraftOrder.PaymentStatus = "Paid";
+            _currentDraftOrder.FulfillmentStatus = "None";
+            _currentDraftOrder.OrderDate = DateTime.UtcNow;
+
+            CalculateTotals();
             subtotal = _currentDraftOrder.SubTotal;
             tax = _currentDraftOrder.TaxAmount;
             total = _currentDraftOrder.TotalAmount;
+
+            await _orderService.UpdateWithDetails(_currentDraftOrder, _currentDraftOrder.OrderDetails.ToList());
         }
 
         // 1. Handle Point Redemption if any
-        if (customer != null && PointsToRedeem > 0)
+        if (finalCustomer != null && PointsToRedeem > 0)
         {
             try 
             {
-                await _loyaltyService.RedeemPointsAsync(customer, PointsToRedeem);
+                await _loyaltyService.RedeemPointsAsync(finalCustomer, PointsToRedeem);
             }
             catch (Exception ex)
             {
@@ -871,11 +878,11 @@ public partial class PosViewModel : ObservableObject
         }
 
         // 2. Handle Point Reward (Calculated on final amount)
-        if (customer != null)
+        if (finalCustomer != null)
         {
             try
             {
-                await _loyaltyService.CalculatePointsAsync(customer, subtotal - DiscountAmount);
+                await _loyaltyService.CalculatePointsAsync(finalCustomer, subtotal - DiscountAmount);
             }
             catch (Exception ex)
             {
@@ -895,8 +902,8 @@ public partial class PosViewModel : ObservableObject
             PaymentStatus = PaymentStatus.Paid,
             FulfillmentStatus = FulfillmentStatus.None,
             Method = method,
-            CustomerId = customer?.Id.ToString(),
-            CustomerName = customer?.Name
+            CustomerId = finalCustomer?.Id.ToString(),
+            CustomerName = finalCustomer?.Name
         };
 
         foreach (var item in Order)

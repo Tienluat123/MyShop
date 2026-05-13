@@ -57,15 +57,17 @@ public sealed partial class PosPage : Page
         var modal = new ProductCustomizationModal(item.Product, item);
         modal.XamlRoot = this.XamlRoot;
 
-        var handler = new Action<OrderItem>(async editedItem =>
-        {
-            // Sync changes back to the draft order and database
-            await ViewModel.UpdateCustomizedItem(item, editedItem);
-        });
+        OrderItem? editedItem = null;
+        var handler = new Action<OrderItem>(confirmedItem => editedItem = confirmedItem);
 
         modal.ViewModel.ItemConfirmed += handler;
         await modal.ShowAsync();
         modal.ViewModel.ItemConfirmed -= handler;
+
+        if (editedItem != null)
+        {
+            await ViewModel.UpdateCustomizedItem(item, editedItem);
+        }
     }
 
     private async void ViewModel_CheckoutRequested(object? sender, EventArgs e)
@@ -172,9 +174,12 @@ public sealed partial class PosPage : Page
         var modal = new ProductCustomizationModal(selectedProduct);
         modal.XamlRoot = this.XamlRoot;
 
-        // CHANGE THIS HANDLER:
-        // Instead of ViewModel.Order.Add, call the ViewModel's database-aware method
-        modal.ViewModel.ItemConfirmed += async (confirmedItem) =>
+        OrderItem? confirmedItem = null;
+        modal.ViewModel.ItemConfirmed += item => confirmedItem = item;
+
+        await modal.ShowAsync();
+
+        if (confirmedItem != null)
         {
             await ViewModel.AddCustomizedToCart(new AddCustomizedParams
             {
@@ -182,9 +187,7 @@ public sealed partial class PosPage : Page
                 Quantity = confirmedItem.Quantity,
                 Options = confirmedItem.DrinkOptions
             });
-        };
-
-        await modal.ShowAsync();
+        }
     }
 
     private async void ActiveOrders_Click(object sender, RoutedEventArgs e)
