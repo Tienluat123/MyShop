@@ -283,8 +283,7 @@ public class OrderService : IOrderService
         if (user == null)
             throw new InvalidOperationException($"Employee with ID {order.UserId} does not exist");
 
-        // Ensure date is UTC to prevent Npgsql timezone shifts
-        order.OrderDate = DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc);
+        order.OrderDate = NormalizeUtc(order.OrderDate);
 
         try
         {
@@ -309,8 +308,7 @@ public class OrderService : IOrderService
 
         try
         {
-            // Ensure date remains UTC
-            order.OrderDate = DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc);
+            order.OrderDate = NormalizeUtc(order.OrderDate);
             await _orderRepository.UpdateAsync(order);
         }
         catch (Exception ex)
@@ -370,6 +368,16 @@ public class OrderService : IOrderService
             await context.SaveChangesAsync();
             return true;
         }, "UpdateWithDetails");
+    }
+
+    private static DateTime NormalizeUtc(DateTime value)
+    {
+        return value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+        };
     }
 
     /// <summary>
