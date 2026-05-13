@@ -16,16 +16,13 @@ namespace MyShop.ViewModels;
 public partial class ProductManagementViewModel : ListManagementViewModelBase
 {
     private readonly IProductService _productService;
+    private readonly ICategoryService _categoryService;
     private readonly IAppConfigService _configService;
     private readonly IExcelCatalogImportService _excelCatalogImportService;
     private readonly INotificationService _notificationService;
     private readonly Helpers.Debouncer _searchDebouncer = new();
 
     private const string CategoryAll = "All";
-    private const string CategoryCoffee = "Coffee";
-    private const string CategoryTea = "Tea";
-    private const string CategorySmoothies = "Smoothies";
-    private const string CategoryPastries = "Pastries";
 
     private readonly Action onAddProduct;
     private readonly Action<ProductListEntry> onEditProduct;
@@ -87,6 +84,7 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
 
     public ProductManagementViewModel(
         IProductService productService,
+        ICategoryService categoryService,
         IAppConfigService configService,
         IExcelCatalogImportService excelCatalogImportService,
         INotificationService notificationService,
@@ -94,6 +92,7 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
         Action<ProductListEntry> onEditProduct)
     {
         _productService = productService;
+        _categoryService = categoryService;
         _configService = configService;
         _excelCatalogImportService = excelCatalogImportService;
         _notificationService = notificationService;
@@ -101,7 +100,7 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
         this.onAddProduct = onAddProduct;
         this.onEditProduct = onEditProduct;
 
-        GetAllCategories();
+        _ = LoadCategories();
         _ = LoadProducts();
     }
 
@@ -319,6 +318,7 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
             var successMessage = BuildImportSuccessMessage(importResult);
             _notificationService.ShowSuccess(successMessage, 3500);
             CurrentPage = 1;
+            await LoadCategories();
             await LoadProducts();
         }
         catch (Exception ex)
@@ -406,14 +406,41 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     }
 
     [RelayCommand]
-    private void GetAllCategories()
+    private async Task LoadCategories()
     {
-        Categories.Clear();
-        Categories.Add(CategoryAll);
-        Categories.Add(CategoryCoffee);
-        Categories.Add(CategoryTea);
-        Categories.Add(CategorySmoothies);
-        Categories.Add(CategoryPastries);
+        try
+        {
+            var categoryNames = (await _categoryService.GetAll())
+                .Where(c => !string.IsNullOrWhiteSpace(c.Name))
+                .Select(c => c.Name.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name)
+                .ToList();
+
+            var previousSelection = SelectedCategory;
+
+            Categories.Clear();
+            Categories.Add(CategoryAll);
+
+            foreach (var categoryName in categoryNames)
+            {
+                Categories.Add(categoryName);
+            }
+
+            if (!Categories.Any(c => c.Equals(previousSelection, StringComparison.OrdinalIgnoreCase)))
+            {
+                SelectedCategory = CategoryAll;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to load categories: {ex.Message}");
+
+            if (Categories.Count == 0)
+            {
+                Categories.Add(CategoryAll);
+            }
+        }
     }
 
     private static string BuildImportSuccessMessage(CatalogImportResult importResult)
@@ -438,13 +465,13 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     {
         return
         [
-            new ProductListEntry { Id = 1, Code = "PRD-001", Name = "Bac xiu", Category = CategoryCoffee, CostPrice = 17000, SellingPrice = 25000 },
-            new ProductListEntry { Id = 2, Code = "PRD-002", Name = "Ca phe sua da", Category = CategoryCoffee, CostPrice = 18000, SellingPrice = 25000 },
-            new ProductListEntry { Id = 3, Code = "PRD-003", Name = "Tra sua truyen thong", Category = CategoryTea, CostPrice = 18000, SellingPrice = 25000 },
-            new ProductListEntry { Id = 4, Code = "PRD-004", Name = "Matcha latte", Category = CategoryTea, CostPrice = 22000, SellingPrice = 32000 },
-            new ProductListEntry { Id = 5, Code = "PRD-005", Name = "Mango smoothie", Category = CategorySmoothies, CostPrice = 26000, SellingPrice = 39000 },
-            new ProductListEntry { Id = 6, Code = "PRD-006", Name = "Butter croissant", Category = CategoryPastries, CostPrice = 15000, SellingPrice = 28000 },
-            new ProductListEntry { Id = 7, Code = "PRD-007", Name = "Americano", Category = CategoryCoffee, CostPrice = 16000, SellingPrice = 27000 }
+            new ProductListEntry { Id = 1, Code = "PRD-001", Name = "Bac xiu", Category = "Coffee", CostPrice = 17000, SellingPrice = 25000 },
+            new ProductListEntry { Id = 2, Code = "PRD-002", Name = "Ca phe sua da", Category = "Coffee", CostPrice = 18000, SellingPrice = 25000 },
+            new ProductListEntry { Id = 3, Code = "PRD-003", Name = "Tra sua truyen thong", Category = "Tea", CostPrice = 18000, SellingPrice = 25000 },
+            new ProductListEntry { Id = 4, Code = "PRD-004", Name = "Matcha latte", Category = "Tea", CostPrice = 22000, SellingPrice = 32000 },
+            new ProductListEntry { Id = 5, Code = "PRD-005", Name = "Mango smoothie", Category = "Smoothies", CostPrice = 26000, SellingPrice = 39000 },
+            new ProductListEntry { Id = 6, Code = "PRD-006", Name = "Butter croissant", Category = "Pastries", CostPrice = 15000, SellingPrice = 28000 },
+            new ProductListEntry { Id = 7, Code = "PRD-007", Name = "Americano", Category = "Coffee", CostPrice = 16000, SellingPrice = 27000 }
         ];
     }
 }

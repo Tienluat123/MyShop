@@ -143,6 +143,11 @@ public class ProductService : IProductService
                 }
             }
 
+            if (paging != null)
+            {
+                paging.SortBy = NormalizeProductSortBy(paging.SortBy);
+            }
+
             return await _productRepository.GetAllAsync(paging, filter, "Category", "ProductImages");
         }
         catch (Exception ex)
@@ -166,6 +171,42 @@ public class ProductService : IProductService
         {
             return node == _oldParameter ? _newParameter : base.VisitParameter(node);
         }
+    }
+
+    private static string? NormalizeProductSortBy(string? sortBy)
+    {
+        if (string.IsNullOrWhiteSpace(sortBy))
+        {
+            return null;
+        }
+
+        var allowedColumns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Name"] = nameof(Product.Name),
+            ["Price"] = nameof(Product.Price),
+            ["Category"] = $"{nameof(Product.Category)}.{nameof(Category.Name)}"
+        };
+
+        var sortSegments = sortBy
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(segment =>
+            {
+                var parts = segment.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (parts.Length == 0 || !allowedColumns.TryGetValue(parts[0], out var propertyPath))
+                {
+                    return null;
+                }
+
+                var direction = parts.Length > 1 && parts[1].Equals("DESC", StringComparison.OrdinalIgnoreCase)
+                    ? "DESC"
+                    : "ASC";
+
+                return $"{propertyPath} {direction}";
+            })
+            .Where(segment => !string.IsNullOrWhiteSpace(segment))
+            .ToList();
+
+        return sortSegments.Count == 0 ? null : string.Join(", ", sortSegments);
     }
 
     /// <summary>

@@ -87,35 +87,35 @@
             <FontIcon Glyph="&#xE8EF;"/>
           </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem Content="SẢN PHẨM"
+        <NavigationViewItem Content="PRODUCTS"
                             Tag="ManageProductPage"
                             Style="{StaticResource SidebarItemStyle}">
           <NavigationViewItem.Icon>
             <FontIcon Glyph="&#xE7B8;"/>
           </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem Content="KHÁCH HÀNG"
+        <NavigationViewItem Content="CUSTOMERS"
                             Tag="CustomersPage"
                             Style="{StaticResource SidebarItemStyle}">
           <NavigationViewItem.Icon>
             <FontIcon Glyph="&#xE716;"/>
           </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem Content="KHUYẾN MÃI"
+        <NavigationViewItem Content="PROMOTIONS"
                             Tag="PromotionsPage"
                             Style="{StaticResource SidebarItemStyle}">
           <NavigationViewItem.Icon>
             <FontIcon Glyph="&#xE8EC;"/>
           </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem Content="NHÂN VIÊN"
+        <NavigationViewItem Content="STAFF"
                             Tag="StaffSchedulePage"
                             Style="{StaticResource SidebarItemStyle}">
           <NavigationViewItem.Icon>
             <FontIcon Glyph="&#xE8A4;"/>
           </NavigationViewItem.Icon>
         </NavigationViewItem>
-        <NavigationViewItem Content="CÀI ĐẶT"
+        <NavigationViewItem Content="SETTINGS"
                             Tag="AppConfigPage"
                             Style="{StaticResource SidebarItemStyle}">
           <NavigationViewItem.Icon>
@@ -156,7 +156,7 @@
           </StackPanel>
 
           <Button Grid.Column="3"
-                  ToolTipService.ToolTip="Đăng xuất"
+                  ToolTipService.ToolTip="Log out"
                   Background="Transparent"
                   BorderThickness="0"
                   Padding="8"
@@ -164,7 +164,7 @@
                   Click="LogoutButton_Click">
             <StackPanel Orientation="Horizontal"
                 Spacing="8">
-              <TextBlock Text="Đăng xuất"
+              <TextBlock Text="Log out"
                          VerticalAlignment="Center"
                          Style="{StaticResource CaptionTextStyle}"
                          Foreground="#EF4444"/>

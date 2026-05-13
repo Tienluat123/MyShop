@@ -12,6 +12,7 @@ namespace MyShop.Views.ProductManagement;
 public sealed partial class ManageProductPage : Page
 {
     private readonly IProductService _productService;
+    private readonly ICategoryService _categoryService;
     private readonly IAppConfigService _configService;
     private readonly IExcelCatalogImportService _excelCatalogImportService;
     private readonly INotificationService _notificationService;
@@ -20,6 +21,7 @@ public sealed partial class ManageProductPage : Page
     {
         InitializeComponent();
         _productService = ServiceContainer.Instance.Get<IProductService>();
+        _categoryService = ServiceContainer.Instance.Get<ICategoryService>();
         _configService = ServiceContainer.Instance.Get<IAppConfigService>();
         _excelCatalogImportService = ServiceContainer.Instance.Get<IExcelCatalogImportService>();
         _notificationService = ServiceContainer.Instance.Get<INotificationService>();
@@ -38,6 +40,7 @@ public sealed partial class ManageProductPage : Page
     {
         var vm = new ProductManagementViewModel(
             productService: _productService,
+            categoryService: _categoryService,
             configService: _configService,
             excelCatalogImportService: _excelCatalogImportService,
             notificationService: _notificationService,
@@ -55,7 +58,11 @@ public sealed partial class ManageProductPage : Page
             isEditMode,
             product,
             onCancel: () => { },
-            onSaved: () => managementVm?.LoadProductsCommand.Execute(null));
+            onSaved: () =>
+            {
+                managementVm?.LoadCategoriesCommand.Execute(null);
+                managementVm?.LoadProductsCommand.Execute(null);
+            });
         var dialog = new ProductFormView(vm)
         {
             XamlRoot = this.XamlRoot
