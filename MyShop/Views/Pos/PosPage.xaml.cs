@@ -130,7 +130,7 @@ public sealed partial class PosPage : Page
             {
                 Product = confirmedItem.Product,
                 Quantity = confirmedItem.Quantity,
-                Options = confirmedItem.DrinkOptions ?? new DrinkOptions()
+                Options = confirmedItem.DrinkOptions
             });
         };
 

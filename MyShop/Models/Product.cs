@@ -24,7 +24,7 @@ public partial class Product : ObservableObject
     private string? imagePath; // Đường dẫn ảnh
 
     // UI/Display helpers - computed properties
-    public bool HasCustomization => Category?.Name != "Pastries";
+    public bool HasCustomization => Category?.HasCustomization == true;
     public string DisplayPrice => HasCustomization ? $"from {Price:C}" : $"{Price:C}";
     public string? PrimaryImageUrl =>
         ProductImages

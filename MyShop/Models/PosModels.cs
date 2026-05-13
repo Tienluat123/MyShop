@@ -149,7 +149,7 @@ public class UpdateQtyParams
 public class AddCustomizedParams
 {
     public Product Product { get; set; } = null!;
-    public DrinkOptions Options { get; set; } = null!;
+    public DrinkOptions? Options { get; set; }
     public int Quantity { get; set; }
 }
 
