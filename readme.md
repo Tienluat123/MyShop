@@ -82,19 +82,5 @@ Ngoài các yêu cầu chính trong đề, nhóm có đầu tư thêm một số
 
 Link YouTube demo ở chế độ Unlisted: TODO - dán link YouTube vào đây
 
-Lưu ý khi quay video:
 
-- Không lồng tiếng.
-- Không lồng nhạc.
-- Chỉ sử dụng hình nền mặc định của hệ điều hành.
-- Nếu cần giải thích thêm, ghi trong file này hoặc PowerPoint.
-- Video nên dưới 5 phút nếu có thể.
-
-## 8. Hướng Dẫn Chạy Ứng Dụng
-
-- Mở solution `MyShop.sln` bằng Visual Studio hoặc IDE hỗ trợ .NET/Uno Platform.
-- Đảm bảo PostgreSQL đã chạy.
-- Lần đầu mở ứng dụng, nhập thông tin database trong màn hình cấu hình.
-- Nếu cần dữ liệu mẫu, chạy các script trong thư mục `SeedData` theo thứ tự hoặc dùng script `run-all.sh`.
-- Đăng nhập bằng tài khoản mẫu trong seed data để demo các chức năng.
 
