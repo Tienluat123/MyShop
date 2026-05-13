@@ -135,6 +135,9 @@ public partial class PosOrder : ObservableObject
     public bool IsFulfillmentActionEnabled => 
         !(FulfillmentStatus == FulfillmentStatus.Ready && PaymentStatus != PaymentStatus.Paid);
 
+    public bool CanCancel { get; set; }
+    public bool CanDeleteFromHistory { get; set; }
+
     partial void OnPaymentStatusChanged(PaymentStatus value) => OnPropertyChanged(nameof(IsFulfillmentActionEnabled));
     partial void OnFulfillmentStatusChanged(FulfillmentStatus value) => OnPropertyChanged(nameof(IsFulfillmentActionEnabled));
 }
