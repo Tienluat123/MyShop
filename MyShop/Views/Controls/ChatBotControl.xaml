@@ -96,8 +96,10 @@
                                       Margin="0,0,0,8"
                                       CornerRadius="8"
                                       BorderThickness="1">
-                                <ComboBoxItem Content="🔍 Q&amp;A &amp; Data Analysis"/>
-                                <ComboBoxItem Content="🎟️ Request Promotion Code"/>
+                                <ComboBoxItem Content="🔍 Q&amp;A &amp; Data Analysis"
+                                              Tag="qa"/>
+                                <ComboBoxItem Content="🎟️ Request Promotion Code"
+                                              Tag="promotion"/>
                             </ComboBox>
 
                             <Grid Grid.Row="1" ColumnDefinitions="*, Auto">
