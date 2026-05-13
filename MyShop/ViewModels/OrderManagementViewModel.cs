@@ -103,9 +103,7 @@ public partial class OrderManagementViewModel : ObservableObject
     [ObservableProperty]
     private decimal _editTotal;
 
-    public bool CanEditItems => SelectedOrderDetails != null && 
-                                SelectedOrderDetails.PaymentStatus != PaymentStatus.Paid && 
-                                SelectedOrderDetails.PaymentStatus != PaymentStatus.Refunded;
+    public bool CanEditItems => SelectedOrderDetails != null;
 
     public bool IsPaid => SelectedOrderDetails?.PaymentStatus == PaymentStatus.Paid;
 

@@ -36,6 +36,7 @@ public partial class PosViewModel : ObservableObject
 
     public Order? CurrentDraftOrder => _currentDraftOrder;
     public bool IsEditingExistingOrder => _isEditingExistingOrder;
+    public string PlaceOrderButtonText => _isEditingExistingOrder ? "Confirm Edit" : "Place Order";
 
     [ObservableProperty]
     private bool isLoading;
@@ -100,6 +101,7 @@ public partial class PosViewModel : ObservableObject
     public event EventHandler<OrderItem>? EditItemRequested;
     public event EventHandler? CheckoutRequested;
     public event EventHandler<Order>? OrderFinalized;
+    public event EventHandler<Order>? OrderEditConfirmed;
 
     public PosViewModel() : this(
         App.Services.GetRequiredService<IProductService>(),
@@ -550,6 +552,7 @@ public partial class PosViewModel : ObservableObject
         SyncCartFromDraft();
         OnPropertyChanged(nameof(CurrentDraftOrder));
         OnPropertyChanged(nameof(IsEditingExistingOrder));
+        OnPropertyChanged(nameof(PlaceOrderButtonText));
         PlaceOrderCommand.NotifyCanExecuteChanged();
     }
 
@@ -574,6 +577,7 @@ public partial class PosViewModel : ObservableObject
 
         OnPropertyChanged(nameof(CurrentDraftOrder));
         OnPropertyChanged(nameof(IsEditingExistingOrder));
+        OnPropertyChanged(nameof(PlaceOrderButtonText));
         PlaceOrderCommand.NotifyCanExecuteChanged();
     }
 
@@ -795,6 +799,12 @@ public partial class PosViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanPlaceOrder))]
     private async Task PlaceOrder()
     {
+        if (_isEditingExistingOrder)
+        {
+            await ConfirmEditOrder();
+            return;
+        }
+
         if (_currentDraftOrder != null)
         {
             _currentDraftOrder.PaymentStatus = "PendingPayment";
@@ -803,20 +813,30 @@ public partial class PosViewModel : ObservableObject
         CheckoutRequested?.Invoke(this, EventArgs.Empty);
     }
 
+    private async Task ConfirmEditOrder()
+    {
+        if (_currentDraftOrder == null) return;
+
+        CalculateTotals();
+        var editedOrder = _currentDraftOrder;
+        await SaveDraftOrder();
+        RestoreParkedDraftAfterEdit();
+        OrderEditConfirmed?.Invoke(this, editedOrder);
+    }
+
     public async Task RevertOrderToDraft()
     {
         if (_currentDraftOrder != null)
         {
-            _currentDraftOrder.PaymentStatus = "Draft";
-            await SaveDraftOrder();
             if (_isEditingExistingOrder)
             {
                 RestoreParkedDraftAfterEdit();
+                return;
             }
-            else
-            {
-                PlaceOrderCommand.NotifyCanExecuteChanged();
-            }
+
+            _currentDraftOrder.PaymentStatus = "Draft";
+            await SaveDraftOrder();
+            PlaceOrderCommand.NotifyCanExecuteChanged();
         }
     }
 
