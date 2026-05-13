@@ -53,7 +53,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/> <!-- Search -->
                     <ColumnDefinition Width="Auto"/> <!-- Category Filter -->
-                    <ColumnDefinition Width="Auto"/> <!-- Advanced Sort -->
+                                        <ColumnDefinition Width="Auto"/> <!-- Price Range -->
+                                        <ColumnDefinition Width="Auto"/> <!-- Advanced Sort -->
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/> <!-- Import -->
                     <ColumnDefinition Width="Auto"/> <!-- Add Product -->
@@ -106,8 +107,67 @@
                           CornerRadius="18"
                           VerticalAlignment="Center"/>
 
-                <!-- Advanced Sort Button -->
                 <Button Grid.Column="2"
+                        Background="White"
+                        Height="35"
+                        CornerRadius="20"
+                        BorderThickness="1"
+                        BorderBrush="#E0E0E0"
+                        Padding="16,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE9D2;" FontSize="14" Foreground="#4A4A4A"/>
+                        <TextBlock Text="Price Range" Foreground="#4A4A4A" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button.Flyout>
+                        <Flyout>
+                            <StackPanel Width="320" Spacing="12" Padding="4">
+                                <TextBlock Text="Filter by price range" FontWeight="Bold" FontSize="16"/>
+
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox Grid.Column="0"
+                                             PlaceholderText="Min"
+                                             Text="{Binding MinPriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             InputScope="Number"
+                                             HorizontalAlignment="Stretch"/>
+
+                                    <TextBox Grid.Column="1"
+                                             PlaceholderText="Max"
+                                             Text="{Binding MaxPriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             InputScope="Number"
+                                             HorizontalAlignment="Stretch"/>
+                                </Grid>
+
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0"
+                                            Content="Clear"
+                                            Command="{Binding ClearPriceRangeCommand}"
+                                            HorizontalAlignment="Stretch"
+                                            Margin="0,0,4,0"/>
+
+                                    <Button Grid.Column="1"
+                                            Content="Apply"
+                                            Command="{Binding FilterByPriceRangeCommand}"
+                                            Style="{StaticResource AppPrimaryButtonStyle}"
+                                            HorizontalAlignment="Stretch"
+                                            Margin="4,0,0,0"/>
+                                </Grid>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+
+                <!-- Advanced Sort Button -->
+                <Button Grid.Column="3"
                         Background="White"
                         Height="35"
                         CornerRadius="20"
@@ -185,7 +245,7 @@
                     </Button.Flyout>
                 </Button>
 
-                <Button Grid.Column="4"
+                <Button Grid.Column="5"
                         Click="ImportButton_Click"
                         Background="#FFFFFF"
                         BorderBrush="#D97706"
@@ -199,7 +259,7 @@
                     </StackPanel>
                 </Button>
 
-                <Button Grid.Column="5"
+                <Button Grid.Column="6"
                         Command="{Binding AddProductCommand}"
                         Background="#D97706"
                         BorderBrush="#D97706"

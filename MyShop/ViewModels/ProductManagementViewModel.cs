@@ -58,6 +58,12 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     private double? maxPrice;
 
     [ObservableProperty]
+    private string minPriceText = string.Empty;
+
+    [ObservableProperty]
+    private string maxPriceText = string.Empty;
+
+    [ObservableProperty]
     private string pageInfoDisplay = "Page 1 / 1";
 
     [ObservableProperty]
@@ -207,6 +213,39 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
     [RelayCommand]
     private async Task FilterByPriceRange()
     {
+        if (!TryParsePriceInput(MinPriceText, out var parsedMinPrice, out var minPriceError))
+        {
+            ErrorMessage = minPriceError;
+            return;
+        }
+
+        if (!TryParsePriceInput(MaxPriceText, out var parsedMaxPrice, out var maxPriceError))
+        {
+            ErrorMessage = maxPriceError;
+            return;
+        }
+
+        if (parsedMinPrice.HasValue && parsedMaxPrice.HasValue && parsedMinPrice.Value > parsedMaxPrice.Value)
+        {
+            ErrorMessage = "Min price cannot be greater than max price.";
+            return;
+        }
+
+        MinPrice = parsedMinPrice.HasValue ? (double?)parsedMinPrice.Value : null;
+        MaxPrice = parsedMaxPrice.HasValue ? (double?)parsedMaxPrice.Value : null;
+        ErrorMessage = string.Empty;
+        CurrentPage = 1;
+        await LoadProducts();
+    }
+
+    [RelayCommand]
+    private async Task ClearPriceRange()
+    {
+        MinPriceText = string.Empty;
+        MaxPriceText = string.Empty;
+        MinPrice = null;
+        MaxPrice = null;
+        ErrorMessage = string.Empty;
         CurrentPage = 1;
         await LoadProducts();
     }
@@ -459,6 +498,34 @@ public partial class ProductManagementViewModel : ListManagementViewModelBase
         }
 
         return $"Đã thêm thành công {importResult.ProductsInserted} sản phẩm: {productList}.";
+    }
+
+    private static bool TryParsePriceInput(string input, out decimal? price, out string error)
+    {
+        price = null;
+        error = string.Empty;
+
+        var normalized = input?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return true;
+        }
+
+        normalized = normalized.Replace(",", string.Empty);
+        if (!decimal.TryParse(normalized, out var parsedValue))
+        {
+            error = "Price range must be a valid number.";
+            return false;
+        }
+
+        if (parsedValue < 0)
+        {
+            error = "Price range cannot be negative.";
+            return false;
+        }
+
+        price = parsedValue;
+        return true;
     }
 
     private static List<ProductListEntry> BuildSeedProducts()
