@@ -34,6 +34,7 @@
         <converters:TimeAgoConverter x:Key="TimeAgoConverter" />
         <converters:StatusToNextStatusTextConverter x:Key="StatusToNextStatusTextConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
         <Style x:Key="FilterButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
@@ -368,7 +369,7 @@
                                         CommandParameter="{Binding}"
                                         CornerRadius="10"
                                         Style="{StaticResource AppIconButtonStyle}"
-                                        Visibility="{Binding PaymentStatus, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter='Cancel'}">
+                                        Visibility="{Binding CanCancel, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <FontIcon
                                             Foreground="{StaticResource Error}"
                                             Glyph="&#xE74D;"
@@ -385,7 +386,7 @@
                                         CommandParameter="{Binding}"
                                         CornerRadius="10"
                                         Style="{StaticResource AppIconButtonStyle}"
-                                        Visibility="{Binding DataContext.Filter, ElementName=ModalRoot, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='History'}">
+                                        Visibility="{Binding CanDeleteFromHistory, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <FontIcon
                                             Foreground="{StaticResource Error}"
                                             Glyph="&#xE74D;"
@@ -524,26 +525,6 @@
                     </Button>
                 </StackPanel>
 
-                <Button
-                    Grid.Column="2"
-                    Padding="24,10"
-                    HorizontalAlignment="Center"
-                    Background="Transparent"
-                    Command="{Binding ClearHistoryCommand}"
-                    CornerRadius="12"
-                    Style="{StaticResource AppGhostButtonStyle}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon
-                            Foreground="{StaticResource Error}"
-                            Glyph="&#xE74D;"
-                            Style="{StaticResource IconSubtitleStyle}" />
-                        <TextBlock
-                            FontSize="{StaticResource FontBody}"
-                            FontWeight="Bold"
-                            Foreground="{StaticResource Error}"
-                            Text="Clear Order History" />
-                    </StackPanel>
-                </Button>
             </Grid>
         </Border>
 

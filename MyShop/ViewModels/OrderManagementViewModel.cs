@@ -536,7 +536,9 @@ public partial class OrderManagementViewModel : ObservableObject
             ManualAdjustment = order.ManualAdjustment,
             ManualAdjustmentReason = order.ManualAdjustmentReason ?? string.Empty,
             Subtotal = order.SubTotal,
-            Total = order.TotalAmount
+            Total = order.TotalAmount,
+            CanCancel = Filter == "Active" && order.PaymentStatus is "Draft" or "PendingPayment" or "Paid",
+            CanDeleteFromHistory = Filter == "History" && order.PaymentStatus != "Cancelled"
         };
 
         if (order.OrderDetails != null)
