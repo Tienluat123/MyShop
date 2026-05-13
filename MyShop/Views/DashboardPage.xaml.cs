@@ -39,12 +39,33 @@ public sealed partial class DashboardPage : Page
         // Tải lại dữ liệu mỗi khi vào trang
         _ = ViewModel.LoadDashboardData();
         
+        if (RevenueChartCanvas != null)
+        {
+            RevenueChartCanvas.SizeChanged -= RevenueChartCanvas_SizeChanged;
+            RevenueChartCanvas.SizeChanged += RevenueChartCanvas_SizeChanged;
+        }
+
         RenderRevenueChart();
     }
 
     private void DashboardPage_Unloaded(object sender, RoutedEventArgs e)
     {
         ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+
+        if (RevenueChartCanvas != null)
+        {
+            RevenueChartCanvas.SizeChanged -= RevenueChartCanvas_SizeChanged;
+        }
+    }
+
+    private void RevenueChartCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (e.NewSize.Width <= 0 || e.NewSize.Height <= 0)
+        {
+            return;
+        }
+
+        RenderRevenueChart();
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -90,8 +111,13 @@ public sealed partial class DashboardPage : Page
         var canvas = RevenueChartCanvas;
         canvas.Children.Clear();
 
-        double canvasWidth = canvas.ActualWidth > 0 ? canvas.ActualWidth : 760;
-        double canvasHeight = 200;
+        double canvasWidth = canvas.ActualWidth;
+        double canvasHeight = canvas.ActualHeight;
+
+        if (canvasWidth <= 0 || canvasHeight <= 0)
+        {
+            return;
+        }
 
         var values = trend.Select(x => (double)x.Value).ToArray();
         var max = values.Max();
