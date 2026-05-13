@@ -191,9 +191,7 @@ public partial class OrderManagementViewModel : ObservableObject
                 DisplayOrders.Clear();
                 foreach (var o in mappedOrders) DisplayOrders.Add(o);
 
-                int historyCountFromDb = await _orderService.GetHistoryCount(
-                    SearchStartDate?.DateTime,
-                    SearchEndDate?.DateTime);
+                int historyCountFromDb = pagedResult.Pagination.TotalItems;
 
                 TotalPagesHistory = (int)Math.Ceiling(historyCountFromDb / (double)PageSizeHistory);
                 if (TotalPagesHistory < 1) TotalPagesHistory = 1;
@@ -507,7 +505,7 @@ public partial class OrderManagementViewModel : ObservableObject
             OrderId = $"ORD-{order.Id}",
             PaymentStatus = MapToPaymentStatus(order.PaymentStatus),
             FulfillmentStatus = MapToFulfillmentStatus(order.FulfillmentStatus),
-            CreatedAt = order.OrderDate,
+            CreatedAt = ToLocalOrderDate(order.OrderDate),
             Type = order.Type,
             Table = order.TableNumber,
             CustomerId = order.CustomerId?.ToString(),
@@ -564,6 +562,15 @@ public partial class OrderManagementViewModel : ObservableObject
             "Completed" => FulfillmentStatus.Completed,
             _ => FulfillmentStatus.None
         };
+    }
+
+    private static DateTime ToLocalOrderDate(DateTime orderDate)
+    {
+        var utcOrderDate = orderDate.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(orderDate, DateTimeKind.Utc)
+            : orderDate.ToUniversalTime();
+
+        return utcOrderDate.ToLocalTime();
     }
 
     [RelayCommand]

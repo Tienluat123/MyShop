@@ -490,6 +490,14 @@ public class OrderService : IOrderService
     {
         if (paging == null) throw new ArgumentNullException(nameof(paging));
         paging.Validate();
+        var sortedPaging = new PagingRequest
+        {
+            PageNumber = paging.PageNumber,
+            PageSize = paging.PageSize,
+            SearchText = paging.SearchText,
+            Filters = paging.Filters,
+            SortBy = sortDescending ? "OrderDate DESC" : "OrderDate ASC"
+        };
 
         try
         {
@@ -515,21 +523,12 @@ public class OrderService : IOrderService
             }
 
             var result = await _orderRepository.GetAllAsyncWithIncludes(
-                paging,
+                sortedPaging,
                 filter,
                 "OrderDetails.Product.Category",
                 "Customer");
 
-            // Apply sorting on client side (after pagination)
-            var sortedItems = sortDescending
-                ? result.Items.OrderByDescending(o => o.OrderDate).ToList()
-                : result.Items.OrderBy(o => o.OrderDate).ToList();
-
-            return new PagedResult<Order>
-            {
-                Items = sortedItems,
-                Pagination = result.Pagination
-            };
+            return result;
         }
         catch (Exception ex)
         {
@@ -545,6 +544,14 @@ public class OrderService : IOrderService
         System.Diagnostics.Debug.WriteLine($"📡 Service: GetPagedActiveOrders, filter={statusFilter}");
         if (paging == null) throw new ArgumentNullException(nameof(paging));
         paging.Validate();
+        var sortedPaging = new PagingRequest
+        {
+            PageNumber = paging.PageNumber,
+            PageSize = paging.PageSize,
+            SearchText = paging.SearchText,
+            Filters = paging.Filters,
+            SortBy = "OrderDate DESC"
+        };
 
         try
         {
@@ -560,19 +567,12 @@ public class OrderService : IOrderService
             }
 
             var result = await _orderRepository.GetAllAsyncWithIncludes(
-                paging,
+                sortedPaging,
                 filter,
                 "OrderDetails.Product.Category",
                 "Customer");
 
-            // Apply sorting
-            var sortedItems = result.Items.OrderByDescending(o => o.OrderDate).ToList();
-
-            return new PagedResult<Order>
-            {
-                Items = sortedItems,
-                Pagination = result.Pagination
-            };
+            return result;
         }
         catch (Exception ex)
         {
@@ -599,6 +599,14 @@ public class OrderService : IOrderService
         System.Diagnostics.Debug.WriteLine($"📡 Service: GetPagedHistoryOrders, filter={statusFilter}");
         if (paging == null) throw new ArgumentNullException(nameof(paging));
         paging.Validate();
+        var sortedPaging = new PagingRequest
+        {
+            PageNumber = paging.PageNumber,
+            PageSize = paging.PageSize,
+            SearchText = paging.SearchText,
+            Filters = paging.Filters,
+            SortBy = "OrderDate DESC"
+        };
 
         try
         {
@@ -636,19 +644,12 @@ public class OrderService : IOrderService
             }
 
             var result = await _orderRepository.GetAllAsyncWithIncludes(
-                paging,
+                sortedPaging,
                 filter,
                 "OrderDetails.Product",
                 "Customer");
 
-            // Apply sorting
-            var sortedItems = result.Items.OrderByDescending(o => o.OrderDate).ToList();
-
-            return new PagedResult<Order>
-            {
-                Items = sortedItems,
-                Pagination = result.Pagination
-            };
+            return result;
         }
         catch (Exception ex)
         {
