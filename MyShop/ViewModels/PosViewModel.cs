@@ -366,14 +366,16 @@ public partial class PosViewModel : ObservableObject
     {
         await EnsureDraftOrder();
 
+        var hasCustomization = param.Product.Category?.HasCustomization == true;
+
         // For simplicity, treating customized items as new entries or matching by notes
-        var notes = param.Options != null ? SerializeOptions(param.Options) : null;
+        var notes = hasCustomization && param.Options != null ? SerializeOptions(param.Options) : null;
 
         // Compute unit price and cost including size and addons, when applicable
         decimal unitPrice = param.Product.Price;
         decimal unitCost = param.Product.BaseCostPrice;
 
-        if (param.Options != null && (param.Product.Category?.HasCustomization == true))
+        if (hasCustomization && param.Options != null)
         {
             if (param.Options.Size == "M")
             {
@@ -504,7 +506,9 @@ public partial class PosViewModel : ObservableObject
         {
             detail.Quantity = editedItem.Quantity;
             detail.UnitPrice = editedItem.BasePrice;
-            detail.Notes = SerializeOptions(editedItem.DrinkOptions);
+            detail.Notes = editedItem.Product.Category?.HasCustomization == true
+                ? SerializeOptions(editedItem.DrinkOptions)
+                : null;
 
             await SaveDraftOrder();
             SyncCartFromDraft();
