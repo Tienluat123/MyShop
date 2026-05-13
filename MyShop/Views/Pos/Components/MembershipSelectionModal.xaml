@@ -48,7 +48,11 @@
     </ContentDialog.Resources>
 
     <ContentDialog.Title>
-        <Grid HorizontalAlignment="Stretch">
+        <Grid Width="500" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <FontIcon
                     Foreground="{StaticResource BrandPrimary}"
@@ -59,6 +63,19 @@
                     FontWeight="{StaticResource FontWeightSemiBold}"
                     Text="Membership &amp; Loyalty" />
             </StackPanel>
+            <Button
+                Grid.Column="1"
+                Width="36"
+                Height="36"
+                Padding="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Background="Transparent"
+                BorderThickness="0"
+                Click="CancelCheckout_Click"
+                ToolTipService.ToolTip="Cancel checkout">
+                <FontIcon Glyph="&#xE711;" FontSize="12" />
+            </Button>
         </Grid>
     </ContentDialog.Title>
 

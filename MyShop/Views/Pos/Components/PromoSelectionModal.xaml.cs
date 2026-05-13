@@ -10,6 +10,7 @@ namespace MyShop.Views.Pos.Components;
 public sealed partial class PromoSelectionModal : ContentDialog
 {
     public PromoViewModel ViewModel { get; }
+    public bool WasCancelled { get; private set; }
 
     public PromoSelectionModal(decimal orderTotal, Customer? customer = null)
     {
@@ -30,5 +31,11 @@ public sealed partial class PromoSelectionModal : ContentDialog
         {
             ViewModel.SelectPromotionCommand.Execute(promo);
         }
+    }
+
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    {
+        WasCancelled = true;
+        Hide();
     }
 }

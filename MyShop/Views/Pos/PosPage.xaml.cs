@@ -14,11 +14,20 @@ public sealed partial class PosPage : Page
 {
     public PosViewModel ViewModel { get; }
     private readonly INotificationService _notificationService;
+    private bool _isCheckoutDialogOpen;
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         await ViewModel.InitializeSessionAsync();
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        ViewModel.OrderEditConfirmed -= ViewModel_OrderEditConfirmed;
+        ViewModel.EditItemRequested -= ViewModel_EditItemRequested;
+        ViewModel.CheckoutRequested -= ViewModel_CheckoutRequested;
+        base.OnNavigatedFrom(e);
     }
 
     public PosPage()
@@ -29,31 +38,43 @@ public sealed partial class PosPage : Page
 
         InitializeComponent();
 
-        ViewModel.OrderEditConfirmed += (s, order) =>
+        ViewModel.OrderEditConfirmed -= ViewModel_OrderEditConfirmed;
+        ViewModel.EditItemRequested -= ViewModel_EditItemRequested;
+        ViewModel.CheckoutRequested -= ViewModel_CheckoutRequested;
+
+        ViewModel.OrderEditConfirmed += ViewModel_OrderEditConfirmed;
+        ViewModel.EditItemRequested += ViewModel_EditItemRequested;
+        ViewModel.CheckoutRequested += ViewModel_CheckoutRequested;
+    }
+
+    private void ViewModel_OrderEditConfirmed(object? sender, Order order)
+    {
+        _notificationService.ShowSuccess($"Order #{order.Id} updated successfully.", 2000);
+    }
+
+    private async void ViewModel_EditItemRequested(object? sender, OrderItem item)
+    {
+        var modal = new ProductCustomizationModal(item.Product, item);
+        modal.XamlRoot = this.XamlRoot;
+
+        var handler = new Action<OrderItem>(async editedItem =>
         {
-            _notificationService.ShowSuccess($"Order #{order.Id} updated successfully.", 2000);
-        };
+            // Sync changes back to the draft order and database
+            await ViewModel.UpdateCustomizedItem(item, editedItem);
+        });
 
-        ViewModel.EditItemRequested += async (s, item) =>
+        modal.ViewModel.ItemConfirmed += handler;
+        await modal.ShowAsync();
+        modal.ViewModel.ItemConfirmed -= handler;
+    }
+
+    private async void ViewModel_CheckoutRequested(object? sender, EventArgs e)
+    {
+        if (_isCheckoutDialogOpen || ViewModel.CurrentDraftOrder == null) return;
+
+        _isCheckoutDialogOpen = true;
+        try
         {
-            var modal = new ProductCustomizationModal(item.Product, item);
-            modal.XamlRoot = this.XamlRoot;
-
-            var handler = new Action<OrderItem>(async editedItem =>
-            {
-                // Sync changes back to the draft order and database
-                await ViewModel.UpdateCustomizedItem(item, editedItem);
-            });
-
-            modal.ViewModel.ItemConfirmed += handler;
-            await modal.ShowAsync();
-            modal.ViewModel.ItemConfirmed -= handler;
-        };
-
-        ViewModel.CheckoutRequested += async (s, e) =>
-        {
-            if (ViewModel.CurrentDraftOrder == null) return;
-
             Customer? selectedCustomer = ViewModel.SelectedCustomer;
 
             if (!ViewModel.IsEditingExistingOrder)
@@ -69,6 +90,12 @@ public sealed partial class PosPage : Page
                 };
 
                 await memberModal.ShowAsync();
+
+                if (memberModal.WasCancelled)
+                {
+                    await ViewModel.RevertOrderToDraft();
+                    return;
+                }
 
                 // Sync customer association early to ensure it's saved in Supabase
                 ViewModel.SelectedCustomer = selectedCustomer;
@@ -90,6 +117,12 @@ public sealed partial class PosPage : Page
                 };
 
                 await promoModal.ShowAsync();
+                if (promoModal.WasCancelled)
+                {
+                    await ViewModel.RevertOrderToDraft();
+                    return;
+                }
+
                 await ViewModel.ApplyPromotion(selectedPromo);
             }
 
@@ -123,7 +156,11 @@ public sealed partial class PosPage : Page
             {
                 await ViewModel.RevertOrderToDraft();
             }
-        };
+        }
+        finally
+        {
+            _isCheckoutDialogOpen = false;
+        }
     }
 
     // In PosPage.xaml.cs
