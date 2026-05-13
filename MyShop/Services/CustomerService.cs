@@ -47,7 +47,7 @@ public class CustomerService : ICustomerService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi lấy danh sách khách hàng", ex);
+            throw new InvalidOperationException("Failed to load customers", ex);
         }
     }
 
@@ -57,7 +57,7 @@ public class CustomerService : ICustomerService
     public async Task<Customer?> GetById(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
+            throw new ArgumentException("ID must be greater than 0", nameof(id));
 
         try
         {
@@ -65,7 +65,7 @@ public class CustomerService : ICustomerService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi lấy khách hàng với ID {id}", ex);
+            throw new InvalidOperationException($"Failed to load customer with ID {id}", ex);
         }
     }
 
@@ -76,7 +76,7 @@ public class CustomerService : ICustomerService
     public async Task<Customer?> GetByPhone(string phone)
     {
         if (string.IsNullOrWhiteSpace(phone))
-            throw new ArgumentException("Số điện thoại không được để trống", nameof(phone));
+            throw new ArgumentException("Phone number is required", nameof(phone));
 
         try
         {
@@ -86,7 +86,7 @@ public class CustomerService : ICustomerService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi tìm khách hàng theo số điện thoại", ex);
+            throw new InvalidOperationException($"Failed to find customer by phone number", ex);
         }
     }
 
@@ -113,7 +113,7 @@ public class CustomerService : ICustomerService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi tìm kiếm khách hàng", ex);
+            throw new InvalidOperationException($"Failed to search customers", ex);
         }
     }
 
@@ -126,15 +126,15 @@ public class CustomerService : ICustomerService
             throw new ArgumentNullException(nameof(customer));
 
         if (string.IsNullOrWhiteSpace(customer.Name))
-            throw new ArgumentException("Tên khách hàng không được để trống", nameof(customer.Name));
+            throw new ArgumentException("Customer name is required", nameof(customer.Name));
 
         if (string.IsNullOrWhiteSpace(customer.Phone))
-            throw new ArgumentException("Số điện thoại không được để trống", nameof(customer.Phone));
+            throw new ArgumentException("Phone number is required", nameof(customer.Phone));
 
         // Kiểm tra số điện thoại đã tồn tại
         var existingCustomer = await GetByPhone(customer.Phone);
         if (existingCustomer != null)
-            throw new InvalidOperationException($"Khách hàng với số điện thoại {customer.Phone} đã tồn tại");
+            throw new InvalidOperationException($"Customer with phone number {customer.Phone} already exists");
 
         try
         {
@@ -142,7 +142,7 @@ public class CustomerService : ICustomerService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi thêm khách hàng", ex);
+            throw new InvalidOperationException("Failed to add customer", ex);
         }
     }
 
@@ -155,13 +155,13 @@ public class CustomerService : ICustomerService
             throw new ArgumentNullException(nameof(customer));
 
         if (customer.Id <= 0)
-            throw new ArgumentException("ID khách hàng không hợp lệ", nameof(customer.Id));
+            throw new ArgumentException("Invalid customer ID", nameof(customer.Id));
 
         if (string.IsNullOrWhiteSpace(customer.Name))
-            throw new ArgumentException("Tên khách hàng không được để trống", nameof(customer.Name));
+            throw new ArgumentException("Customer name is required", nameof(customer.Name));
 
         if (string.IsNullOrWhiteSpace(customer.Phone))
-            throw new ArgumentException("Số điện thoại không được để trống", nameof(customer.Phone));
+            throw new ArgumentException("Phone number is required", nameof(customer.Phone));
 
         try
         {
@@ -169,7 +169,7 @@ public class CustomerService : ICustomerService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Lỗi khi cập nhật khách hàng", ex);
+            throw new InvalidOperationException("Failed to update customer", ex);
         }
     }
 
@@ -179,16 +179,16 @@ public class CustomerService : ICustomerService
     public async Task UpdateStatus(int customerId, string status)
     {
         if (customerId <= 0)
-            throw new ArgumentException("ID khách hàng không hợp lệ", nameof(customerId));
+            throw new ArgumentException("Invalid customer ID", nameof(customerId));
 
         if (string.IsNullOrWhiteSpace(status))
-            throw new ArgumentException("Trạng thái không hợp lệ", nameof(status));
+            throw new ArgumentException("Invalid status", nameof(status));
 
         var normalizedStatus = status.Trim();
         if (!normalizedStatus.Equals("Active", StringComparison.OrdinalIgnoreCase) &&
             !normalizedStatus.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("Trạng thái chỉ được là Active hoặc Inactive", nameof(status));
+            throw new ArgumentException("Status must be Active or Inactive", nameof(status));
         }
 
         normalizedStatus = normalizedStatus.Equals("Active", StringComparison.OrdinalIgnoreCase)
@@ -199,14 +199,14 @@ public class CustomerService : ICustomerService
         {
             var customer = await _repo.GetByIdAsync(customerId);
             if (customer == null)
-                throw new KeyNotFoundException($"Không tìm thấy khách hàng với ID {customerId}");
+                throw new KeyNotFoundException($"Customer not found with ID {customerId}");
 
             customer.Status = normalizedStatus;
             await _repo.UpdateAsync(customer);
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi cập nhật trạng thái khách hàng ID {customerId}", ex);
+            throw new InvalidOperationException($"Failed to update customer status for ID {customerId}", ex);
         }
     }
 
@@ -216,7 +216,7 @@ public class CustomerService : ICustomerService
     public async Task Delete(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID khách hàng không hợp lệ", nameof(id));
+            throw new ArgumentException("Invalid customer ID", nameof(id));
 
         try
         {
@@ -224,7 +224,7 @@ public class CustomerService : ICustomerService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Lỗi khi xóa khách hàng với ID {id}", ex);
+            throw new InvalidOperationException($"Failed to delete customer with ID {id}", ex);
         }
     }
 }

@@ -92,7 +92,7 @@
                                 Margin="0,0,0,22">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <SymbolIcon Symbol="Back" Foreground="#6B7280"/>
-                                <TextBlock Text="Quay lại onboarding" FontSize="13" FontWeight="SemiBold"/>
+                                <TextBlock Text="Back to onboarding" FontSize="13" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         
@@ -100,8 +100,8 @@
                             <Viewbox Width="40" Height="40" Margin="0,0,0,8">
                                 <SymbolIcon Symbol="Setting" Foreground="#EA580C"/>
                             </Viewbox>
-                            <TextBlock Text="Cấu hình Database" FontSize="26" FontWeight="Bold" Foreground="#1A1A2E" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Thiết lập kết nối PostgreSQL cho ứng dụng" FontSize="14" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Database Configuration" FontSize="26" FontWeight="Bold" Foreground="#1A1A2E" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Set up the PostgreSQL connection for the app" FontSize="14" Foreground="#6B7280" HorizontalAlignment="Center"/>
                         </StackPanel>
 
                         <InfoBar IsOpen="{Binding IsInfoBarOpen, Mode=TwoWay}"
@@ -152,7 +152,7 @@
                             <StackPanel>
                                 <TextBlock Text="Password" FontSize="13" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,6"/>
                                 <PasswordBox x:Name="PasswordInput" PasswordChanged="PasswordInput_PasswordChanged"
-                                             PlaceholderText="Nhập mật khẩu..." Padding="12,10" CornerRadius="8" BorderThickness="1.5" BorderBrush="#D1D5DB" FontSize="14"/>
+                                             PlaceholderText="Enter password..." Padding="12,10" CornerRadius="8" BorderThickness="1.5" BorderBrush="#D1D5DB" FontSize="14"/>
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,20,0,0" HorizontalAlignment="Center">
@@ -185,7 +185,7 @@
                                     </Button.Foreground>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <SymbolIcon Symbol="Save" />
-                                        <TextBlock Text="Lưu Cấu Hình" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Save Configuration" FontSize="14" FontWeight="SemiBold"/>
                                         <ProgressRing IsActive="{Binding IsTestingConnection}" Width="16" Height="16" Margin="4,0,0,0"
                                                       Visibility="{Binding IsTestingConnection, Converter={StaticResource BoolToVisibilityConverter}}"
                                                       Foreground="White"/>

@@ -66,7 +66,7 @@ public sealed partial class ChatBotControl : UserControl
 
         // Lấy chế độ hiện tại từ ComboBox
         var selectedItem = ModeSelector.SelectedItem as ComboBoxItem;
-        var mode = selectedItem?.Content?.ToString() ?? "Hỏi đáp";
+        var mode = selectedItem?.Content?.ToString() ?? "Q&A";
 
         // Show a loading indicator
         var response = await _aiService.GetAiResponse(text, Messages.ToList(), mode);

@@ -91,7 +91,7 @@ public partial class CustomerProfileViewModel : ObservableObject
     private async Task LoadOrderHistory()
     {
         var orders = await Task.Run(() => _orderService.GetByCustomerId(SelectedCustomer.Customer.Id));
-        Console.WriteLine($"[DEBUG] Khách hàng ID {SelectedCustomer.Customer.Id} có {orders.Count()} đơn hàng.");
+        Console.WriteLine($"[DEBUG] Customer ID {SelectedCustomer.Customer.Id} has {orders.Count()}orders.");
         SelectedCustomer.Orders.Clear();
         foreach (var order in orders.OrderByDescending(o => o.OrderDate))
         {
@@ -109,7 +109,7 @@ public partial class CustomerProfileViewModel : ObservableObject
     private async Task LoadLoyaltyPoints()
     {
         SelectedCustomer.PointLogs.Clear();
-        // Giả lập log điểm dựa trên đơn hàng hiện có
+        // Giả lập log điểm dựa trênorders hiện có
         foreach (var order in SelectedCustomer.Orders.Take(5))
         {
             SelectedCustomer.PointLogs.Add(new PointLogItem

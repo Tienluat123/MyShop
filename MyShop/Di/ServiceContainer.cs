@@ -42,7 +42,7 @@ public class ServiceContainer : IServiceProvider
     {
         var serviceType = typeof(T);
         if (!_services.TryGetValue(serviceType, out var service))
-            throw new InvalidOperationException($"Service {serviceType.Name} chưa được register");
+            throw new InvalidOperationException($"Service {serviceType.Name} has not been registered");
 
         return (T)service;
     }
@@ -54,7 +54,7 @@ public class ServiceContainer : IServiceProvider
     {
         var serviceType = typeof(T);
         if (!_services.TryGetValue(serviceType, out var service))
-            throw new InvalidOperationException($"Service {serviceType.Name} chưa được register");
+            throw new InvalidOperationException($"Service {serviceType.Name} has not been registered");
 
         return (T)service;
     }

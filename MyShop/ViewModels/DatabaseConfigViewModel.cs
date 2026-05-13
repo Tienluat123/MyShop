@@ -20,7 +20,7 @@ public partial class DatabaseConfigViewModel : ObservableObject
     [ObservableProperty] private bool isTestingConnection;
     [ObservableProperty] private bool isInfoBarOpen;
     [ObservableProperty] private string infoMessage = string.Empty;
-    [ObservableProperty] private string infoTitle = "Thông báo";
+    [ObservableProperty] private string infoTitle = "Notice";
     [ObservableProperty] private InfoBarSeverity infoSeverity = InfoBarSeverity.Informational;
 
     public DatabaseConfigViewModel(IConfigService configService)
@@ -56,22 +56,22 @@ public partial class DatabaseConfigViewModel : ObservableObject
 
             if (!result.Success)
             {
-                InfoTitle = "Thất bại";
-                InfoMessage = $"Không thể kết nối: {result.ErrorMessage}";
+                InfoTitle = "Failed";
+                InfoMessage = $"Unable to connect: {result.ErrorMessage}";
                 InfoSeverity = InfoBarSeverity.Error;
                 IsInfoBarOpen = true;
                 return;
             }
 
-            InfoTitle = "Thành công";
-            InfoMessage = "Kết nối cơ sở dữ liệu thành công.";
+            InfoTitle = "Success";
+            InfoMessage = "Database connection succeeded.";
             InfoSeverity = InfoBarSeverity.Success;
             IsInfoBarOpen = true;
         }
         catch (Exception ex)
         {
-            InfoTitle = "Thất bại";
-            InfoMessage = $"Không thể kết nối: {ex.Message}";
+            InfoTitle = "Failed";
+            InfoMessage = $"Unable to connect: {ex.Message}";
             InfoSeverity = InfoBarSeverity.Error;
             IsInfoBarOpen = true;
         }
@@ -89,16 +89,16 @@ public partial class DatabaseConfigViewModel : ObservableObject
             var config = BuildCurrentConfig();
             await _configService.SaveAsync(config);
 
-            InfoTitle = "Đã lưu";
-            InfoMessage = "Đã lưu cấu hình";
+            InfoTitle = "Saved";
+            InfoMessage = "Configuration saved.";
             InfoSeverity = InfoBarSeverity.Warning;
             IsInfoBarOpen = true;
             ConfigSavedSuccessfully?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex)
         {
-            InfoTitle = "Lỗi";
-            InfoMessage = $"Không thể lưu cấu hình: {ex.Message}";
+            InfoTitle = "Error";
+            InfoMessage = $"Unable to save configuration: {ex.Message}";
             InfoSeverity = InfoBarSeverity.Error;
             IsInfoBarOpen = true;
         }

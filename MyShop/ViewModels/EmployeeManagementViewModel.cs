@@ -30,7 +30,7 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
 
     // --- DASHBOARD STATS ---
     [ObservableProperty]
-    private string totalPayrollDisplay = "0 đ";
+    private string totalPayrollDisplay = "0 VND";
 
     [ObservableProperty]
     private int activeStaffCount = 0;
@@ -215,7 +215,7 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
         }
         catch (Exception)
         {
-            _notificationService.ShowError("Lỗi khi tải dữ liệu nhân viên");
+            _notificationService.ShowError("Failed to load employee data");
         }
         finally
         {
@@ -227,7 +227,7 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
     {
         if (employees.Count == 0)
         {
-            TotalPayrollDisplay = "0 đ";
+            TotalPayrollDisplay = "0 VND";
             ActiveStaffCount = 0;
             TopPerformerName = "None";
             return;
@@ -235,7 +235,7 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
 
         // Total salary from current page (for dashboard display)
         decimal totalSalary = employees.Sum(x => x.FinalSalary);
-        TotalPayrollDisplay = string.Format("{0:N0} đ", totalSalary);
+        TotalPayrollDisplay = string.Format("{0:N0} VND", totalSalary);
 
         // Active count (from current page)
         ActiveStaffCount = employees.Count(x => x.User.IsActive);
@@ -259,7 +259,7 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
         }
         catch (Exception)
         {
-            _notificationService.ShowError("Lỗi khi cập nhật trạng thái");
+            _notificationService.ShowError("Failed to update status");
         }
     }
 
@@ -293,11 +293,11 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
             await _employeeService.DeleteEmployeeAsync(info.User.Id);
             CurrentPage = 1;
             await RefreshCommand.ExecuteAsync(null);
-            _notificationService.ShowSuccess("Xóa nhân viên thành công");
+            _notificationService.ShowSuccess("Employee deleted successfully");
         }
         catch (Exception)
         {
-            _notificationService.ShowError("Không thể xóa nhân viên");
+            _notificationService.ShowError("Unable to delete employee");
         }
     }
 

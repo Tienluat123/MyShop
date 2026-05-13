@@ -168,7 +168,7 @@ public partial class PromotionFormViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Lỗi khi lưu khuyến mãi: {ex.Message}";
+            ErrorMessage = $"Failed to save promotion: {ex.Message}";
         }
         finally
         {
@@ -196,33 +196,33 @@ public partial class PromotionFormViewModel : ObservableObject
         // === Mã khuyến mãi ===
         if (string.IsNullOrWhiteSpace(PromotionData.Code))
         {
-            errors["Code"] = "Mã khuyến mãi không được để trống";
+            errors["Code"] = "Promotion code is required";
         }
         else
         {
             // Không chứa ký tự đặc biệt
             if (!System.Text.RegularExpressions.Regex.IsMatch(PromotionData.Code, @"^[A-Za-z0-9_]+$"))
             {
-                errors["Code"] = "Mã chỉ được chứa chữ cái, số và dấu gạch dưới (_)";
+                errors["Code"] = "Code can only contain letters, numbers, and underscores (_)";
             }
         }
 
         // === Giá trị giảm > 0 ===
         if (PromotionData.Value <= 0)
         {
-            errors["Value"] = "Giá trị giảm phải lớn hơn 0";
+            errors["Value"] = "Discount value must be greater than 0";
         }
 
         // Nếu là phần trăm, không được vượt quá 100
         if (PromotionData.Type == PromoType.Percent && PromotionData.Value > 100)
         {
-            errors["Value"] = "Giảm theo phần trăm không được vượt quá 100%";
+            errors["Value"] = "Percentage discount cannot exceed 100%";
         }
 
         // === Ngày tháng hợp lệ: StartDate <= EndDate ===
         if (PromotionData.EndDate < PromotionData.StartDate)
         {
-            errors["EndDate"] = "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu";
+            errors["EndDate"] = "End date must be greater than or equal to start date";
         }
 
         // === Mã không trùng lặp ===
@@ -233,7 +233,7 @@ public partial class PromotionFormViewModel : ObservableObject
                 var existing = await _promoService.GetByCodeAsync(PromotionData.Code);
                 if (existing != null && existing.Id != PromotionData.Id)
                 {
-                    errors["Code"] = $"Mã '{PromotionData.Code}' đã tồn tại. Vui lòng chọn mã khác.";
+                    errors["Code"] = $"Code '{PromotionData.Code}' already exists. Choose another code.";
                 }
             }
             catch

@@ -167,7 +167,7 @@
                                 </Grid.ColumnDefinitions>
                                 <NumberBox x:Name="NbHourlyRate"
                                            Value="{x:Bind ViewModel.HourlyRate, Mode=TwoWay}"
-                                           Header="Hourly Rate (VNĐ)"
+                                           Header="Hourly Rate (VND)"
                                            SpinButtonPlacementMode="Compact"
                                            CornerRadius="8"/>
                                 <ComboBox x:Name="CboRole"
