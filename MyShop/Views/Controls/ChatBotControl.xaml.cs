@@ -64,19 +64,18 @@ public sealed partial class ChatBotControl : UserControl
         Messages.Add(new ChatMessage { Content = text, IsUser = true });
         InputBox.Text = string.Empty;
 
-        // Lấy chế độ hiện tại từ ComboBox
         var selectedItem = ModeSelector.SelectedItem as ComboBoxItem;
-        var mode = selectedItem?.Content?.ToString() ?? "Q&A";
+        var mode = selectedItem?.Tag?.ToString() ?? "qa";
+        var isPromotionMode = mode == "promotion";
 
         // Show a loading indicator
         var response = await _aiService.GetAiResponse(text, Messages.ToList(), mode);
         
-        // Parse for Proposals (Quét toàn bộ tin nhắn, không quan trọng có thẻ PROPOSAL: hay không)
         var codeMatch = System.Text.RegularExpressions.Regex.Match(response, @"CODE\s*[=:]\s*([^,\s\]\n]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         var valueMatch = System.Text.RegularExpressions.Regex.Match(response, @"VALUE\s*[=:]\s*([^,\s\]%\n]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         var typeMatch = System.Text.RegularExpressions.Regex.Match(response, @"TYPE\s*[=:]\s*([^,\]\n]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
-        if (codeMatch.Success && valueMatch.Success)
+        if (isPromotionMode && codeMatch.Success && valueMatch.Success)
         {
             string promoCode = codeMatch.Groups[1].Value.Trim();
             string promoValue = valueMatch.Groups[1].Value.Trim();

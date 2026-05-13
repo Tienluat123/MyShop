@@ -501,8 +501,6 @@ dist/
 
 # === Local Configuration (DO NOT COMMIT) ===
 MyShop/appsettings.json
-MyShop/ReadMe.md
-ReadMe.md
 
 # === Team Documentation (Individual Setup) ===
 docs/*

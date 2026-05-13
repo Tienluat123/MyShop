@@ -79,6 +79,11 @@ public sealed partial class EmployeeListTab : UserControl
 
     private void Status_Toggled(object sender, RoutedEventArgs e)
     {
+        if (ViewModel?.IsLoading == true)
+        {
+            return;
+        }
+
         if (sender is ToggleSwitch toggle && toggle.DataContext is UserSalaryInfo info && ViewModel != null)
         {
             _ = ViewModel.UpdateUserStatusAsync(info);
