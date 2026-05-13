@@ -136,7 +136,29 @@ public class AiAssistantService : IAiAssistantService
 
     private string GetSystemPrompt(string context, string mode)
     {
-        bool isActionMode = mode.Contains("Request");
+        bool isPromotionMode = mode.Equals("promotion", StringComparison.OrdinalIgnoreCase);
+        var taskInstructions = isPromotionMode
+            ? @"TASK: PROMOTION CODE CREATION
+You must analyze the request and propose exactly one promotion code.
+
+PROMO CODE RULES (MANDATORY):
+To enable the code generation system, you MUST include the following line in your response:
+CODE=PROMO_CODE, VALUE=AMOUNT, TYPE=TYPE, REASON=SHORT_REASON
+
+IMPORTANT NOTES:
+1. Code Name (CODE): Must be UPPERCASE, use underscores (_) instead of hyphens (-). Example: CLEARANCE_SALE, VIP_GIFT. NEVER use IDs.
+2. Value (VALUE): Numbers only. Example: 10, 20.
+3. Type (TYPE): Use 'Percent' or 'FixedAmount'.
+4. Keep the explanation short and make the proposed code easy to review.
+
+Example:
+Based on the data, Salted Coffee has high inventory, so I propose:
+CODE=SALTED_COFFEE_SALE, VALUE=20, TYPE=Percent, REASON=Clearance sale"
+            : @"TASK: BUSINESS Q&A AND DATA ANALYSIS
+Answer questions, explain trends, and give operational advice only.
+Do NOT propose or create promotion codes in this mode.
+Do NOT include CODE=, VALUE=, or TYPE= lines.
+If the user wants to create a promotion, tell them to switch to Request Promotion Code mode.";
 
         return $@"You are a Senior Business Strategy and Marketing Expert for MyShop.
 Shop Data:
@@ -149,20 +171,7 @@ WORKING STYLE:
 - If a product is out of stock, remind the shop owner to restock.
 - ALWAYS RESPOND IN ENGLISH.
 
-{(isActionMode ? "TASK: ANALYZE AND PROPOSE PROMO CODE" : "TASK: BUSINESS CONSULTATION")}
-
-PROMO CODE RULES (MANDATORY):
-To enable the code generation system, you MUST include the following line in your response:
-CODE=PROMO_CODE, VALUE=AMOUNT, TYPE=TYPE, REASON=SHORT_REASON
-
-IMPORTANT NOTES:
-1. Code Name (CODE): Must be UPPERCASE, use underscores (_) instead of hyphens (-). (Example: CLEARANCE_SALE, VIP_GIFT). NEVER use IDs.
-2. Value (VALUE): Numbers only (Example: 10, 20).
-3. Type (TYPE): Use 'Percent' or 'FixedAmount'.
-
-Example:
-'Based on the data, I see that Salted Coffee has high inventory... I propose:
-CODE=SALTED_COFFEE_SALE, VALUE=20, TYPE=Percent, REASON=Clearance sale'
+{taskInstructions}
 
 FORMAT: Use plain text only, no Markdown.";
     }

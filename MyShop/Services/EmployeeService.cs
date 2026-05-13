@@ -10,7 +10,7 @@ namespace MyShop.Services;
 
 public interface IEmployeeService
 {
-    Task<MyShop.Data.PagedResult<UserSalaryInfo>> GetPagedEmployeeSalariesAsync(PagingRequest request);
+    Task<EmployeeSalaryPageResult> GetPagedEmployeeSalariesAsync(PagingRequest request);
 
     Task<List<User>> GetActiveEmployeesAsync();
     Task<User?> GetById(int id);
@@ -38,7 +38,7 @@ public class EmployeeService : IEmployeeService
             .ToListAsync();
     }
 
-    public async Task<MyShop.Data.PagedResult<UserSalaryInfo>> GetPagedEmployeeSalariesAsync(PagingRequest? paging = null)
+    public async Task<EmployeeSalaryPageResult> GetPagedEmployeeSalariesAsync(PagingRequest? paging = null)
     {
         paging ??= new PagingRequest();
         paging.Validate();
@@ -62,7 +62,6 @@ public class EmployeeService : IEmployeeService
             .FirstOrDefaultAsync();
 
         var baseQuery = context.Users
-            .Where(u => u.IsActive)
             .Select(u => new
             {
                 User = u,
@@ -115,36 +114,25 @@ public class EmployeeService : IEmployeeService
             ? baseQuery.OrderBy(paging.SortBy)
             : baseQuery.OrderByDescending(x => x.CurrentHours);
 
+        var allFilteredData = await baseQuery.ToListAsync();
+        var allFilteredSalaries = allFilteredData
+            .Select(x => BuildSalaryInfo(x.User, x.CurrentHours, x.LastMonthHours, maxCurrentHours))
+            .ToList();
+
         var pagedData = await sortedQuery
             .Skip(paging.GetSkip())
             .Take(paging.PageSize)
             .ToListAsync();
 
-        var result = pagedData.Select(x =>
-        {
-            decimal currentHours = x.CurrentHours;
-            decimal lastMonthHours = x.LastMonthHours;
+        var result = pagedData
+            .Select(x => BuildSalaryInfo(x.User, x.CurrentHours, x.LastMonthHours, maxCurrentHours))
+            .ToList();
 
-            decimal bonusRate = 1.0m;
-            if (currentHours == maxCurrentHours && currentHours > 100m) bonusRate = 1.15m;
-            else if (currentHours > 100m) bonusRate = 1.1m;
+        var topPerformer = allFilteredSalaries
+            .OrderByDescending(x => x.TotalHours)
+            .FirstOrDefault();
 
-            decimal currentSalary = x.User.HourlyRate * currentHours * bonusRate;
-            decimal lastMonthSalary = x.User.HourlyRate * lastMonthHours;
-
-            return new UserSalaryInfo
-            {
-                User = x.User,
-                TotalHours = (double)currentHours,
-                FinalSalary = currentSalary,
-                LastMonthSalary = lastMonthSalary,
-                BonusTag = bonusRate == 1.15m ? "TOP 1 (+15%)" : (bonusRate == 1.1m ? "+10%" : "0%"),
-                TagColor = bonusRate == 1.15m ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gold) :
-                           (bonusRate == 1.1m ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.LightGreen) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gray))
-            };
-        }).ToList();
-
-        return new MyShop.Data.PagedResult<UserSalaryInfo>
+        return new EmployeeSalaryPageResult
         {
             Items = result,
             Pagination = new PagingMetadata
@@ -152,7 +140,30 @@ public class EmployeeService : IEmployeeService
                 PageNumber = paging.PageNumber,
                 PageSize = paging.PageSize,
                 TotalItems = totalCount
-            }
+            },
+            TotalPayroll = allFilteredSalaries.Sum(x => x.FinalSalary),
+            ActiveStaffCount = allFilteredSalaries.Count(x => x.User.IsActive),
+            TopPerformerName = topPerformer != null
+                ? $"{topPerformer.User.FullName} ({topPerformer.TotalHours}h)"
+                : "None"
+        };
+    }
+
+    private static UserSalaryInfo BuildSalaryInfo(User user, decimal currentHours, decimal lastMonthHours, decimal maxCurrentHours)
+    {
+        decimal bonusRate = 1.0m;
+        if (currentHours == maxCurrentHours && currentHours > 100m) bonusRate = 1.15m;
+        else if (currentHours > 100m) bonusRate = 1.1m;
+
+        return new UserSalaryInfo
+        {
+            User = user,
+            TotalHours = (double)currentHours,
+            FinalSalary = user.HourlyRate * currentHours * bonusRate,
+            LastMonthSalary = user.HourlyRate * lastMonthHours,
+            BonusTag = bonusRate == 1.15m ? "TOP 1 (+15%)" : (bonusRate == 1.1m ? "+10%" : "0%"),
+            TagColor = bonusRate == 1.15m ? new SolidColorBrush(Colors.Gold) :
+                       (bonusRate == 1.1m ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.Gray))
         };
     }
 
@@ -173,7 +184,13 @@ public class EmployeeService : IEmployeeService
 
     public async Task DeleteEmployeeAsync(int userId)
     {
-        await _repo.DeleteAsync(userId);
+        var employee = await _repo.GetByIdAsync(userId);
+        if (employee == null)
+        {
+            return;
+        }
+
+        employee.IsActive = false;
+        await _repo.UpdateAsync(employee);
     }
 }
-

@@ -208,9 +208,9 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
             DisplayEmployees = new ObservableCollection<UserSalaryInfo>(pagedResult.Items);
             TotalPages = pagedResult.Pagination.TotalPages;
             PageInfoDisplay = BuildPageInfoDisplay(CurrentPage, TotalPages);
-
-            // Calculate dashboard stats from current page data
-            CalculateDashboardStats(pagedResult.Items);
+            TotalPayrollDisplay = string.Format("{0:N0} VND", pagedResult.TotalPayroll);
+            ActiveStaffCount = pagedResult.ActiveStaffCount;
+            TopPerformerName = pagedResult.TopPerformerName;
 
         }
         catch (Exception)
@@ -223,28 +223,6 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
         }
     }
 
-    private void CalculateDashboardStats(List<UserSalaryInfo> employees)
-    {
-        if (employees.Count == 0)
-        {
-            TotalPayrollDisplay = "0 VND";
-            ActiveStaffCount = 0;
-            TopPerformerName = "None";
-            return;
-        }
-
-        // Total salary from current page (for dashboard display)
-        decimal totalSalary = employees.Sum(x => x.FinalSalary);
-        TotalPayrollDisplay = string.Format("{0:N0} VND", totalSalary);
-
-        // Active count (from current page)
-        ActiveStaffCount = employees.Count(x => x.User.IsActive);
-
-        // Top performer by hours
-        var topStaff = employees.OrderByDescending(x => x.TotalHours).FirstOrDefault();
-        TopPerformerName = topStaff != null ? $"{topStaff.User.FullName} ({topStaff.TotalHours}h)" : "None";
-    }
-
     // --- ACTION COMMANDS ---
 
     [RelayCommand]
@@ -255,12 +233,39 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
         try
         {
             await _employeeService.UpdateEmployeeAsync(info.User);
-            ActiveStaffCount = DisplayEmployees.Count(x => x.User.IsActive);
+            if (SelectedStatus == "All Status")
+            {
+                await RefreshDashboardStatsAsync();
+            }
+            else
+            {
+                await LoadEmployeesAsync();
+            }
         }
         catch (Exception)
         {
             _notificationService.ShowError("Failed to update status");
         }
+    }
+
+    private async Task RefreshDashboardStatsAsync()
+    {
+        var request = new PagingRequest
+        {
+            PageNumber = 1,
+            PageSize = 1,
+            SearchText = SearchText?.Trim(),
+            Filters = new Dictionary<string, string>
+            {
+                { "Role", SelectedRole == "All Roles" ? "" : SelectedRole },
+                { "Status", SelectedStatus == "All Status" ? "" : SelectedStatus }
+            }
+        };
+
+        var result = await _employeeService.GetPagedEmployeeSalariesAsync(request);
+        TotalPayrollDisplay = string.Format("{0:N0} VND", result.TotalPayroll);
+        ActiveStaffCount = result.ActiveStaffCount;
+        TopPerformerName = result.TopPerformerName;
     }
 
     [RelayCommand]
@@ -293,11 +298,11 @@ public partial class EmployeeManagementViewModel : ListManagementViewModelBase
             await _employeeService.DeleteEmployeeAsync(info.User.Id);
             CurrentPage = 1;
             await RefreshCommand.ExecuteAsync(null);
-            _notificationService.ShowSuccess("Employee deleted successfully");
+            _notificationService.ShowSuccess("Employee deactivated successfully");
         }
         catch (Exception)
         {
-            _notificationService.ShowError("Unable to delete employee");
+            _notificationService.ShowError("Unable to deactivate employee");
         }
     }
 
@@ -385,3 +390,9 @@ public class UserSalaryInfo
     public SolidColorBrush TagColor { get; set; } = null!;
 }
 
+public class EmployeeSalaryPageResult : PagedResult<UserSalaryInfo>
+{
+    public decimal TotalPayroll { get; set; }
+    public int ActiveStaffCount { get; set; }
+    public string TopPerformerName { get; set; } = "None";
+}
