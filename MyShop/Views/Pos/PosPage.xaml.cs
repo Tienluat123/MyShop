@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -141,7 +142,19 @@ public sealed partial class PosPage : Page
     {
         var modal = new OrderManagementModal();
         modal.XamlRoot = this.XamlRoot;
+
+        async Task editHandler(int orderId)
+        {
+            await ViewModel.BeginEditOrderAsync(orderId);
+            modal.Hide();
+        }
+
+        modal.ViewModel.EditOrderInPosAction = editHandler;
         await modal.ShowAsync();
+        if (modal.ViewModel.EditOrderInPosAction == editHandler)
+        {
+            modal.ViewModel.EditOrderInPosAction = null;
+        }
     }
 
     /// <summary>
