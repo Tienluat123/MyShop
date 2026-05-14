@@ -55,7 +55,7 @@ MyShop là ứng dụng hỗ trợ chủ cửa hàng nhỏ quản lý hoạt đ�
 | Kiểm thử giao diện tự động                        | Nâng cao     |  1.0 |
 | Tích hợp Machine Learning riêng ngoài LLM         | Nâng cao     |  2.0 |
 
-## 5. Các Tính Năng Bổ Sung Nhóm Đã Thực Hiện
+## 5. Các chức năng giáo viên nên xem xét cộng điểm vì đã bỏ nhiều thời gian và công sức tìm hiểu
 
 Ngoài các yêu cầu chính trong đề, nhóm có đầu tư thêm một số chức năng mở rộng để ứng dụng gần hơn với quy trình vận hành thực tế của một cửa hàng nhỏ.
 
