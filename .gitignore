@@ -491,6 +491,9 @@ appsettings.json
 appsettings.example.json
 MyShop/appsettings.example.json
 migration_backup.sql
+MyShop.db
+MyShop/MyShop.db
+seeddata_complete.sql
 run-all.sh
 
 # === Uno Platform Specific ===
