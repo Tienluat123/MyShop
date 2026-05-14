@@ -21,9 +21,12 @@ FILES=(
     "02-product-images.sql"
     "03-customers.sql"
     "04-users.sql"
-    "05-orders.sql"
     "06-promotions.sql"
+    "05-orders.sql"
+    "07-loyalty-rules.sql"
     "07-workschedules.sql"
+    "08-appconfig.sql"
+    "09-expenses.sql"
 )
 
 # Run each SQL file
@@ -64,5 +67,13 @@ UNION ALL
 SELECT 'OrderDetails', COUNT(*) FROM \"OrderDetails\"
 UNION ALL
 SELECT 'Promotions', COUNT(*) FROM \"Promotions\"
+UNION ALL
+SELECT 'LoyaltyTierConfigs', COUNT(*) FROM \"LoyaltyTierConfigs\"
+UNION ALL
+SELECT 'WorkSchedules', COUNT(*) FROM \"WorkSchedules\"
+UNION ALL
+SELECT 'AppConfigs', COUNT(*) FROM \"AppConfigs\"
+UNION ALL
+SELECT 'Expenses', COUNT(*) FROM \"Expenses\"
 ORDER BY type;
 "

@@ -1,11 +1,8 @@
 -- ===== PROMOTIONS =====
 -- Coffee Shop Promotions & Discounts
 -- Edit by: PhamVanMinhBinhThuan
--- Updated: 2026-04-08
+-- Updated: 2026-05-14
 -- Dữ liệu mẫu bao quát 4 trạng thái: Active, Expired, Upcoming, Inactive
-
--- Xóa dữ liệu cũ để seed lại từ đầu
-TRUNCATE TABLE "Promotions" RESTART IDENTITY CASCADE;
 
 INSERT INTO "Promotions"
     ("Id", "PromoCode", "PromoType", "DiscountValue", "MinOrderAmount", "StartDate", "EndDate", "TargetAudience", "IsActive")
@@ -28,9 +25,18 @@ VALUES
 
     -- 4. INACTIVE PROMOTIONS (IsActive = false)
     (13, 'TEST_OFF', 'Percent', 50.00, 1000000, NOW() - INTERVAL '1 day', NOW() + INTERVAL '10 days', 'All', false),
-    (14, 'OFF_VIP', 'FixedAmount', 100000.00, 500000, NOW() - INTERVAL '5 days', NOW() + INTERVAL '5 days', 'VIP', false);
+    (14, 'OFF_VIP', 'FixedAmount', 100000.00, 500000, NOW() - INTERVAL '5 days', NOW() + INTERVAL '5 days', 'VIP', false)
+ON CONFLICT ("Id") DO UPDATE SET
+    "PromoCode" = EXCLUDED."PromoCode",
+    "PromoType" = EXCLUDED."PromoType",
+    "DiscountValue" = EXCLUDED."DiscountValue",
+    "MinOrderAmount" = EXCLUDED."MinOrderAmount",
+    "StartDate" = EXCLUDED."StartDate",
+    "EndDate" = EXCLUDED."EndDate",
+    "TargetAudience" = EXCLUDED."TargetAudience",
+    "IsActive" = EXCLUDED."IsActive";
 
 -- Cập nhật lại sequence của ID để tránh lỗi khi thêm mới từ giao diện
-SELECT setval('"Promotions_Id_seq"', COALESCE((SELECT MAX("Id") FROM "Promotions"), 0) + 1, false);
+SELECT setval('"Promotions_Id_seq"', COALESCE((SELECT MAX("Id") FROM "Promotions"), 1), TRUE);
 
 SELECT COUNT(*) AS "Total_Promotions" FROM "Promotions";

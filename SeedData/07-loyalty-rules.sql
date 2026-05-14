@@ -36,28 +36,32 @@ INSERT INTO "LoyaltyTierConfigs" ("Id", "ConfigKey", "ConfigValue", "Description
 VALUES (10, 'Tier_Bronze', '{"TierName":"Bronze","MinPoints":0,"Multiplier":1.0}', 'Bronze: 1.0x, from 0 pts', 10)
 ON CONFLICT ("ConfigKey") DO UPDATE SET
     "ConfigValue" = EXCLUDED."ConfigValue",
-    "Description" = EXCLUDED."Description";
+    "Description" = EXCLUDED."Description",
+    "DisplayOrder" = EXCLUDED."DisplayOrder";
 
 -- Tier: Silver — multiplier 1.5x, min 5000 points
 INSERT INTO "LoyaltyTierConfigs" ("Id", "ConfigKey", "ConfigValue", "Description", "DisplayOrder")
 VALUES (11, 'Tier_Silver', '{"TierName":"Silver","MinPoints":5000,"Multiplier":1.5}', 'Silver: 1.5x, from 5000 pts', 11)
 ON CONFLICT ("ConfigKey") DO UPDATE SET
     "ConfigValue" = EXCLUDED."ConfigValue",
-    "Description" = EXCLUDED."Description";
+    "Description" = EXCLUDED."Description",
+    "DisplayOrder" = EXCLUDED."DisplayOrder";
 
 -- Tier: Gold — multiplier 2.0x, min 15000 points
 INSERT INTO "LoyaltyTierConfigs" ("Id", "ConfigKey", "ConfigValue", "Description", "DisplayOrder")
 VALUES (12, 'Tier_Gold', '{"TierName":"Gold","MinPoints":15000,"Multiplier":2.0}', 'Gold: 2.0x, from 15000 pts', 12)
 ON CONFLICT ("ConfigKey") DO UPDATE SET
     "ConfigValue" = EXCLUDED."ConfigValue",
-    "Description" = EXCLUDED."Description";
+    "Description" = EXCLUDED."Description",
+    "DisplayOrder" = EXCLUDED."DisplayOrder";
 
 -- Tier: Platinum — multiplier 2.5x, min 30000 points
 INSERT INTO "LoyaltyTierConfigs" ("Id", "ConfigKey", "ConfigValue", "Description", "DisplayOrder")
 VALUES (13, 'Tier_Platinum', '{"TierName":"Platinum","MinPoints":30000,"Multiplier":2.5}', 'Platinum: 2.5x, from 30000 pts', 13)
 ON CONFLICT ("ConfigKey") DO UPDATE SET
     "ConfigValue" = EXCLUDED."ConfigValue",
-    "Description" = EXCLUDED."Description";
+    "Description" = EXCLUDED."Description",
+    "DisplayOrder" = EXCLUDED."DisplayOrder";
 
 -- =============================================================================
 -- SECTION 3: Update existing Customers to new split-points schema
@@ -103,6 +107,8 @@ UPDATE "Customers" SET
     "CurrentAvailablePoints" = 50,
     "Tier" = 0  -- Bronze
 WHERE "Id" = 6;
+
+SELECT setval('"LoyaltyTierConfigs_Id_seq"', COALESCE((SELECT MAX("Id") FROM "LoyaltyTierConfigs"), 1), TRUE);
 
 -- =============================================================================
 -- VERIFY

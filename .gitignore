@@ -488,6 +488,9 @@ solution-config.props
 
 # DB config
 appsettings.json
+appsettings.example.json
+MyShop/appsettings.example.json
+migration_backup.sql
 run-all.sh
 
 # === Uno Platform Specific ===

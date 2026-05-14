@@ -11,3 +11,5 @@ SET
     "HasCustomization" = EXCLUDED."HasCustomization",
     "IconKey" = EXCLUDED."IconKey",
     "Description" = EXCLUDED."Description";
+
+SELECT setval('"Categories_Id_seq"', COALESCE((SELECT MAX("Id") FROM "Categories"), 1), TRUE);
