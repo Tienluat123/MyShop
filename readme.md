@@ -80,7 +80,7 @@ Ngoài các yêu cầu chính trong đề, nhóm có đầu tư thêm một số
 
 ## 7. Video Demo
 
-Link YouTube demo ở chế độ Unlisted: TODO - dán link YouTube vào đây
+Link YouTube demo ở chế độ Unlisted: https://www.youtube.com/watch?v=gH9Gqal-ajE
 
 
 
